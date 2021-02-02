@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.5">
+    <!--Generated on demand-->
+    <model name="floor_obstacles">
+        <static>true</static>
+        <link name="wall_0_0">
+            <pose>7.736280456407018 -2.2834915711348627 3.19325267877899050.0 0.0 0.0</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall_0_1">
+            <pose>7.736280456407018 2.191711488332525 3.19325267877899050.0 0.0 0.0</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall_1_0">
+            <pose>9.736280456407018 -1.5843038717885007 3.19325267877899050.0 0.0 1.5707963267948966</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall_1_1">
+            <pose>9.736280456407018 2.385979313668538 3.19325267877899050.0 0.0 1.5707963267948966</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall_2_0">
+            <pose>11.736280456407018 -1.3867799009392703 3.19325267877899050.0 0.0 1.5707963267948966</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall_2_1">
+            <pose>11.736280456407018 1.307111901667096 3.19325267877899050.0 0.0 1.5707963267948966</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall_3_0">
+            <pose>13.736280456407018 -2.8997275280528947 3.19325267877899050.0 0.0 0.0</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall_3_1">
+            <pose>13.736280456407018 2.1801328951769294 3.19325267877899050.0 0.0 0.0</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>1.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+    </model>
+</sdf>

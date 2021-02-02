@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<sdf version="1.5">
+  <world name="default">
+
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.25 0.25 0.25 1</background>
+      <shadows>false</shadows>
+    </scene>
+
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+      <physics type="ode">
+      <max_step_size>0.001</max_step_size> <!--0.0018-->
+      <real_time_factor>1000</real_time_factor> <!--10000-->
+      <real_time_update_rate>1000</real_time_update_rate> <!--10000-->
+
+      <!--
+      x1 // all models // demonstrations
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1000</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+
+      up to x15 // without arm or arm fixed
+      <max_step_size>0.005</max_step_size>
+      <real_time_factor>1000</real_time_factor>
+      <real_time_update_rate>15000</real_time_update_rate>
+
+      up to x3 // armed model revolute
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>1000</real_time_factor>
+      <real_time_update_rate>15000</real_time_update_rate>
+      -->
+    </physics>
+    <!--
+        # Default configuration of the engine
+        <max_step_size>0.001</max_step_size>
+        <real_time_factor>1</real_time_factor>
+        <real_time_update_rate>1000</real_time_update_rate>
+    -->
+
+    <!--
+    # Light if necessary
+    <light type="point" name="point">
+      <pose>-2 -1 1.5 0 0 0</pose>
+      <diffuse>1 1 1 1</diffuse>
+      <specular>.1 .1 .1 1</specular>
+      <attenuation>
+        <range>20</range>
+        <linear>0.2</linear>
+        <constant>0.8</constant>
+        <quadratic>0.01</quadratic>
+      </attenuation>
+      <cast_shadows>false</cast_shadows>
+    </light>
+    -->
+    <!-- # Immovable ground walls created only once -->
+    <model name="immovable">
+      <static>true</static>
+      <link name="wall_left">
+        <pose> -6.0  5.0  1.0  1.57 0 0 </pose>
+        <collision name="collision">
+          <geometry>
+            <box> <size>12.0 2.0 0.02</size> </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+         <geometry>
+            <box> <size>12.0 2.0 0.02</size> </box>
+          </geometry>
+        </visual>
+      </link>
+
+      <link name="wall_right">
+        <pose> -6.0  -5.0  1.0  1.57 0 0 </pose>
+        <collision name="collision">
+          <geometry>
+            <box> <size>12.0 2.0 0.02</size> </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+         <geometry>
+            <box> <size>12.0 2.0 0.02</size> </box>
+          </geometry>
+        </visual>
+      </link><!---->
+
+      <link name="wall_back">
+        <pose> -12.0  0  1.0  1.57 0 1.57 </pose>
+        <collision name="collision">
+          <geometry>
+            <box> <size>10.0 2.0 0.02</size> </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+         <geometry>
+            <box> <size>10.0 2.0 0.02</size> </box>
+          </geometry>
+        </visual>
+      </link>
+
+      <link name="wall_front_left">
+        <pose> 0.0  -3.0  1.0  1.57 0 1.57 </pose>
+        <collision name="collision">
+          <geometry>
+            <box> <size>4.0 2.0 0.02</size> </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+         <geometry>
+            <box> <size>4.0 2.0 0.02</size> </box>
+          </geometry>
+        </visual>
+      </link><!---->
+
+      <link name="wall_front_right">
+        <pose> 0.0  3.0  1.0  1.57 0 1.57 </pose>
+        <collision name="collision">
+          <geometry>
+            <box> <size>4.0 2.0 0.02</size> </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+         <geometry>
+            <box> <size>4.0 2.0 0.02</size> </box>
+          </geometry>
+        </visual>
+      </link>
+
+
+    </model>
+
+  </world>
+</sdf>
+

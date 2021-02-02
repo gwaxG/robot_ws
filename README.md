@@ -1,0 +1,30 @@
+# Robot work space
+***
+## Description
+This work space contains all code necessary for jaguar simulation,
+control, navigation and learning.
+
+## Launch:
+Before starting your work, be sure that Go nodes are compiled.
+To do so, it is necessary to execute `go build` in every package 
+of every cmd folder (they are not so many btw). The tool like 
+catkin_make is coming.
+
+If you want to launch a particular package you can find its documentation inside.
+In case of a scenario launch:
+* learning: 
+
+    `roslaunh launch_scenario learning.launch`;
+* deploy in simulation or reality
+  
+  `roslaunh launch_scenario deploy.launch`.
+
+
+## Packages:
+***
+### launch_scenario
+Launch files for learning and deploy scenarios.
+***
+### simulation
+Gazebo environment flat/multi-floor simulation and robot spawning accordingly to the task.
+***
