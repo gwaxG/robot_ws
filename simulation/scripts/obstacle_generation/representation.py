@@ -50,10 +50,10 @@ class FloorObstacles(Group):
         self.wall_y_size = wall_y_size
         self.shift_x = shift_x
         self.shift_z = shift_z
+        self.exist = False
 
     def generate(self):
         walls = []
-        print("Shift", self.shift_z, self.shift_x)
         for dist_i in range(4):
             dist = 3.0 + dist_i*2 + self.shift_x
             for wall_i in range(2):
@@ -72,6 +72,7 @@ class FloorObstacles(Group):
                     )
                 )
         self.walls = walls
+        self.exist = True
 
 class GroundObstacles(Group):
 
@@ -80,6 +81,7 @@ class GroundObstacles(Group):
         self.wall_z_size = wall_z_size
         self.wall_x_size = wall_x_size
         self.wall_y_size = wall_y_size
+        self.exist = False
 
     def generate(self):
         walls = []
@@ -101,6 +103,7 @@ class GroundObstacles(Group):
                     )
                 )
         self.walls = walls
+        self.exist = True
 
 class StairFloor(Group):
 
@@ -119,12 +122,24 @@ class StairFloor(Group):
         self.shift_x = 0.
         self.shift_z = 0.
 
+        self.step_height = 0.
+        self.step_length = 0.
+        self.step_n = 0.
+        self.exist = False
+
     def generate(self):
         # steps
-        n_steps = random.randint(5, 10)
+        step_n = random.randint(5, 10)
         length = StairFloor.min_step_length + random.random() * (StairFloor.max_step_length - StairFloor.min_step_length)
         height = StairFloor.min_step_height + random.random() * (StairFloor.max_step_length - StairFloor.min_step_height)
-        for i in range(n_steps):
+
+        self.step_height = height
+        self.step_length = length
+        self.step_n = step_n
+        self.exist = True
+
+        self.steps = []
+        for i in range(step_n):
             self.steps.append(
                 Box(
                     name="step_"+str(i),
@@ -139,8 +154,8 @@ class StairFloor(Group):
                     box_z=height
                 )
             )
-        self.shift_x = length * n_steps
-        self.shift_z = height * n_steps
+        self.shift_x = length * step_n
+        self.shift_z = height * step_n
         # floor
         self.floor = Box(
             name="floor",

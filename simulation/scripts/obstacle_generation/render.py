@@ -105,7 +105,7 @@ def apply(model):
     :return:
     """
     # Delete previous model
-    delete_model(model.name)
+    # delete_model(model.name)
     # Add headers
     sdf = Element('sdf')
     sdf.set("version", str(1.5))
