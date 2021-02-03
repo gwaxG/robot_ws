@@ -1,0 +1,10 @@
+jaguar:
+  arm_1_effort_controller:
+    type: effort_controllers/JointPositionController
+    joint: arm_1_hinge
+    pid: {p: 100.0, i: 0.01, d: 5.0}
+
+  arm_2_effort_controller:
+    type: effort_controllers/JointPositionController
+    joint: arm_2_hinge
+    pid: {p: 100.0, i: 0.01, d: 5.0}

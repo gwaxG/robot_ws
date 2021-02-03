@@ -16,4 +16,9 @@
         <arg name="use_sim_time" value="$(arg use_sim_time)"/>
         <arg name="headless" value="$(arg headless)"/>
     </include>
+
+    <node name="env_gen_services" pkg="simulation" type="env_gen_services.py"
+      output="screen">
+    </node>
+
 </launch>

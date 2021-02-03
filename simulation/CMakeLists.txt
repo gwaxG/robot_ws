@@ -57,6 +57,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES
     EnvGen.srv
+    RobotSpawn.srv
     StairInfo.srv
 #   Service2.srv
 )

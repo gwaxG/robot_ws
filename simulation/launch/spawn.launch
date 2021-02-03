@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="dev"         default="/dev/input/js0"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+
+    <arg name="model" default="$(find simulation)/models/jag.urdf"/>
+
+    <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+
+    <param name="use_gui" value="$(arg gui)"/>
+
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find simulation)/models/jag.urdf -urdf -z 1 -model jaguar" />
+
+    <rosparam file="$(find simulation)/config/arms.yaml" command="load"/>
+
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" ns="/jaguar" args="joint_state_controller
+            arm_1_effort_controller
+            arm_2_effort_controller"
+        />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+          respawn="false" output="screen">
+    </node>
+
+    <node name="robot_spawn_service" pkg="simulation" type="robot_spawn_service.py"
+      output="screen">
+    </node>
+
+</launch>

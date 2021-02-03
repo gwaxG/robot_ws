@@ -1,0 +1,6 @@
+string place
+string task
+string rand
+---
+bool result
+string err

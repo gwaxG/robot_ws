@@ -1,0 +1,829 @@
+<?xml version="1.0" ?>
+<robot name="jaguar">
+  <joint name="left_track_j" type="fixed">
+    <parent link="base_link"/>
+    <child link="left_track"/>
+    <origin rpy="0      0     0" xyz="0    0.245  0.1"/>
+    <axis xyz="0  0  0"/>
+    <limit effort="0" lower="0" upper="0" velocity="0"/>
+  </joint>
+
+  <link name="centroid"/>
+  <joint name="centroid_j" type="fixed">
+    <parent link="base_link"/>
+    <child link="centroid"/>
+    <origin rpy="0      0     0" xyz="0    0.0  0.09"/>
+    <axis xyz="0  0  0"/>
+    <limit effort="0" lower="0" upper="0" velocity="0"/>
+  </joint>
+
+  <joint name="right_track_j" type="fixed">
+    <parent link="base_link"/>
+    <child link="right_track"/>
+    <origin rpy="0      0     0" xyz="0  -0.245     0.1"/>
+    <axis xyz="0  0  0"/>
+    <limit effort="0" lower="0" upper="0" velocity="0"/>
+  </joint>
+  <joint name="right_rear_track_j" type="revolute">
+    <parent link="base_link"/>
+    <child link="right_rear_arm"/>
+    <origin rpy="0  0  1.5708" xyz="-0.23  -0.315    0.1"/>
+    <axis xyz="1  0  0"/>
+    <limit effort="-1" lower="-1e+16" upper="+1e+16" velocity="1"/>
+    <dynamics damping=".5"/>
+  </joint>
+  <joint name="left_rear_track_j" type="revolute">
+    <parent link="base_link"/>
+    <child link="left_rear_arm"/>
+    <origin rpy="0  0  1.5708" xyz="-0.23   0.315  0.1"/>
+    <axis xyz="1  0  0"/>
+    <limit effort="-1" lower="-1e+16" upper="+1e+16" velocity="1"/>
+    <dynamics damping=".5"/>
+  </joint>
+  <joint name="right_front_track_j" type="revolute">
+    <parent link="base_link"/>
+    <child link="right_front_arm"/>
+    <origin rpy="0  0  1.5708" xyz="0.23  -0.315   0.1"/>
+    <axis xyz="1  0  0"/>
+    <limit effort="-1" lower="-1e+16" upper="+1e+16" velocity="1"/>
+    <dynamics damping=".5"/>
+  </joint>
+  <joint name="left_front_track_j" type="revolute">
+    <parent link="base_link"/>
+    <child link="left_front_arm"/>
+    <origin rpy="0  0  1.5708" xyz="0.23  0.315  0.1"/>
+    <axis xyz="1  0  0"/>
+    <limit effort="-1" lower="-1e+16" upper="+1e+16" velocity="1"/>
+    <dynamics damping=".5"/>
+  </joint>
+ <!--  <joint name="velodyne_j" type="fixed">
+    <parent link="base"/>
+    <child link="top"/>
+    <origin rpy="0  0  0" xyz="0 0 0.029335"/>
+    <axis xyz="0  0  0"/>
+    <limit effort="-1" lower="-1e+16" upper="+1e+16" velocity="1"/>
+    <dynamics damping=".5"/>
+  </joint>
+  <joint name='velodyne_base_j' type='fixed'>
+    <parent link="base_link"/>
+    <child link="base"/>
+    <origin rpy="0      0     0" xyz="0  0  0.5"/>
+    <axis xyz="0  0  0"/>
+    <limit effort="0" lower="0" upper="0" velocity="0"/>
+  </joint>-->
+  <joint name="imu_joint" type="fixed">
+    <axis xyz="1 0 0"/>
+    <origin xyz="0 0 0.19"/>
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+  </joint>
+  <link name="base_link">
+    <inertial>
+      <mass value="10.14"/>
+      <origin rpy="1.5708  0      0" xyz="0  0  0.1"/>
+      <inertia ixx="0.13068" ixy="0" ixz="0" iyy="0.4184" iyz="0" izz="0.3196"/>
+      <!--<inertia ixx="0.17136" ixy="0" ixz="0" iyy="0.544105" iyz="0" izz="0.415662"/>-->
+    </inertial>
+    <collision name="base_link_collision">
+      <origin rpy="0      0     0" xyz="0   0   0.1"/>
+      <geometry>
+        <box size="0.55 0.37 0.135"/>
+      </geometry>
+    </collision>
+
+    <visual name="base_link_visual">
+      <origin rpy="0      3.14     0" xyz="0   0.005   0.14"/>
+      <geometry>
+	<mesh filename="package://simulation/models/meshes/jaguar/base.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+  </link>
+  <!-- Arm -->
+  <gazebo>
+    <plugin filename="libgazebo_ros_control.so" name="gazebo_ros_control">
+      <legacyModeNS>True</legacyModeNS>
+      <robotNamespace>/jaguar</robotNamespace>
+    </plugin>
+  </gazebo>
+
+<!--<link name="box">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0  0  0"/>
+      <mass value="7.0"/>
+      <inertia ixx="0.03886458333333334" ixy="0" ixz="0" iyy="0.019745833333333337" iyz="0" izz="0.03734791666666667"/>
+    </inertial>
+    <collision name="box_collision">
+      <origin rpy="0 0 0" xyz="0  0  0"/>
+      <geometry>
+        <box size="0.125 0.22 0.135"/>
+      </geometry>
+    </collision>
+    <visual name="box_visual">
+      <origin rpy="0 0 0" xyz="0  0  0"/>
+      <geometry>
+        <box size="0.125 0.22 0.135"/>
+      </geometry>
+    </visual>
+</link>
+<joint name="box_hinge" type="fixed">
+    <origin xyz="0.12 0.07 0.23" />
+    <parent link="base_link"/>
+    <child link="box"/>
+    <axis xyz="0  0  0"/>
+    <limit effort="0" lower="0" upper="0" velocity="0"/>
+</joint>-->
+<!---->
+  <link name="arm_1">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0  0  0.17"/>
+      <mass value="1.0"/>
+      <inertia ixx="0.009789583333333334" ixy="0" ixz="0" iyy="0.009789583333333334" iyz="0" izz="0.0003125"/>
+    </inertial>
+    <collision name="arm_1_collision">
+      <origin rpy="0 0 0" xyz="0  -0.025  0.17"/>
+      <geometry>
+        <cylinder length="0.34" radius="0.025"/>
+      </geometry>
+    </collision>
+    <visual name="arm_1_visual">
+      <origin rpy="0 -1.57 0" xyz="0  0  0.0"/>
+      <geometry>
+        <mesh filename="package://simulation/models/meshes/jaguar/arm1.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+  </link>
+
+ <joint name="arm_1_hinge" type="revolute">
+    <!-- case of the box <origin rpy="0 -1.0 0" xyz="0.01 -0.145 0.04"/>  -1.25-->
+    <origin rpy="0 0 0" xyz="0.123 -0.08 0.27"/>
+    <parent link="base_link"/>
+    <child link="arm_1"/>
+    <axis xyz="0  1  0"/>
+    <limit effort="10000" lower="-1.3" upper="1.3" velocity="0.05"/>
+    <dynamics damping=".5" friction=".5"/>
+ </joint>
+
+   <transmission name="arm_1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="arm_1_motor">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="arm_1_hinge">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+  </transmission>
+
+<link name="arm_2">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0  0  0.075"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.001015625" ixy="0" ixz="0" iyy="0.001015625" iyz="0" izz="0.00015625"/>
+    </inertial>
+    <collision name="arm_2_collision">
+      <origin rpy="0 0 0" xyz="0  0.025  0"/>
+      <geometry>
+        <cylinder length="0.15" radius="0.025"/>
+      </geometry>
+    </collision>
+    <visual name="arm_2_visual">
+      <origin rpy="0 -1.57 0" xyz="0  -0.025  0.0"/>
+      <geometry>
+        <mesh filename="package://simulation/models/meshes/jaguar/arm2.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+  </link>
+
+<joint name="arm_2_hinge" type="revolute">
+    <origin xyz="0 0.055 0.33" rpy="0.0 0 0"/>
+    <parent link="arm_1"/>
+    <child link="arm_2"/>
+    <axis xyz="0  1  0"/>
+    <dynamics damping=" 0.2" friction="0"/>
+    <!-- <limit effort="10000" velocity="0.001" lower="-2.82" upper="0" /> -->
+    <limit effort="10000" velocity="0.05" lower="-2.9" upper="2.9" />
+ </joint>
+
+   <transmission name="arm_2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <actuator name="arm_2_motor">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+    <joint name="arm_2_hinge">
+      <hardwareInterface>EffortJointInterface</hardwareInterface>
+    </joint>
+  </transmission><!---->
+
+<link name="arm_3">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0  0  0.075"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.001015625" ixy="0" ixz="0" iyy="0.001015625" iyz="0" izz="0.00015625"/>
+    </inertial>
+    <collision name="arm_3_collision">
+      <origin rpy="0 0 0" xyz="0  0  0"/>
+      <geometry>
+        <cylinder length="0.15" radius="0.025"/>
+      </geometry>
+    </collision>
+    <visual name="arm_3_visual">
+      <origin rpy="0 -1.57 0" xyz="0  0  0.0"/>
+      <geometry>
+        <mesh filename="package://simulation/models/meshes/jaguar/arm3.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+
+  </link>
+
+<joint name="arm_3_hinge" type="fixed">
+    <origin xyz="0 0.025 0.075" rpy="0.0 3.14 0"/>
+    <parent link="arm_2"/>
+    <child link="arm_3"/>
+    <axis xyz="0  1  0"/>
+    <dynamics damping=" 0.2" friction="0"/>
+
+
+ </joint> <!---->
+
+
+
+ <link name="ball">
+    <inertial>
+      <mass value="2.0"/>
+      <inertia ixx="0.0045" ixy="0" ixz="0" iyy="0.0045" iyz="0" izz="0.0045"/>
+    </inertial>
+    <visual name="arm_2_visual">
+      <geometry>
+        <sphere radius="0.04"/>
+      </geometry>
+    </visual>
+  </link>
+
+<joint name="ball_hinge" type="fixed">
+    <origin xyz="0 0.0 -0.235" rpy="0.0 0 0"/>
+    <parent link="arm_3"/>
+    <child link="ball"/>
+    <axis xyz="0  0  0"/>
+ </joint>
+
+<!--   Arm - end -->
+  <link name="left_track">
+    <inertial>
+      <mass value="3.03"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.000909" ixy="0" ixz="0" iyy="0.016277" iyz="0" izz="0.0156955"/>
+    </inertial>
+    <collision name="left_track_collision">
+      <origin rpy="1.5708  0      1.5708" xyz="0  0  0"/>
+      <geometry>
+        <box size="0.06 0.180 0.46"/>
+      </geometry>
+    </collision>
+    <collision name="left_track_collision_1">
+      <origin rpy="1.5708  0      0" xyz="0.23  0    0"/>
+      <geometry>
+        <cylinder length="0.06" radius="0.09"/>
+      </geometry>
+    </collision>
+    <collision name="left_track_collision_2">
+      <origin rpy="1.5708  0      0" xyz="-0.23  0    0"/>
+      <geometry>
+        <cylinder length="0.06" radius="0.09"/>
+      </geometry>
+    </collision>
+
+  </link>
+  <link name="right_track">
+    <inertial>
+      <mass value="3.03"/>
+      <origin rpy="0  0  0" xyz="0  0  0"/>
+      <inertia ixx="0.000909" ixy="0" ixz="0" iyy="0.016277" iyz="0" izz="0.0156955"/>
+    </inertial>
+    <collision name="right_track_collision">
+      <origin rpy="1.5708  0      1.5708" xyz="0  0  0"/>
+      <geometry>
+        <box size="0.06 0.180 0.46"/>
+      </geometry>
+    </collision>
+    <collision name="right_track_collision_1">
+      <origin rpy="1.5708  0      0" xyz="0.23  0    0"/>
+      <geometry>
+        <cylinder length="0.06" radius="0.09"/>
+      </geometry>
+    </collision>
+    <collision name="right_track_collision_2">
+      <origin rpy="1.5708  0      0" xyz="-0.23  0    0"/>
+      <geometry>
+        <cylinder length="0.06" radius="0.09"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="right_rear_arm">
+    <inertial>
+      <mass value="0.5"/>
+      <origin rpy="1.57079  0    1.57079" xyz="0  0     0"/>
+      <inertia ixx="0.000340625" ixy="0" ixz="0" iyy="0.001981265" iyz="0" izz="0.002265625"/>
+    </inertial>
+    <collision name="collision_right_rear_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </collision>
+    <collision name="collision_right_rear_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </collision>
+    <collision name="right_rear_track_collision">
+      <origin rpy="-1.3293  0      0" xyz="0       0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </collision>
+    <collision name="right_rear_track_collision_2">
+      <origin rpy="1.3293  0      0" xyz="0       0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </collision>
+    <visual name="right_rear_arm_visual">
+      <origin rpy="0  0   1.57" xyz="0  0.04    0"/>
+      <geometry>
+<mesh filename="package://simulation/models/meshes/jaguar/flipper.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+    <!-- <visual name="visual">
+      <origin rpy="0  0  0" xyz="0     0.115  0.001"/>
+      <geometry>
+        <box size=".002 .23 .05"/>
+      </geometry>
+    </visual>
+    <visual name="visual_right_rear_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </visual>
+    <visual name="visual_right_rear_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </visual>
+    <visual name="right_rear_track_visual">
+      <origin rpy="1.3293  0      0" xyz="0       0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </visual>
+    <visual name="right_rear_track_visual_2">
+      <origin rpy="-1.3293  0      0" xyz="0       0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </visual> -->
+  </link>
+
+  <link name="left_rear_arm">
+    <inertial>
+      <mass value="0.5"/>
+      <origin rpy="1.57079  0    1.57079" xyz="0  0     0"/>
+      <inertia ixx="0.000340625" ixy="0" ixz="0" iyy="0.001981265" iyz="0" izz="0.002265625"/>
+    </inertial>
+    <collision name="collision_left_rear_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </collision>
+    <collision name="collision_left_rear_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </collision>
+    <collision name="left_rear_track_collision">
+      <origin rpy="-1.3293  0      0" xyz="0       0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </collision>
+    <collision name="left_rear_track_collision_2">
+      <origin rpy="1.3293  0      0" xyz="0       0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </collision>
+    <!--<visual name="visual">
+      <origin rpy="0  0  0" xyz="0     0.115  0.001"/>
+      <geometry>
+        <box size=".002 .23 .05"/>
+      </geometry>
+    </visual>
+    <visual name="visual_left_rear_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </visual>
+    <visual name="visual_left_rear_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </visual>
+    <visual name="left_rear_track_visual">
+      <origin rpy="1.3293  0      0" xyz="0       0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </visual>
+    <visual name="left_rear_track_visual_2">
+      <origin rpy="-1.3293  0      0" xyz="0       0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </visual>-->
+    <visual name="left_rear_arm_visual">
+      <origin rpy="3.14  0   1.57" xyz="0  0.04    0"/>
+      <geometry>
+<mesh filename="package://simulation/models/meshes/jaguar/flipper.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="right_front_arm">
+    <inertial>
+      <mass value="0.5"/>
+      <origin rpy="1.57  0    1.57" xyz="0  0     0"/>
+      <inertia ixx="0.000340625" ixy="0" ixz="0" iyy="0.001981265" iyz="0" izz="0.002265625"/>
+    </inertial>
+    <collision name="collision_right_front_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </collision>
+    <collision name="collision_right_front_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0    -0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </collision>
+    <collision name="right_front_track_collision">
+      <origin rpy="-1.3293  0      0" xyz="0      -0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </collision>
+    <collision name="right_front_track_collision_2">
+      <origin rpy="1.3293  0      0" xyz="0      -0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </collision>
+    <!-- <visual name="visual">
+      <origin rpy="0  0  0" xyz="0    -0.115  0.001"/>
+      <geometry>
+        <box size=".002 .23 .05"/>
+      </geometry>
+    </visual>
+    <visual name="visual_right_front_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </visual>
+    <visual name="visual_right_front_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0    -0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </visual>
+    <visual name="right_front_track_visual">
+      <origin rpy="-1.3293  0      0" xyz="0      -0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </visual>
+    <visual name="right_front_track_visual_2">
+      <origin rpy="1.3293  0      0" xyz="0      -0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </visual> -->
+    <visual name="right_front_arm_visual">
+      <origin rpy="3.14  0   -1.57" xyz="0  -0.04    0"/>
+      <geometry>
+<mesh filename="package://simulation/models/meshes/jaguar/flipper.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="left_front_arm">
+    <inertial>
+      <mass value="0.5"/>
+      <origin rpy="1.57  0    1.57" xyz="0  0     0"/>
+      <inertia ixx="0.000340625" ixy="0" ixz="0" iyy="0.001981265" iyz="0" izz="0.002265625"/>
+    </inertial>
+    <collision name="collision_left_front_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </collision>
+    <collision name="collision_left_front_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0    -0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </collision>
+    <collision name="left_front_track_collision">
+      <origin rpy="-1.3293  0      0" xyz="0      -0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </collision>
+    <collision name="left_front_track_collision_2">
+      <origin rpy="1.3293  0      0" xyz="0      -0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </collision>
+    <!--<visual name="visual">
+      <origin rpy="0  0  0" xyz="0    -0.115  0.001"/>
+      <geometry>
+        <box size=".002 .23 .05"/>
+      </geometry>
+    </visual>
+    <visual name="visual_left_front_arm_wheel_1">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0     0     0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".09"/>
+      </geometry>
+    </visual>
+    <visual name="visual_left_front_arm_wheel_2">
+      <origin rpy="3.14159 -1.57079  3.14159" xyz="0    -0.23   0.001"/>
+      <geometry>
+        <cylinder length=".06" radius=".035"/>
+      </geometry>
+    </visual>
+    <visual name="left_front_track_visual">
+      <origin rpy="-1.3293  0      0" xyz="0      -0.12157  0.0277"/>
+      <geometry>
+        <box size="0.06 0.07 0.2233"/>
+      </geometry>
+    </visual>
+    <visual name="left_front_track_visual_2">
+      <origin rpy="1.3293  0      0" xyz="0      -0.12157 -0.0257"/>
+      <geometry>
+        <box size="0.06 0.07 0.23"/>
+      </geometry>
+    </visual> -->
+
+    <visual name="left_front_arm_visual">
+      <origin rpy="0  0   -1.57" xyz="0  -0.04    0"/>
+      <geometry>
+<mesh filename="package://simulation/models/meshes/jaguar/flipper.dae" scale="0.021 0.021 0.021"/>
+      </geometry>
+    </visual>
+
+  </link>
+<!--  <link name="base">
+    <inertial>
+      <mass value="1.2"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.001087473" iyy="0.001087473" izz="0.001092437" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>
+  <link name="top">
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0.036785" rpy="0 0 0"/>
+      <inertia ixx="0.000090623" iyy="0.000090623" izz="0.000091036" ixy="0" ixz="0" iyz="0" />
+    </inertial>
+  </link>-->
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.001"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.0001"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size=".001 .001 .001"/>
+      </geometry>
+    </collision>
+  </link>
+
+    <gazebo>
+        <plugin name="gazebo_ros_imu_controller" filename="libgazebo_ros_imu.so">
+          <robotNamespace></robotNamespace>
+          <topicName>imu</topicName>
+          <serviceName>imu/service</serviceName>
+          <bodyName>base_link</bodyName>
+          <gaussianNoise>0</gaussianNoise>
+          <rpyOffsets>0 0 0</rpyOffsets>
+          <updateRate>20.0</updateRate>
+          <alwaysOn>true</alwaysOn>
+          <gaussianNoise>0</gaussianNoise>
+        </plugin>
+    </gazebo>
+
+  <!-- <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor name="imu_sensor" type="imu">
+      <always_on>true</always_on>
+      <update_rate>10</update_rate>
+      <visualize>true</visualize>
+      <topic>__default_topic__</topic>
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <topicName>imu</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link</frameName>
+      </plugin>
+      <pose>0 0 0 0 0 0</pose>
+    </sensor>
+  </gazebo>-->
+
+  <gazebo reference="left_track_j">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+
+  <gazebo reference="right_track_j">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+
+  <!-- <gazebo reference="velodyne_base_j">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo> -->
+
+  <gazebo reference="imu_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+  <gazebo>
+            <!-- <plugin name="jaguar_plugin" filename="
+            /home/r1d1/dev/catkin_ws/src/jaguar_ws/plugins/flipper_control/build/libjaguar_plugin.so"> -->
+            <plugin name="jaguar_plugin" filename="/usr/lib/libjaguar_plugin.so">
+            <velocity>0</velocity>
+            <flipperTopicName>/cmd_flipper</flipperTopicName>
+            <right_front_joint>right_front_track_j</right_front_joint>
+            <left_front_joint>left_front_track_j</left_front_joint>
+            <right_rear_joint>right_rear_track_j</right_rear_joint>
+            <left_rear_joint>left_rear_track_j</left_rear_joint>
+            <updateRate>0.0</updateRate>>
+        </plugin>
+  </gazebo>
+
+  <gazebo>
+          <plugin filename="libSimpleTrackedVehiclePlugin.so"
+            name="simple_tracked_vehicle">
+                <body>base_link</body>
+                <cmdVelTopicName>/cmd_vel</cmdVelTopicName>
+                <left_track>left_track</left_track>
+                <right_track>right_track</right_track>
+                <rear_left_track>left_rear_arm</rear_left_track>
+                <rear_right_track>right_rear_arm</rear_right_track>
+                <front_left_track>left_front_arm</front_left_track>
+                <front_right_track>right_front_arm</front_right_track>
+                <track_mu>1</track_mu>
+                <track_mu2>0.5</track_mu2>
+                <tracks_separation>0.6</tracks_separation>
+                <steering_efficiency>0.5</steering_efficiency>
+        </plugin>
+  </gazebo>
+
+<!-- KINECT -->
+
+      <link name="camera_link">
+        <inertial_sphere mass="0.01" diameter="0.07" />
+        <visual>
+          <origin xyz="0 0 0.0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://hector_sensors_description/meshes/kinect_camera/kinect_camera_simple.dae"/>
+          </geometry>
+        </visual>
+        <collision>
+
+          <geometry>
+            <mesh filename="package://hector_sensors_description/meshes/kinect_camera/kinect_camera_simple.stl"/>
+          </geometry>
+        </collision>
+      </link>
+
+      <joint name="camera_joint" type="fixed">
+        <origin xyz="0.24 0 0.315" rpy="0 0.2 0"/>
+        <parent link="base_link"/>
+        <child link="camera_link"/>
+      </joint>
+
+      <joint name="camera_depth_joint" type="fixed">
+        <origin xyz="0.0 -0.02 0.0" rpy="0 0 0" />
+        <parent link="camera_link" />
+        <child link="camera_depth_frame"/>
+      </joint>
+
+      <link name="camera_depth_frame"/>
+
+      <joint name="camera_depth_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="-1.57 0.0 -1.57" />
+        <parent link="camera_depth_frame" />
+        <child link="camera_depth_optical_frame"/>
+      </joint>
+
+      <link name="camera_depth_optical_frame"/>
+
+      <joint name="camera_rgb_joint" type="fixed">
+        <origin xyz="0.0 -0.0125 0.0" rpy="0 0 0" />
+        <parent link="camera_link" />
+        <child link="camera_rgb_frame"/>
+      </joint>
+
+      <link name="camera_rgb_frame"/>
+
+      <joint name="camera_rgb_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="-1.57 0.0 -1.57" />
+        <parent link="camera_rgb_frame" />
+        <child link="camera_rgb_optical_frame"/>
+      </joint>
+
+      <link name="camera_rgb_optical_frame"/>
+
+      <gazebo reference="camera_depth_frame">
+        <sensor type="depth" name="camera">
+          <update_rate>20</update_rate>
+          <camera>
+            <horizontal_fov>1.05</horizontal_fov>
+            <image>
+              <format>R8G8B8</format>
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>3</far>
+            </clip>
+          </camera>
+          <plugin name="camera_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+          <!--
+          host:
+          <plugin name="camera_camera_controller" filename="/home/r1d1/dev/catkin_ws/devel/lib/libgazebo_ros_openni_kinect.so">
+          usual:
+          <plugin name="camera_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+          or
+          <plugin name="camera_camera_controller" filename="/opt/ros/noetic/lib/libgazebo_ros_openni_kinect.so">
+          -->
+            <alwaysOn>true</alwaysOn>
+            <updateRate>20</updateRate>
+            <imageTopicName>camera/rgb/image_raw</imageTopicName>
+            <cameraInfoTopicName>camera/rgb/camera_info</cameraInfoTopicName>
+            <depthImageTopicName>camera/depth/image_raw</depthImageTopicName>
+            <depthImageCameraInfoTopicName>camera/depth/camera_info</depthImageCameraInfoTopicName>
+            <frameName>camera_depth_optical_frame</frameName>
+            <distortion_k1>0.0</distortion_k1>
+            <distortion_k2>0.0</distortion_k2>
+            <distortion_k3>0.0</distortion_k3>
+            <distortion_t1>0.0</distortion_t1>
+            <distortion_t2>0.0</distortion_t2>
+          </plugin>
+        </sensor>
+      </gazebo>
+   <!-- END Kinect -->
+
+<!-- Marker
+  <link name="marker_0">
+    <inertial>
+      <mass value="0.001"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+    <collision name="marker_0">
+      <geometry>
+        <mesh filename="package://tracked_irl/meshes/markers/marker_0.dae" scale="0.22 0.22 0.22"/>
+      </geometry>
+    </collision>
+    <visual name="marker_0">
+      <geometry>
+        <mesh filename="package://tracked_irl/meshes/markers/marker_0.dae" scale="0.22 0.22 0.22"/>
+      </geometry>
+    </visual>
+  </link>-->
+
+  <!--<joint name="marker_0" type="fixed">
+     <origin rpy="-0.785 0.0 1.57" xyz="-0.28 0 0.28"/>
+     <parent link="base_link"/>
+     <child link="marker_0"/>
+   </joint>-->
+</robot>
