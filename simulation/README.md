@@ -1,8 +1,9 @@
 # Simulation package
 
-- - -
 ## Description
-This package provides Gazebo utilities.
+This package provides Gazebo simulation utilities.
+
+- - -
 ## Environment generation
 `simulation.launch` starts simulation with basic immovable walls.
 
@@ -14,12 +15,23 @@ The "stair_floor" model relates to the staircase with the floor.
 
 The service `stair_info` returns staircase length, height and number of steps if the staircas exists which is indicated by the attribute `exist`.
 
+
+- - -
 ## Robot (re)spawning
+
 `spawn.launch` spawns the Jaguar robot in front of the staircase one meter away.
-This sub-package provides the service `spawn` to actively respawn the robot.
-The navigation pattern is `/place/task/random` where:
-* the place is `ground` or `floor`;
-* the task is `flat` or `traversal`;
-* random is `0` or `1`.
+This sub-package provides the service `robot_spawn` to actively respawn the robot.
+The RobotSpawn.srv contains:
+
+```
+string place
+string task
+string random
+---
+bool result
+string err
+```
+
+where the place is `ground` or `floor`, the task is `flat`, `ascent` or `descent`, random is `0` or `1`.
 
 
