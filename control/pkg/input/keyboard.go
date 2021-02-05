@@ -7,19 +7,24 @@ import (
 	"unicode/utf8"
 )
 
-type Keyboard struct {}
+type Keyboard struct {
+	stateChange chan state.State
+}
 
-func (k *Keyboard) Serve (stateChange chan state.State) {
+func (k *Keyboard) Init (stateChange chan state.State) {
+	k.stateChange = stateChange
 	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
 	// do not display entered characters on the screen
 	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
+}
 
+func (k *Keyboard) Serve () {
 	b := make([]byte, 1)
 	st := state.State{}
 	for {
 		os.Stdin.Read(b)
 		k.handleKeyPress(b, &st)
-		stateChange <- st
+		k.stateChange <- st
 		st.Reset()
 	}
 }

@@ -1,49 +1,63 @@
 package input
 
 import (
-	"fmt"
-	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/aler9/goroslib"
-	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
+	"github.com/aler9/goroslib/pkg/msg"
+	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/control/pkg/utils"
-	"log"
 )
 
-type Ros struct {}
+type Ros struct {
+	stateChange chan state.State
+	state state.State
+}
 
-func (r * Ros) Serve (stateChange chan state.State) {
+type JaguarControl struct {
+	// JaguarControl.msg Go definition
+	msg.Package `ros:"control"`
+	Linear  float64
+	Angular float64
+	FrontFlippers float64
+	RearFlippers float64
+	ArmJoint1  float64
+	ArmJoint2  float64
+	ArmJoint3  float64
+	ArmJoint4  float64
+}
+
+func (r *Ros) Init (stateChange chan state.State) {
+	r.stateChange = stateChange
+	r.state = state.State{}
+}
+
+func (r * Ros) Serve () {
 	// create a node and connect to the master
 	n, err := goroslib.NewNode(goroslib.NodeConf{
 		Name:          "jag_control",
 		MasterAddress: "127.0.0.1:11311",
 	})
-	log.Println("")
 	utils.FailOnError(err, "Failed to connect to ROS master")
-	defer utils.FailOnError(n.Close(), "Failed to close jag_control node")
+	defer func(){err=n.Close(); utils.FailOnError(err, "Failed to disconnect from ROS master")}()
 
 	subBase, err := goroslib.NewSubscriber(goroslib.SubscriberConf{
 		Node:     n,
-		Topic:    "base_cmd",
-		Callback: r.onBase,
+		Topic:    "platform_cmd",
+		Callback: r.onRequest,
 	})
-	utils.FailOnError(err, "Failed to create base_cmd subscriber")
+	utils.FailOnError(err, "Failed to create platform_cmd subscriber")
+	defer func(){err=subBase.Close(); utils.FailOnError(err, "Failed to disconnect from platform_cmd")}()
 
-	subArm, err := goroslib.NewSubscriber(goroslib.SubscriberConf{
-		Node:     n,
-		Topic:    "arm_cmd",
-		Callback: r.onArm,
-	})
-	utils.FailOnError(err, "Failed to create arm_cmd subscriber")
-	defer utils.FailOnError(subArm.Close(), "Failed to close sub_arm")
-	defer utils.FailOnError(subBase.Close(), "Failed to close sub_base")
 	select {}
 }
 
-func (r * Ros) onArm (msg *geometry_msgs.Twist) {
-	fmt.Printf("Incoming: %+v\n", msg)
-}
-
-
-func (r * Ros) onBase (msg *geometry_msgs.Twist) {
-	fmt.Printf("Incoming: %+v\n", msg)
+func (r * Ros) onRequest (msg *JaguarControl) {
+	r.state.Linear = msg.Linear
+	r.state.Angular = msg.Angular
+	r.state.FrontFlippers = msg.FrontFlippers
+	r.state.RearFlippers = msg.RearFlippers
+	r.state.ArmJoint1 = msg.ArmJoint1
+	r.state.ArmJoint2 = msg.ArmJoint2
+	r.state.ArmJoint3 = msg.ArmJoint3
+	r.state.ArmJoint4 = msg.ArmJoint4
+	r.stateChange <- r.state
 }
