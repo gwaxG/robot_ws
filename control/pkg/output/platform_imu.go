@@ -6,6 +6,6 @@ type PlatformImu struct {
 func (i *PlatformImu) Init() {
 
 }
-func (i *PlatformImu) Emit() {
+func (i *PlatformImu) Serve() {
 
 }

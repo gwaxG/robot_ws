@@ -6,10 +6,10 @@ type PlatformCmd struct {
 
 }
 
-func (p *PlatformCmd) Init() {
+func (p *PlatformCmd) Init(actions chan state.State) {
 
 }
 
-func (p *PlatformCmd) ApplyChange(change state.State) {
+func (p *PlatformCmd) Serve() {
 
 }

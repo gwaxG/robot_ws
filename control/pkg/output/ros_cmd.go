@@ -6,10 +6,10 @@ type RosCmd struct {
 
 }
 
-func (p *RosCmd) Init() {
+func (p *RosCmd) Init(actions chan state.State) {
 
 }
 
-func (p *RosCmd) ApplyChange(change state.State) {
+func (p *RosCmd) Serve() {
 
 }

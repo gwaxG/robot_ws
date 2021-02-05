@@ -10,3 +10,4 @@ func FailOnError(err error, msg string) {
 		log.Panicln(msg)
 	}
 }
+

@@ -12,8 +12,8 @@ type Ros struct {
 	state state.State
 }
 
+// JaguarControl.msg Go definition
 type JaguarControl struct {
-	// JaguarControl.msg Go definition
 	msg.Package `ros:"control"`
 	Linear  float64
 	Angular float64

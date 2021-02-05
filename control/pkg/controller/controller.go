@@ -11,81 +11,82 @@ import (
 )
 
 type Controller struct {
-	//keyboardCmdInput *input.Keyboard
-	//rosCmdInput *input.Ros
-
-	input interface{}
-	output interface{}
-	imu interface{}
-
-	//platformCmdOutput *output.PlatformCmd
-	//rosCmdOutput *output.RosCmd
-	//platformImu *output.PlatformImu
-	//keyboardCmdInput *input.Keyboard
-	//rosCmdInput *input.Ros
-
-	state state.State
-	stateChange chan state.State
-
 	connBase net.Conn
 	connArm net.Conn
 	node *goroslib.Node
+
+	input []interface{}
+	output interface{}
+	imu interface{}
+	manager state.Manager
+
+	fromInput chan state.State
+	toOutput chan state.State
+
 }
 
 // Initialize connections with the platform and roscore.
 // This method automatically defines configuration of the control node
 // based on availability of connections and keyboardSim flag provided at start time.
 func (c * Controller) Init (keyboardSim bool) {
-
 	c.connBase = connections.ConnectHostPort("192.168.0.60", "10001")
 	c.connArm = connections.ConnectHostPort("192.168.0.60", "10001")
 	c.node = connections.ConnectRos()
-	c.stateChange = make(chan state.State)
 
-	//platformCmdOutput *output.PlatformCmd
-	//rosCmdOutput *output.RosCmd
-	//platformImu *output.PlatformImu
-	//keyboardCmdInput *input.Keyboard
-	//rosCmdInput *input.Ros
+	// input sink to indicate what actions to execute
+	c.fromInput = make(chan state.State)
+	c.toOutput = make(chan state.State)
 
 	if c.connBase != nil {
-		c.input = ""
-		// c.keyboardCmdInput.Init(c.stateChange)
+		c.input = append(c.input, input.Keyboard{})
 		if c.node != nil {
-			c.rosCmdInput.Init(c.stateChange)
-			c.platformCmdOutput.Init()
-			c.platformImu.Init()
+			c.input = append(c.input, input.Ros{})
+			c.output = output.PlatformCmd{}
+			c.imu = output.PlatformImu{}
 		}
 	} else {
 		if keyboardSim {
-			c.keyboardCmdInput.Init(c.stateChange)
+			c.input = append(c.input, input.Keyboard{})
 		}
-		c.rosCmdInput.Init(c.stateChange)
-		c.rosCmdOutput.Init()
+		c.input = append(c.input, input.Ros{})
+		c.output = output.RosCmd{}
 	}
+
+	for _, s := range c.input {
+		switch s.(type) {
+		case input.Keyboard:
+			s.(*input.Keyboard).Init(c.fromInput)
+			go s.(*input.Keyboard).Serve()
+		case input.Ros:
+			s.(*input.Ros).Init(c.fromInput)
+			go s.(*input.Ros).Serve()
+		}
+	}
+
+	switch c.output.(type) {
+	case output.PlatformCmd:
+		c.output.(*output.PlatformCmd).Init(c.toOutput)
+		go c.output.(*output.PlatformCmd).Serve()
+	case output.RosCmd:
+		c.output.(*output.RosCmd).Init(c.toOutput)
+		go c.output.(*output.RosCmd).Serve()
+	}
+	if c.imu != nil {
+		c.imu.(*output.PlatformImu).Init()
+		go c.output.(*output.PlatformImu).Serve()
+	}
+
+	c.manager = state.Manager{}
 }
 
 
 func (c *Controller) Start () {
-	if c.keyboardCmdInput != nil {
-		go c.keyboardCmdInput.Serve()
-	}
-	if c.rosCmdInput != nil {
-		go c.rosCmdInput.Serve()
-	}
-
-	change := state.State{}
-
+	st := state.State{}
 	for {
-		change = <- c.stateChange
-		if c.platformCmd != nil {
-			go c.platformCmd.ApplyChange(change)
-		}
-		if c.rosCmd != nil {
-			go c.rosCmd.ApplyChange(change)
-		}
+		st = <- c.fromInput
+		go c.manager.Monitor(&st)
+		c.toOutput <- st
 	}
-
 }
 
 
