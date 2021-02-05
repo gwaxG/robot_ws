@@ -5,23 +5,36 @@ This package provides Gazebo simulation utilities.
 
 - - -
 ## Environment generation
-`simulation.launch` starts simulation with basic immovable walls.
+`simulation.launch` starts simulation with basic immovable walls and services that manage environment reconfiguration.
 
-The sub-package `env_generation` provides services for handling environment (re)generation through the node `env_gen_services.py`.
-
-The service `env_gen` works with navigation like `/action/model_name` where the action could be `generate` or `delete`.
-Supported models are `ground_obstacles`, `stair_floor` and `floor_obstacles`. 
+The service `env_gen` works with EnvGen.srv:
+```
+string action
+string model
+---
+bool result
+string err
+```
+where the action could be `generate` or `delete`, supported models are `ground_obstacles`, `stair_floor` and `floor_obstacles`. 
 The "stair_floor" model relates to the staircase with the floor.
+The field `result` indicates if generation was succesful, if `false`, the field `err` explains why.
 
-The service `stair_info` returns staircase length, height and number of steps if the staircas exists which is indicated by the attribute `exist`.
-
+The service `stair_info` operates with StairInfo.srv:
+```
+---
+float64 length
+float64 height
+float64 number
+bool exist
+```
+where fields `length`, `height` and `number`(number of steps) relates to the staircase parameters, staircase existence is indicated by the `exist` field.
 
 - - -
 ## Robot (re)spawning
 
-`spawn.launch` spawns the Jaguar robot in front of the staircase one meter away.
-This sub-package provides the service `robot_spawn` to actively respawn the robot.
-The RobotSpawn.srv contains:
+`spawn.launch` initially spawns the Jaguar robot in fornt of the staircase one meter away.
+This sub-package provides the service `robot_spawn` to actively respawn the robot at other locations.
+RobotSpawn.srv:
 
 ```
 string place
