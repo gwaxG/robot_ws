@@ -1,0 +1,7 @@
+{
+    "name": "str",
+    "alg": "PPO/TD3/custom",
+    "task": "ascent/descent/flat/hierarchical",
+    "iterations": 1,
+    "time_steps": 1000
+}
