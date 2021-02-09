@@ -18,24 +18,33 @@ type Controller struct {
 	input []interface{}
 	output interface{}
 	imu interface{}
+	statePublisher interface{}
 	manager state.Manager
 
 	fromInput chan state.State
 	toOutput chan state.State
+	publishState chan state.State
 
 }
 
 // Initialize connections with the platform and roscore.
 // This method automatically defines configuration of the control node
 // based on availability of connections and keyboardSim flag provided at start time.
-func (c * Controller) Init (keyboardSim bool) {
-	c.connBase = connections.ConnectHostPort("192.168.0.60", "10001")
-	c.connArm = connections.ConnectHostPort("192.168.0.60", "10001")
+func (c * Controller) Init (keyboardSim, test bool) {
+	if !test {
+		c.connBase = connections.ConnectHostPort("192.168.0.60", "10001")
+		c.connArm = connections.ConnectHostPort("192.168.0.63", "10001")
+	} else {
+		c.connBase = connections.ConnectHostPort("localhost", "10001")
+		c.connArm = connections.ConnectHostPort("localhost", "10002")
+	}
+
 	c.node = connections.ConnectRos()
 
 	// input sink to indicate what actions to execute
 	c.fromInput = make(chan state.State)
 	c.toOutput = make(chan state.State)
+	c.publishState = make(chan state.State)
 
 	if c.connBase != nil {
 		c.input = append(c.input, input.Keyboard{})
@@ -50,6 +59,13 @@ func (c * Controller) Init (keyboardSim bool) {
 		}
 		c.input = append(c.input, input.Ros{})
 		c.output = output.RosCmd{}
+	}
+
+	// If ROS enabled, then we publish the robot state to /robot/state
+	if c.node != nil {
+		statePublisher := output.StatePublisher{}
+		statePublisher.Init(c.node, c.publishState)
+		go statePublisher.Publish()
 	}
 
 	for _, s := range c.input {
@@ -77,18 +93,17 @@ func (c * Controller) Init (keyboardSim bool) {
 	}
 
 	c.manager = state.Manager{}
+	c.manager.Init()
 }
-
 
 func (c *Controller) Start () {
-	st := state.State{}
+	actions := state.State{}
 	for {
-		st = <- c.fromInput
-		go c.manager.Monitor(&st)
-		c.toOutput <- st
+		actions = <- c.fromInput
+		c.publishState <- c.manager.Monitor(&actions)
+		c.toOutput <- actions
 	}
 }
-
 
 func (c * Controller) Close(){
 	if c.connBase != nil {
