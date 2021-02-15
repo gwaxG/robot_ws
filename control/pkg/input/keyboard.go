@@ -20,12 +20,12 @@ func (k *Keyboard) Init (stateChange chan state.State) {
 
 func (k *Keyboard) Serve () {
 	b := make([]byte, 1)
-	st := state.State{}
+	st := &state.State{}
 	for {
 		os.Stdin.Read(b)
-		k.handleKeyPress(b, &st)
-		k.stateChange <- st
-		st.Reset()
+		k.handleKeyPress(b, st)
+		k.stateChange <- *st
+		state.Reset(st)
 	}
 }
 
@@ -54,6 +54,5 @@ func  (k *Keyboard) handleKeyPress(b []byte, st *state.State){
 		st.ArmJoint2 = 0.1
 	case 'j':
 		st.ArmJoint2 = -0.1
-
 	}
 }

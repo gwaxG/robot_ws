@@ -6,6 +6,7 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/control/pkg/utils"
+	"log"
 	"time"
 )
 
@@ -110,8 +111,10 @@ func (p *RosCmd) ServeFlippers(actions *state.State) {
 }
 
 func (p *RosCmd) Serve() {
+	actions := state.State{}
 	for {
-		actions := <- p.actions
+		actions = <- p.actions
+		log.Println("Action received")
 		p.ServeBase(&actions)
 		p.ServeFlippers(&actions)
 		p.ServeArm(&actions)

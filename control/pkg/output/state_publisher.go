@@ -2,7 +2,6 @@ package output
 
 import (
 	"github.com/aler9/goroslib"
-	"github.com/gwaxG/robot_ws/control/pkg/input"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/control/pkg/utils"
 )
@@ -12,13 +11,14 @@ type StatePublisher struct {
 	pub *goroslib.Publisher
 }
 
-func (p *StatePublisher) Init(n *goroslib.Node, state chan state.State) {
-	p.receiver = state
+func (p *StatePublisher) Init(n *goroslib.Node, msgChan chan state.State) {
+	p.receiver = msgChan
 	pub, err := goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  n,
 		Topic: "robot/state",
-		Msg:   &input.JaguarControl{},
+		Msg:   &state.State{},
 	})
+
 	p.pub = pub
 	utils.FailOnError(err, "can not create publisher state")
 
@@ -28,6 +28,6 @@ func (p *StatePublisher) Publish() {
 	msg := state.State{}
 	for {
 		msg = <- p.receiver
-		p.pub.Write(msg)
+		p.pub.Write(&msg)
 	}
 }

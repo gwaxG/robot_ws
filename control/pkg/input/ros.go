@@ -2,7 +2,6 @@ package input
 
 import (
 	"github.com/aler9/goroslib"
-	"github.com/aler9/goroslib/pkg/msg"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/control/pkg/utils"
 )
@@ -10,19 +9,6 @@ import (
 type Ros struct {
 	stateChange chan state.State
 	state state.State
-}
-
-// JaguarControl.msg Go definition
-type JaguarControl struct {
-	msg.Package `ros:"control"`
-	Linear  float64
-	Angular float64
-	FrontFlippers float64
-	RearFlippers float64
-	ArmJoint1  float64
-	ArmJoint2  float64
-	ArmJoint3  float64
-	ArmJoint4  float64
 }
 
 func (r *Ros) Init (stateChange chan state.State) {
@@ -50,7 +36,7 @@ func (r * Ros) Serve () {
 	select {}
 }
 
-func (r * Ros) onRequest (msg *JaguarControl) {
+func (r * Ros) onRequest (msg *state.State) {
 	r.state.Linear = msg.Linear
 	r.state.Angular = msg.Angular
 	r.state.FrontFlippers = msg.FrontFlippers

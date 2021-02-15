@@ -1,6 +1,8 @@
 package state
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type Manager struct {
 	state State
@@ -14,11 +16,15 @@ func (m *Manager) Init(){
 
 	state := reflect.ValueOf(State{})
 	for i:=0; i<state.NumField(); i++ {
-		m.names = append(m.names, state.Type().Field(i).Name)
+		if i != 0 { // ignoring msg.Package message field
+			m.names = append(m.names, state.Type().Field(i).Name)
+		}
 	}
 }
 // Control actions correctness through velocity and joint limits approval
-func (m *Manager) Monitor(change *State) State {
+func (m *Manager) Monitor(change State) (State, State) {
+	actions := State{}
+
 	changes := reflect.ValueOf(change)
 	var min, max, value, changeValue, last float64
 	for _, name := range m.names {
@@ -40,10 +46,13 @@ func (m *Manager) Monitor(change *State) State {
 		} else {
 			value = value + changeValue
 		}
-		reflect.Indirect(reflect.ValueOf(&change)).FieldByName(name).SetFloat(changeValue)
+
+		// correct action vector
+		reflect.Indirect(reflect.ValueOf(&actions)).FieldByName(name).SetFloat(changeValue)
+		// produce state vector
 		reflect.Indirect(reflect.ValueOf(&m.state)).FieldByName(name).SetFloat(value)
 	}
-	return m.state
+	return m.state, actions
 }
 
 /*

@@ -42,12 +42,12 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	// creating struct instances
 	if inputKeyboard {
 		log.Println("Keyboard enabled")
-		c.input = append(c.input, input.Keyboard{})
+		c.input = append(c.input, &input.Keyboard{})
 	}
 	if inputRos {
-		log.Println("ROS input enabled")
+		log.Println("ROS input enabled on /platform_cmd")
 		c.node = connections.ConnectRos(outputSimulation)
-		c.input = append(c.input, input.Ros{})
+		c.input = append(c.input, &input.Ros{})
 	}
 	if outputPlatform {
 		log.Println("Platform output enabled")
@@ -64,7 +64,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 
 	// If ROS enabled, then we publish the robot state to /robot/state
 	if inputRos || outputSimulation {
-		log.Println("State publishing enabled")
+		log.Println("State publishing started")
 		statePublisher := output.StatePublisher{}
 		statePublisher.Init(c.node, c.publishState)
 		go statePublisher.Publish()
@@ -77,15 +77,14 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 		c.connBase = connections.ConnectHostPort("192.168.0.60", "10001")
 		c.connArm = connections.ConnectHostPort("192.168.0.63", "10001")
 	}
-
 	for _, s := range c.input {
 		switch s.(type) {
 		case *input.Keyboard:
-			log.Println("Keyboard input instance created")
+			log.Println("Keyboard input started")
 			s.(*input.Keyboard).Init(c.fromInput)
 			go s.(*input.Keyboard).Serve()
 		case *input.Ros:
-			log.Println("ROS input instance created")
+			log.Println("ROS input started")
 			s.(*input.Ros).Init(c.fromInput)
 			go s.(*input.Ros).Serve()
 		}
@@ -114,11 +113,19 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 
 func (c *Controller) Start () {
 	actions := state.State{}
+	state := state.State{}
 	log.Println("Started...")
 	for {
+		log.Println("Start loop")
 		actions = <- c.fromInput
-		c.publishState <- c.manager.Monitor(&actions)
+		log.Println("Action", actions)
+		state, actions = c.manager.Monitor(actions)
+		log.Println("State actual", actions)
+		log.Println("Action actual", actions)
+		c.publishState <- state
+		log.Println("Pre-end loop")
 		c.toOutput <- actions
+		log.Println("End loop")
 	}
 }
 

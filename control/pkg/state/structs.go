@@ -1,19 +1,23 @@
 package state
 
-import "math"
+import (
+	"github.com/aler9/goroslib/pkg/msg"
+	"math"
+)
 
 type State struct {
-	FrontFlippers float64
-	RearFlippers  float64
+	msg.Package `ros:"control"`
 	Linear        float64
 	Angular       float64
+	FrontFlippers float64
+	RearFlippers  float64
 	ArmJoint1     float64
 	ArmJoint2     float64
 	ArmJoint3     float64 // not supported
 	ArmJoint4     float64 // not supported
 }
 
-func (cs *State) Reset () {
+func Reset (cs *State) {
 	cs.FrontFlippers = 0.
 	cs.RearFlippers = 0.
 	cs.Linear = 0.
