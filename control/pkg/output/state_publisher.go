@@ -8,7 +8,7 @@ import (
 
 type StatePublisher struct {
 	receiver chan state.State
-	pub *goroslib.Publisher
+    pub 	 *goroslib.Publisher
 }
 
 func (p *StatePublisher) Init(n *goroslib.Node, msgChan chan state.State) {
@@ -18,7 +18,6 @@ func (p *StatePublisher) Init(n *goroslib.Node, msgChan chan state.State) {
 		Topic: "robot/state",
 		Msg:   &state.State{},
 	})
-
 	p.pub = pub
 	utils.FailOnError(err, "can not create publisher state")
 

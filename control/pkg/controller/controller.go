@@ -25,7 +25,7 @@ type Controller struct {
 	fromInput chan state.State
 	toOutput chan state.State
 	publishState chan state.State
-
+	done 			chan bool
 }
 
 // Initialize connections with the platform and roscore.
@@ -38,6 +38,12 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	c.fromInput = make(chan state.State)
 	c.toOutput = make(chan state.State)
 	c.publishState = make(chan state.State)
+	c.done = make(chan bool)
+
+	// Checking ROS
+	if inputRos || outputSimulation {
+		c.node = connections.ConnectRos(false)
+	}
 
 	// creating struct instances
 	if inputKeyboard {
@@ -46,20 +52,17 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	}
 	if inputRos {
 		log.Println("ROS input enabled on /platform_cmd")
-		c.node = connections.ConnectRos(outputSimulation)
+
 		c.input = append(c.input, &input.Ros{})
 	}
 	if outputPlatform {
 		log.Println("Platform output enabled")
-		c.output = output.PlatformCmd{}
-		c.imu = output.PlatformImu{}
+		c.output = &output.PlatformCmd{}
+		c.imu = &output.PlatformImu{}
 	}
 	if outputSimulation {
 		log.Println("Simulation output enabled")
-		if c.node == nil {
-			c.node = connections.ConnectRos(outputSimulation)
-		}
-		c.output = output.RosCmd{}
+		c.output = &output.RosCmd{}
 	}
 
 	// If ROS enabled, then we publish the robot state to /robot/state
@@ -81,7 +84,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 		switch s.(type) {
 		case *input.Keyboard:
 			log.Println("Keyboard input started")
-			s.(*input.Keyboard).Init(c.fromInput)
+			s.(*input.Keyboard).Init(c.fromInput, c.done)
 			go s.(*input.Keyboard).Serve()
 		case *input.Ros:
 			log.Println("ROS input started")
@@ -92,11 +95,11 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 
 	switch c.output.(type) {
 	case *output.PlatformCmd:
-		log.Println("Sending commands to the platform")
+		log.Println("Platform output started")
 		c.output.(*output.PlatformCmd).Init(c.toOutput)
 		go c.output.(*output.PlatformCmd).Serve()
 	case *output.RosCmd:
-		log.Println("Sending commands to ROS")
+		log.Println("Simulation output started")
 		c.output.(*output.RosCmd).Init(c.node, c.toOutput)
 		go c.output.(*output.RosCmd).Serve()
 	}
@@ -111,25 +114,25 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	c.manager.Init()
 }
 
+
 func (c *Controller) Start () {
-	actions := state.State{}
-	state := state.State{}
-	log.Println("Started...")
-	for {
-		log.Println("Start loop")
-		actions = <- c.fromInput
-		log.Println("Action", actions)
-		state, actions = c.manager.Monitor(actions)
-		log.Println("State actual", actions)
-		log.Println("Action actual", actions)
-		c.publishState <- state
-		log.Println("Pre-end loop")
-		c.toOutput <- actions
-		log.Println("End loop")
+	stateReceived := state.State{}
+	log.Println("Controller started...")
+	end := false
+	for ; !end; {
+		select {
+		case actions := <- c.fromInput:
+			stateReceived, actions = c.manager.Monitor(actions)
+			c.publishState <- stateReceived
+			c.toOutput <- actions
+		case _ = <-c.done:
+			end = true
+		}
 	}
 }
 
 func (c * Controller) Close(){
+	log.Println("Closing everything")
 	if c.connBase != nil {
 		err := c.connBase.Close()
 		utils.FailOnError(err, "Failed to close tcp connection:base")

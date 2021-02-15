@@ -3,19 +3,20 @@ package input
 import (
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"os"
-	"os/exec"
 	"unicode/utf8"
 )
 
 type Keyboard struct {
 	stateChange chan state.State
+	done chan bool
 }
 
-func (k *Keyboard) Init (stateChange chan state.State) {
+func (k *Keyboard) Init (stateChange chan state.State, done chan bool) {
 	k.stateChange = stateChange
-	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
+	k.done = done
+	// exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
 	// do not display entered characters on the screen
-	exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
+	// exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
 }
 
 func (k *Keyboard) Serve () {
@@ -54,5 +55,7 @@ func  (k *Keyboard) handleKeyPress(b []byte, st *state.State){
 		st.ArmJoint2 = 0.1
 	case 'j':
 		st.ArmJoint2 = -0.1
+	case 'p':
+		k.done <- true
 	}
 }

@@ -5,7 +5,6 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"github.com/gwaxG/robot_ws/control/pkg/utils"
 	"log"
 	"time"
 )
@@ -28,48 +27,45 @@ func (p *RosCmd) Init(node *goroslib.Node, actions chan state.State) {
 	p.node = node
 	// chan init
 	p.actions = actions
-
 	// /cmd_vel TwistStamped
-	pub, err := goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  node,
-		Topic: "/cmd_vel",
+
+	p.pubBase, _ = goroslib.NewPublisher(goroslib.PublisherConf{
+		Node:  p.node,
+		Topic: "cmd_vel",
 		Msg:   &geometry_msgs.TwistStamped{},
 	})
-	p.pubBase = pub
-	utils.FailOnError(err, "Can not create publisher cmd base")
+
 	// /cmd_flipper TwistStamped
-	pub, err = goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  node,
-		Topic: "/cmd_flipper",
+	p.pubFlipper, _ = goroslib.NewPublisher(goroslib.PublisherConf{
+		Node:  p.node,
+		Topic: "cmd_flipper",
 		Msg:   &geometry_msgs.TwistStamped{},
 	})
-	p.pubFlipper = pub
-	utils.FailOnError(err, "Can not create publisher cmd flipper")
+
 	// /jaguar/arm_1_effort_controller/command Float64
-	pub, err = goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  node,
-		Topic: "/jaguar/arm_1_effort_controller/command",
+	p.pubArm1, _ = goroslib.NewPublisher(goroslib.PublisherConf{
+		Node:  p.node,
+		Topic: "jaguar/arm_1_effort_controller/command",
 		Msg:   &std_msgs.Float64{},
 	})
-	p.pubArm1 = pub
-	utils.FailOnError(err, "Can not create publisher pub arm 1")
 	// /jaguar/arm_2_effort_controller/command Float64
-	pub, err = goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  node,
-		Topic: "/jaguar/arm_2_effort_controller/command",
+	p.pubArm2, _ = goroslib.NewPublisher(goroslib.PublisherConf{
+		Node:  p.node,
+		Topic: "jaguar/arm_2_effort_controller/command",
 		Msg:   &std_msgs.Float64{},
 	})
-	p.pubArm1 = pub
-	utils.FailOnError(err, "Can not create publisher pub arm 2")
+
 	// Float64 msg
 	p.msgFloat = &std_msgs.Float64{
 		Data: 0.0,
 	}
+
 	// stamped twist msg
 	p.msgStampedTwist = &geometry_msgs.TwistStamped{
 		Header: std_msgs.Header{Stamp:   time.Time{}.UTC()},
 		Twist: geometry_msgs.Twist{Linear:  geometry_msgs.Vector3{}, Angular: geometry_msgs.Vector3{}},
 	}
+
 }
 
 func (p *RosCmd) ServeArm(actions *state.State) {
@@ -82,6 +78,7 @@ func (p *RosCmd) ServeArm(actions *state.State) {
 }
 
 func (p *RosCmd) ServeBase(actions *state.State) {
+	log.Println("Msg in ServeBase", actions)
 	p.msgStampedTwist.Header.Seq = p.seqBase
 	p.msgStampedTwist.Header.Stamp = p.node.TimeNow()
 	p.msgStampedTwist.Twist.Linear.X = actions.Linear

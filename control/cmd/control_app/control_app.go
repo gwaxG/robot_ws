@@ -8,7 +8,8 @@ import (
 func main() {
 	/*
 	TODO
-	+ Output to ROS
+	>>> Output to ROS
+	Integration with initial position in simulation
 	Output to the platform
 	Output of platform IMU data
 	*/
@@ -23,4 +24,5 @@ func main() {
 	c := controller.Controller{}
 	c.Init(*iKeyb, *iRos, *test, *oPlat, *oSim)
 	c.Start()
+	c.Close()
 }
