@@ -8,16 +8,19 @@ import (
 func main() {
 	/*
 	TODO
-	Output to ROS
+	+ Output to ROS
 	Output to the platform
 	Output of platform IMU data
 	*/
 	
-	keyboardSim := flag.Bool("k", false, "Simulation keyboard usage")
-	test := flag.Bool("t", true, "test platform")
+	iKeyb := flag.Bool("ik", true, "Keyboard input")
+	iRos := flag.Bool("ir", true, "ROS input")
+	test := flag.Bool("t", false, "Test IP:HOST platform configuration")
+	oPlat := flag.Bool("op", false, "Platform command output")
+	oSim := flag.Bool("os", true, "Simulation command output")
 	flag.Parse()
 
 	c := controller.Controller{}
-	c.Init(*keyboardSim, *test)
+	c.Init(*iKeyb, *iRos, *test, *oPlat, *oSim)
 	c.Start()
 }
