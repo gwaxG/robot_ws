@@ -9,7 +9,7 @@ type PlatformCmd struct {
 
 }
 
-func (p *PlatformCmd) Init(test bool, actions chan state.State) {
+func (p *PlatformCmd) Init(test bool, StateChange chan []state.State) {
 	if test {
 		_ = connections.ConnectHostPort("localhost", "10001")
 		_ = connections.ConnectHostPort("localhost", "10002")

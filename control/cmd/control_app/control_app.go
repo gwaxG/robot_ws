@@ -8,8 +8,7 @@ import (
 func main() {
 	/*
 	TODO
-	>>> Output to ROS
-	Integration with initial position in simulation
+	add hot reset
 	Output to the platform
 	Output of platform IMU data
 	*/

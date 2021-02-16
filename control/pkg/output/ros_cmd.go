@@ -6,7 +6,6 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"time"
 )
 
 type RosCmd struct {
@@ -14,16 +13,15 @@ type RosCmd struct {
 	pubArm2      	*goroslib.Publisher
 	pubBase      	*goroslib.Publisher
 	pubFlipper   	*goroslib.Publisher
-	msgStampedTwist *geometry_msgs.TwistStamped
 	msgFloat 		*std_msgs.Float64
 	seqBase 		uint32
 	seqFlipper 		uint32
-	actions 		chan state.State
+	stateActionChan 		chan []state.State
 }
 
-func (p *RosCmd) Init(actions chan state.State) {
+func (p *RosCmd) Init(stateActionChan chan []state.State) {
 	// chan init
-	p.actions = actions
+	p.stateActionChan = stateActionChan
 
 	// /cmd_vel TwistStamped
 	p.pubBase, _ = goroslib.NewPublisher(goroslib.PublisherConf{
@@ -51,64 +49,66 @@ func (p *RosCmd) Init(actions chan state.State) {
 		Topic: "jaguar/arm_2_effort_controller/command",
 		Msg:   &std_msgs.Float64{},
 	})
-
-	// Float64 msg
-	p.msgFloat = &std_msgs.Float64{
-		Data: 0.0,
-	}
-
-	// stamped twist msg
-	p.msgStampedTwist = &geometry_msgs.TwistStamped{
-		Header: std_msgs.Header{Stamp:   time.Time{}.UTC()},
-		Twist: geometry_msgs.Twist{Linear:  geometry_msgs.Vector3{}, Angular: geometry_msgs.Vector3{}},
-	}
 }
 
 func (p *RosCmd) ServeArm(actions *state.State) {
 	if actions.ArmJoint1 != 0.0 || actions.ArmJoint2 != 0.0 {
-		p.msgFloat.Data = actions.ArmJoint1
-		p.pubArm1.Write(p.msgFloat)
-		p.msgFloat.Data = actions.ArmJoint2
-		p.pubArm2.Write(p.msgFloat)
+		p.pubArm1.Write(&std_msgs.Float64{Data: actions.ArmJoint1})
+		p.pubArm2.Write(&std_msgs.Float64{Data: actions.ArmJoint2})
 	}
 }
 
 func (p *RosCmd) ServeBase(actions *state.State) {
-	p.msgStampedTwist.Header.Seq = p.seqBase
-	p.msgStampedTwist.Header.Stamp = connections.RosConnection().TimeNow()
-	p.msgStampedTwist.Twist.Linear.X = actions.Linear
-	p.msgStampedTwist.Twist.Angular.Z = actions.Angular
-	p.pubBase.Write(p.msgStampedTwist)
+	msgStampedTwist := &geometry_msgs.TwistStamped{
+		Header: std_msgs.Header{
+			Seq: p.seqBase,
+			Stamp: connections.RosConnection().TimeNow(),
+		},
+		Twist: geometry_msgs.Twist{
+			Linear:  geometry_msgs.Vector3{
+				X: actions.Linear,
+			},
+			Angular: geometry_msgs.Vector3{
+				Z: actions.Angular,
+			},
+		},
+	}
+	p.pubBase.Write(msgStampedTwist)
 	p.seqBase += 1
 }
 
 func (p *RosCmd) ServeFlippers(actions *state.State) {
-	/*
-		self.msg_flipper.twist.linear.x = self.flipper_front
-		self.msg_flipper.twist.linear.y = self.flipper_front
-		self.msg_flipper.twist.angular.x = self.flipper_rear
-		self.msg_flipper.twist.angular.y = self.flipper_rear
-	*/
 	if actions.FrontFlippers != 0.0 || actions.RearFlippers != 0.0 {
-		p.msgStampedTwist.Header.Seq = p.seqFlipper
-		p.msgStampedTwist.Header.Stamp = connections.RosConnection().TimeNow()
-		// Check git
-		p.msgStampedTwist.Twist.Linear.X = actions.FrontFlippers
-		p.msgStampedTwist.Twist.Linear.Y = actions.FrontFlippers
-		p.msgStampedTwist.Twist.Angular.X = actions.RearFlippers
-		p.msgStampedTwist.Twist.Angular.Y = actions.RearFlippers
-		p.pubFlipper.Write(p.msgStampedTwist)
+		msgStampedTwist := &geometry_msgs.TwistStamped{
+			Header: std_msgs.Header{
+				Seq: p.seqFlipper,
+				Stamp: connections.RosConnection().TimeNow(),
+			},
+			Twist: geometry_msgs.Twist{
+				Linear:  geometry_msgs.Vector3{
+					X: actions.FrontFlippers,
+					Y: actions.FrontFlippers,
+				},
+				Angular: geometry_msgs.Vector3{
+					X: actions.RearFlippers,
+					Y: actions.RearFlippers,
+				},
+			},
+		}
+		p.pubFlipper.Write(msgStampedTwist)
 		p.seqFlipper += 1
 	}
 }
 
 func (p *RosCmd) Serve() {
-	actions := state.State{}
+	var StateChange []state.State
+	var StateAction state.State
 	for {
-		actions = <- p.actions
-		p.ServeBase(&actions)
-		p.ServeFlippers(&actions)
-		p.ServeArm(&actions)
+		StateChange = <- p.stateActionChan
+		StateAction = StateChange[0]
+		p.ServeBase(&StateAction)
+		p.ServeFlippers(&StateAction)
+		p.ServeArm(&StateAction)
 	}
 }
 
@@ -118,3 +118,4 @@ func (p *RosCmd) Close() {
 	_ = p.pubArm2.Close()
 	_ = p.pubFlipper.Close()
 }
+

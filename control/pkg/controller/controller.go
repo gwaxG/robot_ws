@@ -19,9 +19,10 @@ type Controller struct {
 	statePublisher  interface{}
 	manager 		state.Manager
 	fromInput 		chan state.State
-	toOutput 		chan state.State
+	toOutput 		chan []state.State
 	publishState 	chan state.State
 	done 			chan bool
+	reset 			chan bool
 	keyboardUsage 	chan bool
 }
 
@@ -33,9 +34,10 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 
 	// input sink to route actions to execute
 	c.fromInput = make(chan state.State)
-	c.toOutput = make(chan state.State)
+	c.toOutput = make(chan []state.State)
 	c.publishState = make(chan state.State)
 	c.done = make(chan bool)
+	c.reset = make(chan bool)
 	c.keyboardUsage = make(chan bool)
 
 	// creating struct instances
@@ -67,7 +69,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 		switch s.(type) {
 		case *input.Keyboard:
 			log.Println("Keyboard input started")
-			s.(*input.Keyboard).Init(c.fromInput, c.done, c.keyboardUsage)
+			s.(*input.Keyboard).Init(c.fromInput, c.reset, c.done, c.keyboardUsage)
 			go s.(*input.Keyboard).Serve()
 		case *input.Ros:
 			log.Println("ROS input started")
@@ -97,11 +99,25 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	c.manager.Init()
 }
 
+func (c *Controller) ServeReset () {
+	var StateAction, Change state.State
+	for {
+		<-c.reset
+		StateAction, _ = c.manager.Monitor(true, state.State{})
+		StateAction, Change = c.manager.Monitor(true, state.State{})
+
+		c.publishState <- StateAction
+		c.toOutput <- []state.State{StateAction, Change}
+	}
+
+}
 
 func (c *Controller) Start () {
 	var set bool
-	stateReceived := state.State{}
+	var StateAction, Change state.State
 	log.Println("Controller started...")
+
+	go c.ServeReset()
 	end := false
 	for ; !end; {
 		select {
@@ -112,11 +128,11 @@ func (c *Controller) Start () {
 			default:
 				set = true
 			}
-			stateReceived, actions = c.manager.Monitor(set, actions)
-			log.Println("state after", stateReceived)
-			log.Println("actions after", actions)
-			c.publishState <- stateReceived
-			c.toOutput <- actions
+			StateAction, Change = c.manager.Monitor(set, actions)
+			log.Println("StateAction ", StateAction)
+			log.Println("Change ", Change)
+			c.publishState <- StateAction
+			c.toOutput <- []state.State{StateAction, Change}
 		case _ = <-c.done:
 			end = true
 		}

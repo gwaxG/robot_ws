@@ -10,12 +10,15 @@ import (
 type Keyboard struct {
 	stateChange 	chan state.State
 	done 			chan bool
+	reset 			chan bool
 	keyboardUsage	chan bool
+
 }
 
-func (k *Keyboard) Init (stateChange chan state.State, done, keyboardUsage chan bool) {
+func (k *Keyboard) Init (stateChange chan state.State, reset, done, keyboardUsage chan bool) {
 	k.stateChange = stateChange
 	k.done = done
+	k.reset = reset
 	k.keyboardUsage = keyboardUsage
 	exec.Command("stty", "-F", "/dev/tty", "cbreak", "min", "1").Run()
 	// do not display entered characters on the screen
@@ -35,14 +38,19 @@ func (k *Keyboard) Serve () {
 
 func  (k *Keyboard) handleKeyPress(b []byte, st *state.State){
 	key, _ := utf8.DecodeRune(b)
-	go func() { k.keyboardUsage <- true }()
 	switch key {
 	case 'z':
 		st.Linear = 0.1
+		go func() { k.keyboardUsage <- true }()
 	case 'q':
 		st.Angular = -0.1
+		go func() { k.keyboardUsage <- true }()
 	case 's':
 		st.Linear = -0.1
+		go func() { k.keyboardUsage <- true }()
+	case 'd':
+		st.Angular = 0.1
+		go func() { k.keyboardUsage <- true }()
 	case 'r':
 		st.FrontFlippers = 0.1
 	case 'f':
@@ -59,6 +67,8 @@ func  (k *Keyboard) handleKeyPress(b []byte, st *state.State){
 		st.ArmJoint2 = 0.1
 	case 'j':
 		st.ArmJoint2 = -0.1
+	case 'a':
+		k.reset <- true
 	case 'p':
 		k.done <- true
 	}

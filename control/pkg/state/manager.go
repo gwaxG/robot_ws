@@ -1,6 +1,7 @@
 package state
 
 import (
+	"log"
 	"reflect"
 )
 
@@ -33,8 +34,9 @@ func (m *Manager) Monitor(set bool, change State) (State, State) {
 		value = reflect.ValueOf(m.state).FieldByName(name).Float()
 		min = reflect.ValueOf(m.limits).FieldByName(name).FieldByName("Min").Float()
 		max = reflect.ValueOf(m.limits).FieldByName(name).FieldByName("Max").Float()
-		if set {
-			if name == "Linear" || name == "Angular" {
+		if name == "Linear" || name == "Angular"{
+			log.Println("set", set, changeValue)
+			if set && changeValue != 0.0{
 				value = 0.0
 			}
 		}
