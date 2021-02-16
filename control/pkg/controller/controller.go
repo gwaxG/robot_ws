@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/aler9/goroslib"
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/input"
 	"github.com/gwaxG/robot_ws/control/pkg/output"
@@ -12,20 +11,18 @@ import (
 )
 
 type Controller struct {
-	connBase net.Conn
-	connArm net.Conn
-	node *goroslib.Node
-
-	input []interface{}
-	output interface{}
-	imu interface{}
-	statePublisher interface{}
-	manager state.Manager
-
-	fromInput chan state.State
-	toOutput chan state.State
-	publishState chan state.State
+	connBase 		net.Conn
+	connArm 		net.Conn
+	input 			[]interface{}
+	output			interface{}
+	imu 			interface{}
+	statePublisher  interface{}
+	manager 		state.Manager
+	fromInput 		chan state.State
+	toOutput 		chan state.State
+	publishState 	chan state.State
 	done 			chan bool
+	keyboardUsage 	chan bool
 }
 
 // Initialize connections with the platform and roscore.
@@ -39,29 +36,20 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	c.toOutput = make(chan state.State)
 	c.publishState = make(chan state.State)
 	c.done = make(chan bool)
-
-	// Checking ROS
-	if inputRos || outputSimulation {
-		c.node = connections.ConnectRos(false)
-	}
+	c.keyboardUsage = make(chan bool)
 
 	// creating struct instances
 	if inputKeyboard {
-		log.Println("Keyboard enabled")
 		c.input = append(c.input, &input.Keyboard{})
 	}
 	if inputRos {
-		log.Println("ROS input enabled on /platform_cmd")
-
 		c.input = append(c.input, &input.Ros{})
 	}
 	if outputPlatform {
-		log.Println("Platform output enabled")
 		c.output = &output.PlatformCmd{}
 		c.imu = &output.PlatformImu{}
 	}
 	if outputSimulation {
-		log.Println("Simulation output enabled")
 		c.output = &output.RosCmd{}
 	}
 
@@ -69,22 +57,17 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	if inputRos || outputSimulation {
 		log.Println("State publishing started")
 		statePublisher := output.StatePublisher{}
-		statePublisher.Init(c.node, c.publishState)
+		statePublisher.Init(c.publishState)
 		go statePublisher.Publish()
 	}
 
-	if test {
-		c.connBase = connections.ConnectHostPort("localhost", "10001")
-		c.connArm = connections.ConnectHostPort("localhost", "10002")
-	} else {
-		c.connBase = connections.ConnectHostPort("192.168.0.60", "10001")
-		c.connArm = connections.ConnectHostPort("192.168.0.63", "10001")
-	}
+
+
 	for _, s := range c.input {
 		switch s.(type) {
 		case *input.Keyboard:
 			log.Println("Keyboard input started")
-			s.(*input.Keyboard).Init(c.fromInput, c.done)
+			s.(*input.Keyboard).Init(c.fromInput, c.done, c.keyboardUsage)
 			go s.(*input.Keyboard).Serve()
 		case *input.Ros:
 			log.Println("ROS input started")
@@ -96,16 +79,16 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	switch c.output.(type) {
 	case *output.PlatformCmd:
 		log.Println("Platform output started")
-		c.output.(*output.PlatformCmd).Init(c.toOutput)
+		c.output.(*output.PlatformCmd).Init(test, c.toOutput)
 		go c.output.(*output.PlatformCmd).Serve()
 	case *output.RosCmd:
 		log.Println("Simulation output started")
-		c.output.(*output.RosCmd).Init(c.node, c.toOutput)
+		c.output.(*output.RosCmd).Init(c.toOutput)
 		go c.output.(*output.RosCmd).Serve()
 	}
 
 	if c.imu != nil {
-		log.Println("platform IMU enabled")
+		log.Println("platform IMU started")
 		c.imu.(*output.PlatformImu).Init()
 		go c.output.(*output.PlatformImu).Serve()
 	}
@@ -116,13 +99,22 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 
 
 func (c *Controller) Start () {
+	var set bool
 	stateReceived := state.State{}
 	log.Println("Controller started...")
 	end := false
 	for ; !end; {
 		select {
 		case actions := <- c.fromInput:
-			stateReceived, actions = c.manager.Monitor(actions)
+			select{
+			case <- c.keyboardUsage:
+				set = false
+			default:
+				set = true
+			}
+			stateReceived, actions = c.manager.Monitor(set, actions)
+			log.Println("state after", stateReceived)
+			log.Println("actions after", actions)
 			c.publishState <- stateReceived
 			c.toOutput <- actions
 		case _ = <-c.done:
@@ -141,8 +133,5 @@ func (c * Controller) Close(){
 		err := c.connArm.Close()
 		utils.FailOnError(err, "Failed to close tcp connection:arm")
 	}
-	if c.node != nil {
-		err := c.node.Close()
-		utils.FailOnError(err, "Failed to close node")
-	}
+	connections.Close()
 }

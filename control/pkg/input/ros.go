@@ -2,6 +2,7 @@ package input
 
 import (
 	"github.com/aler9/goroslib"
+	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/control/pkg/utils"
 )
@@ -18,16 +19,9 @@ func (r *Ros) Init (stateChange chan state.State) {
 
 func (r * Ros) Serve () {
 	// create a node and connect to the master
-	n, err := goroslib.NewNode(goroslib.NodeConf{
-		Name:          "jag_control",
-		MasterAddress: "127.0.0.1:11311",
-	})
-	utils.FailOnError(err, "Failed to connect to ROS master")
-	defer func(){err=n.Close(); utils.FailOnError(err, "Failed to disconnect from ROS master")}()
-
 	subBase, err := goroslib.NewSubscriber(goroslib.SubscriberConf{
-		Node:     n,
-		Topic:    "platform_cmd",
+		Node:     connections.RosConnection(),
+		Topic:    "robot_cmd",
 		Callback: r.onRequest,
 	})
 	utils.FailOnError(err, "Failed to create platform_cmd subscriber")

@@ -4,13 +4,12 @@ import (
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
+	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"log"
 	"time"
 )
 
 type RosCmd struct {
-	node 			*goroslib.Node
 	pubArm1      	*goroslib.Publisher
 	pubArm2      	*goroslib.Publisher
 	pubBase      	*goroslib.Publisher
@@ -22,35 +21,33 @@ type RosCmd struct {
 	actions 		chan state.State
 }
 
-func (p *RosCmd) Init(node *goroslib.Node, actions chan state.State) {
-	//
-	p.node = node
+func (p *RosCmd) Init(actions chan state.State) {
 	// chan init
 	p.actions = actions
-	// /cmd_vel TwistStamped
 
+	// /cmd_vel TwistStamped
 	p.pubBase, _ = goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  p.node,
+		Node:  connections.RosConnection(),
 		Topic: "cmd_vel",
 		Msg:   &geometry_msgs.TwistStamped{},
 	})
-
 	// /cmd_flipper TwistStamped
 	p.pubFlipper, _ = goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  p.node,
+		Node:  connections.RosConnection(),
 		Topic: "cmd_flipper",
 		Msg:   &geometry_msgs.TwistStamped{},
 	})
 
 	// /jaguar/arm_1_effort_controller/command Float64
 	p.pubArm1, _ = goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  p.node,
+		Node:  connections.RosConnection(),
 		Topic: "jaguar/arm_1_effort_controller/command",
 		Msg:   &std_msgs.Float64{},
 	})
+
 	// /jaguar/arm_2_effort_controller/command Float64
 	p.pubArm2, _ = goroslib.NewPublisher(goroslib.PublisherConf{
-		Node:  p.node,
+		Node:  connections.RosConnection(),
 		Topic: "jaguar/arm_2_effort_controller/command",
 		Msg:   &std_msgs.Float64{},
 	})
@@ -65,7 +62,6 @@ func (p *RosCmd) Init(node *goroslib.Node, actions chan state.State) {
 		Header: std_msgs.Header{Stamp:   time.Time{}.UTC()},
 		Twist: geometry_msgs.Twist{Linear:  geometry_msgs.Vector3{}, Angular: geometry_msgs.Vector3{}},
 	}
-
 }
 
 func (p *RosCmd) ServeArm(actions *state.State) {
@@ -78,9 +74,8 @@ func (p *RosCmd) ServeArm(actions *state.State) {
 }
 
 func (p *RosCmd) ServeBase(actions *state.State) {
-	log.Println("Msg in ServeBase", actions)
 	p.msgStampedTwist.Header.Seq = p.seqBase
-	p.msgStampedTwist.Header.Stamp = p.node.TimeNow()
+	p.msgStampedTwist.Header.Stamp = connections.RosConnection().TimeNow()
 	p.msgStampedTwist.Twist.Linear.X = actions.Linear
 	p.msgStampedTwist.Twist.Angular.Z = actions.Angular
 	p.pubBase.Write(p.msgStampedTwist)
@@ -96,7 +91,7 @@ func (p *RosCmd) ServeFlippers(actions *state.State) {
 	*/
 	if actions.FrontFlippers != 0.0 || actions.RearFlippers != 0.0 {
 		p.msgStampedTwist.Header.Seq = p.seqFlipper
-		p.msgStampedTwist.Header.Stamp = p.node.TimeNow()
+		p.msgStampedTwist.Header.Stamp = connections.RosConnection().TimeNow()
 		// Check git
 		p.msgStampedTwist.Twist.Linear.X = actions.FrontFlippers
 		p.msgStampedTwist.Twist.Linear.Y = actions.FrontFlippers
@@ -111,7 +106,6 @@ func (p *RosCmd) Serve() {
 	actions := state.State{}
 	for {
 		actions = <- p.actions
-		log.Println("Action received")
 		p.ServeBase(&actions)
 		p.ServeFlippers(&actions)
 		p.ServeArm(&actions)
