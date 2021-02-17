@@ -8,7 +8,6 @@ import (
 func main() {
 	/*
 	TODO
-	add hot reset
 	Output to the platform
 	Output of platform IMU data
 	*/

@@ -26,31 +26,42 @@ func (k *Keyboard) Init (stateChange chan state.State, reset, done, keyboardUsag
 }
 
 func (k *Keyboard) Serve () {
+	var reset, done, setVelocity bool
 	b := make([]byte, 1)
 	st := &state.State{}
 	for {
 		os.Stdin.Read(b)
-		k.handleKeyPress(b, st)
-		k.stateChange <- *st
+		reset, done, setVelocity = k.handleKeyPress(b, st)
+		if reset {
+			k.reset <- true
+		} else if done {
+			k.done <- true
+		} else {
+			if setVelocity {
+				go func() { k.keyboardUsage <- true }()
+			}
+			k.stateChange <- *st
+		}
 		state.Reset(st)
 	}
 }
 
-func  (k *Keyboard) handleKeyPress(b []byte, st *state.State){
+func  (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool) {
 	key, _ := utf8.DecodeRune(b)
+	var reset, done, setVelocity bool
 	switch key {
 	case 'z':
 		st.Linear = 0.1
-		go func() { k.keyboardUsage <- true }()
+		setVelocity = true
 	case 'q':
 		st.Angular = -0.1
-		go func() { k.keyboardUsage <- true }()
+		setVelocity = true
 	case 's':
 		st.Linear = -0.1
-		go func() { k.keyboardUsage <- true }()
+		setVelocity = true
 	case 'd':
 		st.Angular = 0.1
-		go func() { k.keyboardUsage <- true }()
+		setVelocity = true
 	case 'r':
 		st.FrontFlippers = 0.1
 	case 'f':
@@ -68,8 +79,9 @@ func  (k *Keyboard) handleKeyPress(b []byte, st *state.State){
 	case 'j':
 		st.ArmJoint2 = -0.1
 	case 'a':
-		k.reset <- true
+		reset = true
 	case 'p':
-		k.done <- true
+		done = true
 	}
+	return reset, done, setVelocity
 }

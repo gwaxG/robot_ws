@@ -73,7 +73,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 			go s.(*input.Keyboard).Serve()
 		case *input.Ros:
 			log.Println("ROS input started")
-			s.(*input.Ros).Init(c.fromInput)
+			s.(*input.Ros).Init(c.fromInput, c.reset)
 			go s.(*input.Ros).Serve()
 		}
 	}
@@ -99,28 +99,19 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	c.manager.Init()
 }
 
-func (c *Controller) ServeReset () {
-	var StateAction, Change state.State
-	for {
-		<-c.reset
-		StateAction, _ = c.manager.Monitor(true, state.State{})
-		StateAction, Change = c.manager.Monitor(true, state.State{})
-
-		c.publishState <- StateAction
-		c.toOutput <- []state.State{StateAction, Change}
-	}
-
-}
 
 func (c *Controller) Start () {
 	var set bool
 	var StateAction, Change state.State
 	log.Println("Controller started...")
 
-	go c.ServeReset()
 	end := false
-	for ; !end; {
+	for {
 		select {
+		case <- c.reset:
+			StateAction, Change = c.manager.Reset()
+		case _ = <-c.done:
+			end = true
 		case actions := <- c.fromInput:
 			select{
 			case <- c.keyboardUsage:
@@ -129,13 +120,16 @@ func (c *Controller) Start () {
 				set = true
 			}
 			StateAction, Change = c.manager.Monitor(set, actions)
+		}
+		if end {
+			break
+		} else {
 			log.Println("StateAction ", StateAction)
 			log.Println("Change ", Change)
 			c.publishState <- StateAction
 			c.toOutput <- []state.State{StateAction, Change}
-		case _ = <-c.done:
-			end = true
 		}
+
 	}
 }
 

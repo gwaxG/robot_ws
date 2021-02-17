@@ -52,10 +52,9 @@ func (p *RosCmd) Init(stateActionChan chan []state.State) {
 }
 
 func (p *RosCmd) ServeArm(actions *state.State) {
-	if actions.ArmJoint1 != 0.0 || actions.ArmJoint2 != 0.0 {
-		p.pubArm1.Write(&std_msgs.Float64{Data: actions.ArmJoint1})
-		p.pubArm2.Write(&std_msgs.Float64{Data: actions.ArmJoint2})
-	}
+	// if actions.ArmJoint1 != 0.0 || actions.ArmJoint2 != 0.0 {}
+	p.pubArm1.Write(&std_msgs.Float64{Data: actions.ArmJoint1})
+	p.pubArm2.Write(&std_msgs.Float64{Data: actions.ArmJoint2})
 }
 
 func (p *RosCmd) ServeBase(actions *state.State) {
@@ -78,26 +77,26 @@ func (p *RosCmd) ServeBase(actions *state.State) {
 }
 
 func (p *RosCmd) ServeFlippers(actions *state.State) {
-	if actions.FrontFlippers != 0.0 || actions.RearFlippers != 0.0 {
-		msgStampedTwist := &geometry_msgs.TwistStamped{
-			Header: std_msgs.Header{
-				Seq: p.seqFlipper,
-				Stamp: connections.RosConnection().TimeNow(),
+	// if actions.FrontFlippers != 0.0 || actions.RearFlippers != 0.0 {}
+	msgStampedTwist := &geometry_msgs.TwistStamped{
+		Header: std_msgs.Header{
+			Seq: p.seqFlipper,
+			Stamp: connections.RosConnection().TimeNow(),
+		},
+		Twist: geometry_msgs.Twist{
+			Linear:  geometry_msgs.Vector3{
+				X: actions.FrontFlippers,
+				Y: actions.FrontFlippers,
 			},
-			Twist: geometry_msgs.Twist{
-				Linear:  geometry_msgs.Vector3{
-					X: actions.FrontFlippers,
-					Y: actions.FrontFlippers,
-				},
-				Angular: geometry_msgs.Vector3{
-					X: actions.RearFlippers,
-					Y: actions.RearFlippers,
-				},
+			Angular: geometry_msgs.Vector3{
+				X: actions.RearFlippers,
+				Y: actions.RearFlippers,
 			},
-		}
-		p.pubFlipper.Write(msgStampedTwist)
-		p.seqFlipper += 1
+		},
 	}
+	p.pubFlipper.Write(msgStampedTwist)
+	p.seqFlipper += 1
+
 }
 
 func (p *RosCmd) Serve() {

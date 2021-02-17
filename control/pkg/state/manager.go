@@ -58,3 +58,14 @@ func (m *Manager) Monitor(set bool, change State) (State, State) {
 	}
 	return m.state, actions
 }
+
+func (m *Manager) Reset() (State, State) {
+	actions := State{}
+	var currentFieldValue float64
+	for _, name := range m.names {
+		currentFieldValue = reflect.ValueOf(m.state).FieldByName(name).Float()
+		reflect.Indirect(reflect.ValueOf(&actions)).FieldByName(name).SetFloat(-currentFieldValue)
+		reflect.Indirect(reflect.ValueOf(&m.state)).FieldByName(name).SetFloat(0.0)
+	}
+	return m.state, actions
+}
