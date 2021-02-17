@@ -4,8 +4,8 @@ import (
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/input"
 	"github.com/gwaxG/robot_ws/control/pkg/output"
+	"github.com/gwaxG/robot_ws/control/pkg/platform_sensors"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"github.com/gwaxG/robot_ws/control/pkg/utils"
 	"log"
 	"net"
 )
@@ -13,6 +13,7 @@ import (
 type Controller struct {
 	connBase 		net.Conn
 	connArm 		net.Conn
+	save 			func()()
 	input 			[]interface{}
 	output			interface{}
 	imu 			interface{}
@@ -24,6 +25,7 @@ type Controller struct {
 	done 			chan bool
 	reset 			chan bool
 	keyboardUsage 	chan bool
+	stopReleaseCh   chan string
 }
 
 // Initialize connections with the platform and roscore.
@@ -48,8 +50,9 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 		c.input = append(c.input, &input.Ros{})
 	}
 	if outputPlatform {
+		c.stopReleaseCh = make(chan string)
 		c.output = &output.PlatformCmd{}
-		c.imu = &output.PlatformImu{}
+		c.imu = &platform_sensors.PlatformSensors{}
 	}
 	if outputSimulation {
 		c.output = &output.RosCmd{}
@@ -67,7 +70,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 		switch s.(type) {
 		case *input.Keyboard:
 			log.Println("Keyboard input started")
-			s.(*input.Keyboard).Init(c.fromInput, c.reset, c.done, c.keyboardUsage)
+			s.(*input.Keyboard).Init(c.fromInput, c.reset, c.done, c.keyboardUsage, c.stopReleaseCh)
 			go s.(*input.Keyboard).Serve()
 		case *input.Ros:
 			log.Println("ROS input started")
@@ -79,7 +82,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	switch c.output.(type) {
 	case *output.PlatformCmd:
 		log.Println("Platform output started")
-		c.output.(*output.PlatformCmd).Init(test, c.toOutput)
+		c.output.(*output.PlatformCmd).Init(c.stopReleaseCh, test, c.toOutput)
 		go c.output.(*output.PlatformCmd).Serve()
 	case *output.RosCmd:
 		log.Println("Simulation output started")
@@ -88,14 +91,21 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	}
 
 	if c.imu != nil {
-		log.Println("platform IMU started")
-		c.imu.(*output.PlatformImu).Init()
-		go c.output.(*output.PlatformImu).Serve()
+		log.Println("platform sensor module started")
+		c.imu.(*platform_sensors.PlatformSensors).Init(c.stopReleaseCh)
+		go c.output.(*platform_sensors.PlatformSensors).Serve()
 	}
 
 	c.manager = state.Manager{}
 	c.manager.Init()
 
+	// Saving robot state
+	if outputPlatform {
+		c.save = c.manager.Save
+		StateAction, Change := c.manager.Load()
+		c.publishState <- StateAction
+		c.toOutput <- []state.State{StateAction, Change}
+	}
 }
 
 func (c *Controller) Start () {
@@ -126,19 +136,15 @@ func (c *Controller) Start () {
 			log.Println("Change ", Change)
 			c.publishState <- StateAction
 			c.toOutput <- []state.State{StateAction, Change}
+			if c.save != nil {
+				c.save()
+			}
 		}
 	}
 }
 
+
+
 func (c * Controller) Close(){
-	log.Println("Closing everything")
-	if c.connBase != nil {
-		err := c.connBase.Close()
-		utils.FailOnError(err, "Failed to close tcp connection:base")
-	}
-	if c.connArm != nil {
-		err := c.connArm.Close()
-		utils.FailOnError(err, "Failed to close tcp connection:arm")
-	}
 	connections.Close()
 }

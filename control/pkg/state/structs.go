@@ -51,3 +51,32 @@ func (sl *Limits) Init() {
 	sl.ArmJoint1 = Limit{-math.Pi/4,math.Pi/4}
 	sl.ArmJoint2 = Limit{-math.Pi/4,math.Pi/4}
 }
+
+type Sensor struct {
+	msg.Package `ros:"control"`
+	FrontFlipperCurrent   float64 `json:"frontFlipperCurrent"`
+	RearFlipperCurrent    float64 `json:"rearFlipperCurrent"`
+	Voltage               float64 `json:"voltage"`
+	AccelX                float64 `json:"accelX"`
+	AccelY                float64 `json:"accelY"`
+	AccelZ                float64 `json:"accelZ"`
+	GyroX                 float64 `json:"gyroX"`
+	GyroY                 float64 `json:"gyroY"`
+	GyroZ                 float64 `json:"gyroZ"`
+	Yaw                   float64 `json:"yaw"`
+	LeftMotorCountsFront  int64   `json:"leftMotorCountsFront"`
+	LeftMotorCountsRear   int64   `json:"leftMotorCountsRear"`
+	RightMotorCountsFront int64   `json:"rightMotorCountsFront"`
+	RightMotorCountsRear  int64   `json:"rightMotorCountsRear"`
+	FrontFlipperCounts    int64   `json:"frontFlipperCounts"`
+	RearFlipperCounts     int64   `json:"rearFlipperCounts"`
+}
+
+type saveState struct {
+	FrontFlippers   float64 `json:"FrontFlippers"`
+	RearFlippers	float64 `json:"RearFlippers"`
+	ArmJoint1 		float64 `json:"ArmJoint1"`
+	ArmJoint2 		float64 `json:"ArmJoint2"`
+	ArmJoint3 		float64 `json:"ArmJoint3"`
+	ArmJoint4 		float64 `json:"ArmJoint4"`
+}

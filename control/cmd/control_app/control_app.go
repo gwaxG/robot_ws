@@ -8,8 +8,7 @@ import (
 func main() {
 	/*
 	TODO
-	Output to the platform
-	Output of platform IMU data
+	test platform
 	*/
 	
 	iKeyb := flag.Bool("ik", true, "Keyboard input")

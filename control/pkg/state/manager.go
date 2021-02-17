@@ -1,7 +1,11 @@
 package state
 
 import (
+	"encoding/json"
+	"github.com/gwaxG/robot_ws/control/pkg/utils"
+	"io/ioutil"
 	"log"
+	"os"
 	"reflect"
 )
 
@@ -68,4 +72,34 @@ func (m *Manager) Reset() (State, State) {
 		reflect.Indirect(reflect.ValueOf(&m.state)).FieldByName(name).SetFloat(0.0)
 	}
 	return m.state, actions
+}
+
+func (m *Manager) Save() {
+	jsonString, _ := json.Marshal(&saveState{
+		FrontFlippers: m.state.FrontFlippers,
+		RearFlippers:  m.state.RearFlippers,
+		ArmJoint1:     m.state.ArmJoint1,
+		ArmJoint2:     m.state.ArmJoint2,
+		ArmJoint3:     m.state.ArmJoint3,
+		ArmJoint4:     m.state.ArmJoint4,
+	})
+	ioutil.WriteFile("platform_state.json", jsonString, os.ModePerm)
+}
+
+func (m *Manager) Load() (State, State) {
+	jsonFile, err := os.Open("platform_state.json")
+	defer jsonFile.Close()
+	utils.FailOnError(err, "can not open platform_state.json")
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	var state saveState
+	_ = json.Unmarshal(byteValue, &state)
+	change := State{
+		FrontFlippers: -state.FrontFlippers,
+		RearFlippers:  -state.RearFlippers,
+		ArmJoint1:     -state.ArmJoint1,
+		ArmJoint2:     -state.ArmJoint2,
+		ArmJoint3:     -state.ArmJoint3,
+		ArmJoint4:     -state.ArmJoint4,
+	}
+	return m.state, change
 }

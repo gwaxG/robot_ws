@@ -12,10 +12,16 @@ type Keyboard struct {
 	done 			chan bool
 	reset 			chan bool
 	keyboardUsage	chan bool
+	releaseStop		chan string
 
 }
 
-func (k *Keyboard) Init (stateChange chan state.State, reset, done, keyboardUsage chan bool) {
+func (k *Keyboard) Init (
+		stateChange chan state.State,
+		reset, done, keyboardUsage chan bool,
+		releaseStop chan string,
+	) {
+	k.releaseStop = releaseStop
 	k.stateChange = stateChange
 	k.done = done
 	k.reset = reset
@@ -27,13 +33,16 @@ func (k *Keyboard) Init (stateChange chan state.State, reset, done, keyboardUsag
 
 func (k *Keyboard) Serve () {
 	var reset, done, setVelocity bool
+	var releaseStop string
 	b := make([]byte, 1)
 	st := &state.State{}
 	for {
 		os.Stdin.Read(b)
-		reset, done, setVelocity = k.handleKeyPress(b, st)
+		reset, done, setVelocity, releaseStop = k.handleKeyPress(b, st)
 		if reset {
 			k.reset <- true
+		} else if releaseStop != "" {
+			k.releaseStop <- releaseStop
 		} else if done {
 			k.done <- true
 		} else {
@@ -46,9 +55,10 @@ func (k *Keyboard) Serve () {
 	}
 }
 
-func  (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool) {
+func  (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool, string) {
 	key, _ := utf8.DecodeRune(b)
 	var reset, done, setVelocity bool
+	var releaseStop string
 	switch key {
 	case 'z':
 		st.Linear = 0.1
@@ -82,6 +92,10 @@ func  (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool)
 		reset = true
 	case 'p':
 		done = true
+	case 'b':
+		releaseStop = "stop"
+	case 'n':
+		releaseStop = "release"
 	}
-	return reset, done, setVelocity
+	return reset, done, setVelocity, releaseStop
 }
