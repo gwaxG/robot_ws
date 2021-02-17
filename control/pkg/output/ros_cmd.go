@@ -6,6 +6,7 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
+	"time"
 )
 
 type RosCmd struct {
@@ -51,11 +52,15 @@ func (p *RosCmd) Init(stateActionChan chan []state.State) {
 		Msg:   &std_msgs.Float64{},
 	})
 
-	// Initialize to the extended state
-	var initState state.State
-	p.ServeBase(&initState)
-	p.ServeFlippers(&initState)
-	p.ServeArm(&initState)
+	// Robot initialization to the extended state
+	go func() {
+		// Waiting for ROS connection, otherwise roscore will miss next 3 messages.
+		time.Sleep(time.Millisecond * 250)
+		var initState state.State
+		p.ServeBase(&initState)
+		p.ServeFlippers(&initState)
+		p.ServeArm(&initState)
+	}()
 }
 
 func (p *RosCmd) ServeArm(actions *state.State) {
