@@ -8,6 +8,7 @@ import (
 func main() {
 	/*
 	TODO
+	Init state simulation
 	Output to the platform
 	Output of platform IMU data
 	*/

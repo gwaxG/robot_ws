@@ -63,8 +63,6 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 		go statePublisher.Publish()
 	}
 
-
-
 	for _, s := range c.input {
 		switch s.(type) {
 		case *input.Keyboard:
@@ -97,15 +95,15 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 
 	c.manager = state.Manager{}
 	c.manager.Init()
+
 }
 
-
 func (c *Controller) Start () {
-	var set bool
+	var set, end bool
 	var StateAction, Change state.State
 	log.Println("Controller started...")
 
-	end := false
+	// control workflow
 	for {
 		select {
 		case <- c.reset:
@@ -129,7 +127,6 @@ func (c *Controller) Start () {
 			c.publishState <- StateAction
 			c.toOutput <- []state.State{StateAction, Change}
 		}
-
 	}
 }
 

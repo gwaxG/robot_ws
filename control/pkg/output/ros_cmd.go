@@ -16,13 +16,14 @@ type RosCmd struct {
 	msgFloat 		*std_msgs.Float64
 	seqBase 		uint32
 	seqFlipper 		uint32
-	stateActionChan 		chan []state.State
+	stateActionChan chan []state.State
 }
 
 func (p *RosCmd) Init(stateActionChan chan []state.State) {
 	// chan init
 	p.stateActionChan = stateActionChan
-
+	p.seqBase = 1
+	p.seqFlipper = 1
 	// /cmd_vel TwistStamped
 	p.pubBase, _ = goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  connections.RosConnection(),
@@ -49,6 +50,12 @@ func (p *RosCmd) Init(stateActionChan chan []state.State) {
 		Topic: "jaguar/arm_2_effort_controller/command",
 		Msg:   &std_msgs.Float64{},
 	})
+
+	// Initialize to the extended state
+	var initState state.State
+	p.ServeBase(&initState)
+	p.ServeFlippers(&initState)
+	p.ServeArm(&initState)
 }
 
 func (p *RosCmd) ServeArm(actions *state.State) {
@@ -96,12 +103,12 @@ func (p *RosCmd) ServeFlippers(actions *state.State) {
 	}
 	p.pubFlipper.Write(msgStampedTwist)
 	p.seqFlipper += 1
-
 }
 
 func (p *RosCmd) Serve() {
 	var StateChange []state.State
 	var StateAction state.State
+
 	for {
 		StateChange = <- p.stateActionChan
 		StateAction = StateChange[0]
