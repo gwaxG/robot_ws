@@ -26,6 +26,7 @@ or
 ***
 ### Workflow
 ![The general workflow.](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
+***
 ### ROS
 
 ###### Service
@@ -48,3 +49,22 @@ Publish
 Subscribe
 
     /robot_cmd
+***
+### Keyboard  
+z/q - linear velocity
+
+q/d - angular velocity
+
+r/f - front flippers
+
+t/g - rear flippers
+
+y/h - first arm joint
+
+u/j - second arm joint
+
+a - reset robot state
+
+p - exit
+
+b/n - block/release motors
