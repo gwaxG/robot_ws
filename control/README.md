@@ -30,17 +30,17 @@ Features:
   To reset the robot to its initial state  
   `/robot/reset`  
 
-###### Topics  
+#### Topics  
 Check info about topics through:  
 `rosmsg info [topic name]`  
 
-Publish  
-    `/cmd_vel  
-    /cmd_flipper  
-    /robot/sensors  
-    /robot/state`  
+###### Publish  
+    `/cmd_vel`  
+    `/cmd_flipper`  
+    `/robot/sensors`  
+    `/robot/state`  
 
-Subscribe  
+###### Subscribe  
     `/robot_cmd`  
 ***  
 ### Keyboard  
