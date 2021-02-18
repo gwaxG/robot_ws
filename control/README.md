@@ -28,28 +28,28 @@ Features:
 ### ROS  
 ###### Service  
   To reset the robot to its initial state  
-  /robot/reset  
+  `/robot/reset`  
 
 ###### Topics  
 Check info about topics through:  
 `rosmsg info [topic name]`  
 
 Publish  
-    /cmd_vel  
+    `/cmd_vel  
     /cmd_flipper  
     /robot/sensors  
-    /robot/state
+    /robot/state`  
 
 Subscribe  
     `/robot_cmd`  
 ***  
 ### Keyboard  
-z/q - linear velocity  
-q/d - angular velocity  
-r/f - front flippers  
-t/g - rear flippers  
-y/h - first arm joint  
-u/j - second arm joint  
-a - reset robot state  
-p - exit  
-b/n - block/release motors  
+`z/q` - linear velocity  
+`q/d` - angular velocity  
+`r/f` - front flippers  
+`t/g` - rear flippers  
+`y/h` - first arm joint  
+`u/j` - second arm joint  
+`a` - reset robot state  
+`p` - exit  
+`b/n` - block/release motors  
