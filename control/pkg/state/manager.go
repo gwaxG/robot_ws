@@ -2,10 +2,8 @@ package state
 
 import (
 	"encoding/json"
-	"github.com/gwaxG/robot_ws/control/pkg/utils"
 	"io/ioutil"
 	"log"
-	"os"
 	"reflect"
 )
 
@@ -30,7 +28,6 @@ func (m *Manager) Init(){
 // Control actions correctness through velocity and joint limits approval
 func (m *Manager) Monitor(set bool, change State) (State, State) {
 	actions := State{}
-
 	changes := reflect.ValueOf(change)
 	var min, max, value, changeValue, last float64
 	for _, name := range m.names {
@@ -75,6 +72,7 @@ func (m *Manager) Reset() (State, State) {
 }
 
 func (m *Manager) Save() {
+	// log.Println("SAVE", m.state)
 	jsonString, _ := json.Marshal(&saveState{
 		FrontFlippers: m.state.FrontFlippers,
 		RearFlippers:  m.state.RearFlippers,
@@ -83,16 +81,13 @@ func (m *Manager) Save() {
 		ArmJoint3:     m.state.ArmJoint3,
 		ArmJoint4:     m.state.ArmJoint4,
 	})
-	ioutil.WriteFile("platform_state.json", jsonString, os.ModePerm)
+	ioutil.WriteFile("data/platform_state.json", jsonString, 0644)
 }
 
 func (m *Manager) Load() (State, State) {
-	jsonFile, err := os.Open("platform_state.json")
-	defer jsonFile.Close()
-	utils.FailOnError(err, "can not open platform_state.json")
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var state saveState
-	_ = json.Unmarshal(byteValue, &state)
+	var state State
+	jsonState, _ := ioutil.ReadFile("data/platform_state.json")
+	_ = json.Unmarshal(jsonState, &state)
 	change := State{
 		FrontFlippers: -state.FrontFlippers,
 		RearFlippers:  -state.RearFlippers,
@@ -101,5 +96,6 @@ func (m *Manager) Load() (State, State) {
 		ArmJoint3:     -state.ArmJoint3,
 		ArmJoint4:     -state.ArmJoint4,
 	}
+	// log.Println("LOAD", m.state, change)
 	return m.state, change
 }

@@ -52,7 +52,9 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	if outputPlatform {
 		c.stopReleaseCh = make(chan string)
 		c.output = &output.PlatformCmd{}
-		c.imu = &platform_sensors.PlatformSensors{}
+		if inputRos {
+			c.imu = &platform_sensors.PlatformSensors{}
+		}
 	}
 	if outputSimulation {
 		c.output = &output.RosCmd{}
@@ -64,6 +66,12 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 		statePublisher := output.StatePublisher{}
 		statePublisher.Init(c.publishState)
 		go statePublisher.Publish()
+		log.Println("Publishing states")
+	} else {
+		statePublisher := output.FakeStatePublisher{}
+		statePublisher.Init(c.publishState)
+		go statePublisher.Publish()
+		log.Println("Omitting states")
 	}
 
 	for _, s := range c.input {
@@ -93,7 +101,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	if c.imu != nil {
 		log.Println("platform sensor module started")
 		c.imu.(*platform_sensors.PlatformSensors).Init(c.stopReleaseCh)
-		go c.output.(*platform_sensors.PlatformSensors).Serve()
+		go c.imu.(*platform_sensors.PlatformSensors).Serve()
 	}
 
 	c.manager = state.Manager{}
@@ -103,6 +111,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	if outputPlatform {
 		c.save = c.manager.Save
 		StateAction, Change := c.manager.Load()
+
 		c.publishState <- StateAction
 		c.toOutput <- []state.State{StateAction, Change}
 	}
@@ -142,8 +151,6 @@ func (c *Controller) Start () {
 		}
 	}
 }
-
-
 
 func (c * Controller) Close(){
 	connections.Close()

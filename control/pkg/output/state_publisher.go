@@ -30,3 +30,17 @@ func (p *StatePublisher) Publish() {
 		p.pub.Write(&msg)
 	}
 }
+
+type FakeStatePublisher struct {
+	receiver chan state.State
+}
+
+func (p *FakeStatePublisher) Init(msgChan chan state.State) {
+	p.receiver = msgChan
+}
+
+func (p *FakeStatePublisher) Publish() {
+	for {
+		_ = <- p.receiver
+	}
+}

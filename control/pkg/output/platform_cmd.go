@@ -14,6 +14,7 @@ type PlatformCmd struct {
 }
 
 const PI = 3.14
+const Latency = 25
 const MAXVel = 400
 const AngFlipperRes = 7600.0 / (2 * PI)
 const AngArmRes = 5700.0 / (2 * PI)
@@ -44,7 +45,7 @@ func (p *PlatformCmd) Serve() {
 		StateChange = <- p.stateActionCh
 		Change = StateChange[1]
 		SetState = StateChange[0]
-		p.serveBase(&SetState, &Change)
+		// p.serveBase(&SetState, &Change)
 		p.serveFlipper(&SetState, &Change)
 		p.serveArm(&SetState, &Change)
 	}
@@ -63,20 +64,36 @@ func (p *PlatformCmd) serveFlipper(setState, change *state.State) {
 	var cmd string
 	fr := int(change.FrontFlippers * AngFlipperRes)
 	rr := int(change.RearFlippers * AngFlipperRes)
-	cmd = "MM2 !PR 1 " + strconv.Itoa(fr) + "\r\n"
-	connections.WriteToBase(cmd)
-	cmd = "MM2 !PR 2 " + strconv.Itoa(rr) + "\r\n"
-	connections.WriteToBase(cmd)
+	if fr != 0 {
+		cmd = "MM2 !PR 1 " + strconv.Itoa(fr) + "\r\n"
+		connections.WriteToBase(cmd)
+		// time to wait for ack from server
+		if rr != 0 {
+			time.Sleep(time.Millisecond * Latency)
+		}
+	}
+	if rr != 0 {
+		cmd = "MM2 !PR 2 " + strconv.Itoa(rr) + "\r\n"
+		connections.WriteToBase(cmd)
+	}
 }
 
 func (p *PlatformCmd) serveArm(setState, change *state.State) {
 	var cmd string
 	arm1 := int(change.ArmJoint1 * AngArmRes)
 	arm2 := int(change.ArmJoint2 * AngArmRes)
-	cmd = "!PR 1 " + strconv.Itoa(arm1) + "\r"
-	connections.WriteToArm(cmd)
-	cmd = "!PR 2 " + strconv.Itoa(-arm2) + "\r"
-	connections.WriteToArm(cmd)
+	if arm1 != 0 {
+		cmd = "!PR 1 " + strconv.Itoa(arm1) + "\r"
+		connections.WriteToArm(cmd)
+		// time to wait for ack from server
+		if arm2 != 0 {
+			time.Sleep(time.Millisecond * Latency)
+		}
+	}
+	if arm2 != 0 {
+		cmd = "!PR 2 " + strconv.Itoa(-arm2) + "\r"
+		connections.WriteToArm(cmd)
+	}
 }
 
 // ping platform every 200 ms to avoid disconnection

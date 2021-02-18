@@ -19,12 +19,12 @@ func (pc *_PlatformConn) ConnectHostPort(addrBase, addrArm string) {
 	var err error
 	lock.Lock()
 	defer lock.Unlock()
+	conn, err = net.DialTimeout("tcp", addrArm, 100 * time.Millisecond)
+	utils.FailOnError(err, "arm connection problem")
+	pc.armConn = conn
 	conn, err = net.DialTimeout("tcp", addrBase, 100 * time.Millisecond)
 	utils.FailOnError(err, "robot connection problem")
 	pc.baseConn = conn
-	conn, err = net.DialTimeout("tcp", addrArm, 100 * time.Millisecond)
-	utils.FailOnError(err, "robot connection problem")
-	pc.armConn = conn
 }
 
 func Init(addrBase, addrArm string) {
