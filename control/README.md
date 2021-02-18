@@ -26,25 +26,22 @@ Features:
 ![The general workflow.](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
 ***
 ### ROS  
-
 ###### Service  
-  To reset the robot to its initial state    
+  To reset the robot to its initial state  
   /robot/reset  
 
 ###### Topics  
-Check info about topics through   
-
+Check info about topics through:  
 `rosmsg info [topic name]`  
 
 Publish  
-
     /cmd_vel  
     /cmd_flipper  
     /robot/sensors  
     /robot/state
 
 Subscribe  
-    /robot_cmd  
+    `/robot_cmd`  
 ***  
 ### Keyboard  
 z/q - linear velocity  
