@@ -26,7 +26,7 @@ Features:
 ![The general workflow.](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
 ***
 ### ROS  
-###### Service  
+#### Services  
   To reset the robot to its initial state  
   `/robot/reset`  
 
