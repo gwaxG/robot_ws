@@ -25,7 +25,7 @@ or
 `roslaunch control control.launch`
 ***
 ### Workflow
-![workflow](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
+![The general workflow.](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
 ### ROS
 
 ###### Service
