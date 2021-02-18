@@ -4,6 +4,7 @@
 The package "Control" provides Jaguar robot control both in real world and simulation.
 Hereafter, the robot state is a vector of linear velocity, angular velocity, arm joints angles, front and rear flippers angles.
 The exended (initial) state is when the front and rear flippers are aligned with the robot base, the arm is perpendicularly to the latter extended.
+
 Features:
 + Control with a keyboard
 + ROS-based control
