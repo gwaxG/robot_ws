@@ -1,6 +1,6 @@
 # Control
 ***
-### Description
+### Description  
 The package "Control" provides Jaguar robot control both in real world and simulation.
 Hereafter, the robot state is a vector of linear velocity, angular velocity, arm joints angles, front and rear flippers angles.
 The exended (initial) state is when the front and rear flippers are aligned with the robot base, the arm is perpendicularly to the latter extended.
@@ -16,55 +16,42 @@ Features:
 + Platform state saving and reconfiguration on the start-up to the initial state
 ***
 ### Usage
-`go build cmd/control_app/control_app.go && ./control_app`
-
-or
-
-`go build cmd/control_app/control_app.go`
-
+`go build cmd/control_app/control_app.go && ./control_app`  
+ or  
+`go build cmd/control_app/control_app.go`  
 `roslaunch control control.launch`
 ***
 ### Workflow
 ![The general workflow.](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
 ***
-### ROS
+### ROS  
 
-###### Service
-  To reset the robot to its initial state
-  
-  /robot/reset
+###### Service  
+  To reset the robot to its initial state    
+  /robot/reset  
 
-###### Topics
-Check info about topics through 
+###### Topics  
+Check info about topics through   
 
-`rosmsg info [topic name]`
+`rosmsg info [topic name]`  
 
-Publish
+Publish  
 
-    /cmd_vel
-    /cmd_flipper
-    /robot/sensors
+    /cmd_vel  
+    /cmd_flipper  
+    /robot/sensors  
     /robot/state
 
-Subscribe
-
-    /robot_cmd
-***
+Subscribe  
+    /robot_cmd  
+***  
 ### Keyboard  
-z/q - linear velocity
-
-q/d - angular velocity
-
-r/f - front flippers
-
-t/g - rear flippers
-
-y/h - first arm joint
-
-u/j - second arm joint
-
-a - reset robot state
-
-p - exit
-
-b/n - block/release motors
+z/q - linear velocity  
+q/d - angular velocity  
+r/f - front flippers  
+t/g - rear flippers  
+y/h - first arm joint  
+u/j - second arm joint  
+a - reset robot state  
+p - exit  
+b/n - block/release motors  
