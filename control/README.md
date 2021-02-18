@@ -17,8 +17,34 @@ Features:
 ***
 ### Usage
 `go build cmd/control_app/control_app.go && ./control_app`
+
 or
+
 `go build cmd/control_app/control_app.go`
+
 `roslaunch control control.launch`
 ***
 ### Workflow
+![workflow](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
+### ROS
+
+###### Service
+  To reset the robot to its initial state
+  
+  /robot/reset
+
+###### Topics
+Check info about topics through 
+
+`rosmsg info [topic name]`
+
+Publish
+
+    /cmd_vel
+    /cmd_flipper
+    /robot/sensors
+    /robot/state
+
+Subscribe
+
+    /robot_cmd
