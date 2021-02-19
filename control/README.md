@@ -8,10 +8,10 @@ The exended (initial) state is when the front and rear flippers are aligned with
 Features:
 + Control with a keyboard
 + ROS-based control
-+ Output to the real world
-+ Output to the simulation
++ Real world output
++ Simulation output 
 + Flipper and arm joint rotation constraints
-+ Robot sensors information output to ROS
++ Robot sensoric output to ROS
 + Robot state publishing to ROS
 + Initialization of the simulated robot in the initial state
 + Platform state saving and reconfiguration on the start-up to the initial state
@@ -20,7 +20,7 @@ Features:
 `go build cmd/control_app/control_app.go && ./control_app`  
  or  
 `go build cmd/control_app/control_app.go`  
-`roslaunch control control.launch`
+`rosrun control control_app`
 ***
 ### Workflow
 ![The general workflow.](https://github.com/gwaxG/robot_ws/tree/main/control/assets/workflow.png)
