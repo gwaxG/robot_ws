@@ -54,7 +54,7 @@ def indent(elem, level=0):
             elem.tail = i
 
 
-def add(model_sdf, box):
+def add_box(model_sdf, box):
     """
     Python wall object into xml tree
     :param model_sdf:
@@ -98,6 +98,35 @@ def spawn(model):
                    shell=True, check=True)
 
 
+def add_sphere(model_sdf, sphere):
+    """
+    Python wall object into xml tree
+    :param model_sdf:
+    :param wall:
+    :return:
+    """
+    link = SubElement(model_sdf, 'link')
+    link.set("name", sphere.name)
+
+    pose = SubElement(link, 'pose')
+
+    pose.text = string_pose(box)
+
+    collision = SubElement(link, 'collision')
+    collision.set("name", "collision")
+    geometry_coll = SubElement(collision, 'geometry')
+    box_coll = SubElement(geometry_coll, 'box')
+    size_coll = SubElement(box_coll, 'size')
+    size_coll.text = string_size(box)
+
+    visual = SubElement(link, 'visual')
+    visual.set("name", "visual")
+    geometry_vis = SubElement(visual, 'geometry')
+    box_vis = SubElement(geometry_vis, 'box')
+    size_vis = SubElement(box_vis, 'size')
+    size_vis.text = string_size(box)
+
+
 def apply(model):
     """
     Conversion of a python object into the corresponding XML tree
@@ -116,18 +145,23 @@ def apply(model):
 
     stat = SubElement(model_sdf, 'static')
     stat.text = "true"
-    # Body
-    # walls
-    for wall in model.walls:
-        add(model_sdf, wall)
+    if hasattr(model, 'steps'):
+        # Body
+        # walls
+        for wall in model.walls:
+            add_box(model_sdf, wall)
 
-    # floor
-    if model.floor is not None:
-        add(model_sdf, model.floor)
+        # floor
+        if model.floor is not None:
+            add_box(model_sdf, model.floor)
 
-    # steps
-    for step in model.steps:
-        add(model_sdf, step)
+        # steps
+        for step in model.steps:
+            add_box(model_sdf, step)
+
+    if hasattr(model, 'goal'):
+        add_sphere(model_sdf, model.goal.inner)
+        add_sphere(model_sdf, model.goal.outter)
 
     # Printing into file
     indent(sdf)
