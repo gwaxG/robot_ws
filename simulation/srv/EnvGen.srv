@@ -1,5 +1,6 @@
 string action
 string model
+string props
 ---
 bool result
 string err

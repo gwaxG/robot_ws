@@ -15,6 +15,7 @@ class Env:
             wall_x_size=1.0, wall_y_size=2.0, wall_z_size=2.0,
             shift_x=2.0, shift_z=2.0
         )
+        self.goal = Goal()
 
 
 class Group(ABC):
@@ -23,6 +24,7 @@ class Group(ABC):
         self.walls = []
         self.floor = None
         self.steps = []
+        self.spheres = []
 
     @abstractmethod
     def generate(self):
@@ -40,6 +42,79 @@ class Box:
         self.box_x = box_x
         self.box_y = box_y
         self.box_z = box_z
+
+class Sphere:
+    def __init__(self, name, x=0., y=0., z=0.,  radius=0.01, transparency=.5):
+        self.name = name
+        self.x = x
+        self.y = y
+        self.z = z
+        self.transparency = transparency
+        self.radius = radius
+
+class Goal(Group):
+
+    def __init__(self):
+        super().__init__("goal")
+        self.spheres = []
+        self.shift_x = 0.
+        self.shift_z = 0.
+        self.exist = False
+
+        self.x = 0.
+        self.y = 0.
+        self.z = 0.085
+
+        self.rand = False
+        self.task = ""
+
+    def generate(self, task, rand):
+        """
+
+        :param task: ascent, descent, flat
+        :param rand: moves randomly the goal in the square 0.5m*0.5m + random location along Y for the flat task
+        :return:
+        """
+        self.rand = rand
+        self.task = task
+        self.x = 0.
+        self.y = 0.
+        self.z = 0.085
+
+        if task == "ascent":
+            self.x += self.shift_x + 1.0
+            self.z += self.shift_z
+        elif task == "descent":
+            self.x += -1.0
+        elif task == "flat":
+            self.x -= 11.0
+            if rand:
+                self.y = (0.5 - random.random()) * 8.0
+        if rand:
+            self.x += (0.5 - random.random()) * 1.0
+            self.y += (0.5 - random.random()) * 1.0
+
+
+        spheres = [
+            Sphere(
+                name="sphere_inner",
+                x=self.x,
+                y=self.y,
+                z=self.z,
+                transparency=0.0,
+                radius=0.05,
+            ),
+            Sphere(
+                name="sphere_outter",
+                x=self.x,
+                y=self.y,
+                z=self.z,
+                transparency=0.75,
+                radius=0.3,
+            )
+        ]
+        self.spheres = spheres
+        self.exist = True
 
 class FloorObstacles(Group):
 
@@ -256,6 +331,9 @@ class StairFloor(Group):
                 box_z=StairFloor.standard_height + self.shift_z
             ),
         ]
+
+
+
 
 
 if __name__ == "__main__":

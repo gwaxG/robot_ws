@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sdf version="1.5">
+    <!--Generated on demand-->
+    <model name="goal">
+        <static>true</static>
+        <link name="sphere_inner">
+            <pose>-11.0 0.0 0.085 0 0 0</pose>
+            <visual name="visual">
+                <geometry>
+                    <sphere>
+                        <radius>0.05</radius>
+                    </sphere>
+                </geometry>
+                <transparency>0.0</transparency>
+            </visual>
+        </link>
+        <link name="sphere_outter">
+            <pose>-11.0 0.0 0.085 0 0 0</pose>
+            <visual name="visual">
+                <geometry>
+                    <sphere>
+                        <radius>0.3</radius>
+                    </sphere>
+                </geometry>
+                <transparency>0.75</transparency>
+            </visual>
+        </link>
+    </model>
+</sdf>

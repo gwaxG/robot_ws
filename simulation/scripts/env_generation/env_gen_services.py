@@ -5,6 +5,7 @@ import rospy
 from representation import Env
 import render
 from simulation.srv import EnvGen, EnvGenResponse
+from simulation.srv import GoalInfo, GoalInfoResponse
 from simulation.srv import StairInfo, StairInfoResponse
 import render
 
@@ -14,19 +15,31 @@ class EnvGenerator:
         self.env = Env()
         s = rospy.Service('env_gen', EnvGen, self.router)
         s = rospy.Service('stair_info', StairInfo, self.send_stair_info)
+        s = rospy.Service('goal_info', GoalInfo, self.send_goal_info)
         self.generation_mapping = {
             "ground_obstacles": self.generate_ground_obstacles,
             "stair_floor": self.generate_stair_floor,
             "floor_obstacles": self.generate_floor_obstacles,
+            "goal": self.generate_goal,
         }
         self.env_mapping = {
             "ground_obstacles": self.env.ground_obstacles,
             "stair_floor": self.env.stair_floor,
             "floor_obstacles": self.env.floor_obstacles,
+            "goal": self.env.goal,
         }
         for key in self.env_mapping.keys():
             render.delete_model(key)
         rospy.spin()
+
+    def send_goal_info(self, _):
+        return GoalInfoResponse(
+            x=self.env.goal.x,
+            y=self.env.goal.y,
+            z=self.env.goal.z,
+            task=self.env.goal.task,
+            rand=self.env.goal.rand
+        )
 
     def send_stair_info(self, _):
         return StairInfoResponse(
@@ -42,7 +55,7 @@ class EnvGenerator:
         if model_name not in self.generation_mapping.keys():
             return EnvGenResponse(result=False, err="No such model")
         if action == "generate":
-            self.generation_mapping[model_name]()
+            self.generation_mapping[model_name](req.props)
         elif action == "delete":
             if self.env_mapping[model_name].exist:
                 self.env_mapping[model_name].exist = False
@@ -51,13 +64,21 @@ class EnvGenerator:
             return EnvGenResponse(result=False, err="No such action")
         return EnvGenResponse(result=True, err="")
 
-    def generate_ground_obstacles(self):
+    def generate_ground_obstacles(self, props=None):
         if self.env.ground_obstacles.exist:
             render.delete_model(self.env.ground_obstacles.name)
         self.env.ground_obstacles.generate()
         render.apply(self.env.ground_obstacles)
 
-    def generate_floor_obstacles(self):
+    def generate_goal(self, props):
+        if self.env.goal.exist:
+            render.delete_model(self.env.goal.name)
+        task, rand = props.split("_")
+        rand = bool(int(rand))
+        self.env.goal.generate(task, rand)
+        render.apply(self.env.goal)
+
+    def generate_floor_obstacles(self, props=None):
         if self.env.floor_obstacles.exist:
             render.delete_model(self.env.floor_obstacles.name)
         if not self.env.stair_floor.exist:
@@ -65,14 +86,19 @@ class EnvGenerator:
         self.env.floor_obstacles.generate()
         render.apply(self.env.floor_obstacles)
 
-    def generate_stair_floor(self):
+    def update_shift(self):
+        self.env.floor_obstacles.shift_x = self.env.stair_floor.shift_x
+        self.env.floor_obstacles.shift_z = self.env.stair_floor.shift_z
+        self.env.goal.shift_x = self.env.stair_floor.shift_x
+        self.env.goal.shift_z = self.env.stair_floor.shift_z
+
+    def generate_stair_floor(self, props=None):
         if self.env.floor_obstacles.exist:
             render.delete_model(self.env.floor_obstacles.name)
         if self.env.stair_floor.exist:
             render.delete_model(self.env.stair_floor.name)
         self.env.stair_floor.generate()
-        self.env.floor_obstacles.shift_x = self.env.stair_floor.shift_x
-        self.env.floor_obstacles.shift_z = self.env.stair_floor.shift_z
+        self.update_shift()
         render.apply(self.env.stair_floor)
 
 

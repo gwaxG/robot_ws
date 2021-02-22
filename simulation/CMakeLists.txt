@@ -59,6 +59,7 @@ add_service_files(
     EnvGen.srv
     RobotSpawn.srv
     StairInfo.srv
+    GoalInfo.srv
 #   Service2.srv
 )
 

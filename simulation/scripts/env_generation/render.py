@@ -54,7 +54,7 @@ def indent(elem, level=0):
             elem.tail = i
 
 
-def add_box(model_sdf, box):
+def add(model_sdf, box, coll_tag=False):
     """
     Python wall object into xml tree
     :param model_sdf:
@@ -67,65 +67,48 @@ def add_box(model_sdf, box):
     pose = SubElement(link, 'pose')
 
     pose.text = string_pose(box)
-
-    collision = SubElement(link, 'collision')
-    collision.set("name", "collision")
-    geometry_coll = SubElement(collision, 'geometry')
-    box_coll = SubElement(geometry_coll, 'box')
-    size_coll = SubElement(box_coll, 'size')
-    size_coll.text = string_size(box)
+    if coll_tag:
+        collision = SubElement(link, 'collision')
+        collision.set("name", "collision")
+        geometry_coll = SubElement(collision, 'geometry')
+        if "sphere" in box.name:
+            box_coll = SubElement(geometry_coll, 'sphere')
+            size_coll = SubElement(box_coll, 'radius')
+            size_coll.text = str(box.radius)
+        else:
+            box_coll = SubElement(geometry_coll, 'box')
+            size_coll = SubElement(box_coll, 'size')
+            size_coll.text = string_size(box)
 
     visual = SubElement(link, 'visual')
     visual.set("name", "visual")
     geometry_vis = SubElement(visual, 'geometry')
-    box_vis = SubElement(geometry_vis, 'box')
-    size_vis = SubElement(box_vis, 'size')
-    size_vis.text = string_size(box)
+    if "sphere" in box.name:
+        box_vis = SubElement(geometry_vis, 'sphere')
+        size_vis = SubElement(box_vis, 'radius')
+        size_vis.text = str(box.radius)
+
+        trans_vis = SubElement(visual, 'transparency')
+        trans_vis.text = str(box.transparency)
+    else:
+        box_vis = SubElement(geometry_vis, 'box')
+        size_vis = SubElement(box_vis, 'size')
+        size_vis.text = string_size(box)
 
 
-def string_pose(wall):
-    return str(wall.x) + " " + str(wall.y) + " " + str(wall.z) + \
-           str(wall.roll) + " " + str(wall.pitch) + " " + str(wall.yaw)
-
+def string_pose(obj):
+    if hasattr(obj, "roll"):
+        return str(obj.x) + " " + str(obj.y) + " " + str(obj.z) + str(obj.roll) + " " + str(obj.pitch) + " " + str(obj.yaw)
+    else:
+        return str(obj.x) + " " + str(obj.y) + " " + str(obj.z) + " 0 0 0"
 
 def string_size(wall):
     return str(wall.box_x) + " " + str(wall.box_y) + " " + str(wall.box_z)
-
 
 def spawn(model):
     launch_file = os.path.join(world_folder_path(), model.name+".sdf")
     subprocess.run('rosrun gazebo_ros spawn_model -file ' + launch_file + ' -sdf -model ' + model.name,
                    shell=True, check=True)
-
-
-def add_sphere(model_sdf, sphere):
-    """
-    Python wall object into xml tree
-    :param model_sdf:
-    :param wall:
-    :return:
-    """
-    link = SubElement(model_sdf, 'link')
-    link.set("name", sphere.name)
-
-    pose = SubElement(link, 'pose')
-
-    pose.text = string_pose(box)
-
-    collision = SubElement(link, 'collision')
-    collision.set("name", "collision")
-    geometry_coll = SubElement(collision, 'geometry')
-    box_coll = SubElement(geometry_coll, 'box')
-    size_coll = SubElement(box_coll, 'size')
-    size_coll.text = string_size(box)
-
-    visual = SubElement(link, 'visual')
-    visual.set("name", "visual")
-    geometry_vis = SubElement(visual, 'geometry')
-    box_vis = SubElement(geometry_vis, 'box')
-    size_vis = SubElement(box_vis, 'size')
-    size_vis.text = string_size(box)
-
 
 def apply(model):
     """
@@ -145,23 +128,22 @@ def apply(model):
 
     stat = SubElement(model_sdf, 'static')
     stat.text = "true"
-    if hasattr(model, 'steps'):
-        # Body
-        # walls
-        for wall in model.walls:
-            add_box(model_sdf, wall)
+    # if hasattr(model, 'steps'):
+    # Body
+    # walls
+    for wall in model.walls:
+        add(model_sdf, wall, coll_tag=True)
 
-        # floor
-        if model.floor is not None:
-            add_box(model_sdf, model.floor)
+    # floor
+    if model.floor is not None:
+        add(model_sdf, model.floor, coll_tag=True)
 
-        # steps
-        for step in model.steps:
-            add_box(model_sdf, step)
+    # steps
+    for step in model.steps:
+        add(model_sdf, step, coll_tag=True)
 
-    if hasattr(model, 'goal'):
-        add_sphere(model_sdf, model.goal.inner)
-        add_sphere(model_sdf, model.goal.outter)
+    for sphere in model.spheres:
+        add(model_sdf, sphere, coll_tag=False)
 
     # Printing into file
     indent(sdf)
