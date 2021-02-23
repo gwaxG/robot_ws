@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+    <param name="feature_type" value="FeatureSliceVertical"/>
+    <param name="image_height" type="int" value="480" />
+    <param name="image_width" type="int" value="640" />
+
+
+    <param name="depth_image_topic" type="str" value="depth" />
+    <param name="feature_height" type="int" value="60" />
+    <param name="feature_width" type="int" value="72" />
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="dev"         default="/dev/input/js0"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+
+    <!-- <node name="beamer" pkg="perception" type="beamer_app"
+      output="screen">
+    </node> -->
+
+     <node name="beamer" pkg="perception" type="features_beams.py"
+      output="screen">
+    </node>
+
+</launch>

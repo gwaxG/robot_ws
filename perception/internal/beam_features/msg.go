@@ -5,7 +5,7 @@ import (
 	"github.com/aler9/goroslib/pkg/msg"
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
-	"github.com/gwaxG/robot_ws/control/pkg/utils"
+	"log"
 	"time"
 )
 
@@ -26,25 +26,25 @@ type RosProxy struct {
 }
 
 func (r * RosProxy) Init(subs func(sensor_msgs.Image)) {
-	var err error
 	r.seq = 1
-	r.conn, err = goroslib.NewNode(goroslib.NodeConf{
+	r.conn, _ = goroslib.NewNode(goroslib.NodeConf{
 		Name:          "features",
 		MasterAddress: "127.0.0.1:11311",
 	})
-	utils.FailOnError(err, "no roscore")
-	r.featurePub, err = goroslib.NewPublisher(goroslib.PublisherConf{
+	depthImageTopic, err := r.conn.ParamGetString("depth_image_topic")
+	if err != nil {
+		log.Fatal("Can not initialize depth image topic")
+	}
+	r.featurePub, _ = goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  r.conn,
-		Topic: "test_topic",
+		Topic: "features",
 		Msg:   &BeamMsg{},
 	})
-	utils.FailOnError(err, "no roscore")
-	r.imgSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
+	r.imgSub, _ = goroslib.NewSubscriber(goroslib.SubscriberConf{
 		Node:     r.conn,
-		Topic:    "test_topic",
+		Topic:    depthImageTopic,
 		Callback: subs,
 	})
-	utils.FailOnError(err, "no roscore")
 }
 
 func (r *RosProxy) Publish(H []float64, V []float64, frame string) {
