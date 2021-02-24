@@ -5,9 +5,10 @@
     <param name="image_width" type="int" value="640" />
 
 
-    <param name="depth_image_topic" type="str" value="depth" />
+    <param name="depth_image_topic" type="str" value="/camera/depth/image_raw" />
     <param name="feature_height" type="int" value="60" />
     <param name="feature_width" type="int" value="72" />
+
     <arg name="paused" default="false"/>
     <arg name="use_sim_time" default="true"/>
     <arg name="dev"         default="/dev/input/js0"/>
@@ -19,8 +20,9 @@
       output="screen">
     </node> -->
 
-     <node name="beamer" pkg="perception" type="features_beams.py"
-      output="screen">
+    <!--Build and and launch go nodes-->
+    <node name="bash_init" pkg="perception" type="init.sh"
+          output="screen">
     </node>
 
 </launch>

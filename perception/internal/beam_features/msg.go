@@ -11,11 +11,11 @@ import (
 
 type BeamMsg struct {
 	msg.Package `ros:"perception"`
-	std_msgs.Header
-	Width int
-	Height int
-	Horizontal []float64
-	Vertical []float64
+	Header		std_msgs.Header
+	Width 		int64
+	Height 		int64
+	Horizontal 	[]float64
+	Vertical 	[]float64
 }
 
 type RosProxy struct {
@@ -25,26 +25,32 @@ type RosProxy struct {
 	seq 		uint32
 }
 
-func (r * RosProxy) Init(subs func(sensor_msgs.Image)) {
+func (r * RosProxy) Init(subs func(*sensor_msgs.Image)) {
+	var (
+		err error
+		depthImageTopic string
+	)
+
 	r.seq = 1
-	r.conn, _ = goroslib.NewNode(goroslib.NodeConf{
+	r.conn, err = goroslib.NewNode(goroslib.NodeConf{
 		Name:          "features",
 		MasterAddress: "127.0.0.1:11311",
 	})
-	depthImageTopic, err := r.conn.ParamGetString("depth_image_topic")
-	if err != nil {
-		log.Fatal("Can not initialize depth image topic")
-	}
-	r.featurePub, _ = goroslib.NewPublisher(goroslib.PublisherConf{
+	FailOnError(err, "Can not create node")
+	depthImageTopic, err = r.conn.ParamGetString("depth_image_topic")
+	FailOnError(err, "Can not get param string")
+	r.featurePub, err = goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  r.conn,
 		Topic: "features",
 		Msg:   &BeamMsg{},
 	})
-	r.imgSub, _ = goroslib.NewSubscriber(goroslib.SubscriberConf{
+	FailOnError(err, "Can not create publisher")
+	r.imgSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
 		Node:     r.conn,
 		Topic:    depthImageTopic,
 		Callback: subs,
 	})
+	FailOnError(err, "Can not create subscriber")
 }
 
 func (r *RosProxy) Publish(H []float64, V []float64, frame string) {
@@ -54,8 +60,8 @@ func (r *RosProxy) Publish(H []float64, V []float64, frame string) {
 			Stamp:   time.Time{},
 			FrameId: frame,
 		},
-		Width:      len(H),
-		Height:     len(V),
+		Width:      int64(len(H)),
+		Height:     int64(len(V)),
 		Horizontal: H,
 		Vertical:   V,
 	})
@@ -65,4 +71,11 @@ func (r *RosProxy) Publish(H []float64, V []float64, frame string) {
 func (r *RosProxy) Close() {
 	r.featurePub.Close()
 	r.conn.Close()
+}
+
+func FailOnError(err error, msg string) {
+	if err != nil {
+		log.Println(msg)
+		panic(err)
+	}
 }
