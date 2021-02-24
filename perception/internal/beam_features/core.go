@@ -1,8 +1,11 @@
 package beam_features
 
 import (
+	"encoding/binary"
+	"fmt"
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"log"
+	"math"
 )
 
 type Core struct {
@@ -20,5 +23,21 @@ func (c *Core) Start () {
 }
 
 func (c *Core) Handle(img *sensor_msgs.Image) {
-	log.Println("Image received")
+	h := img.Height
+	w := img.Width
+	step := img.Step
+	l := uint32(len(img.Data))
+	data := []byte{uint8(img.Data[:4]}
+	bits := binary.LittleEndian.Uint32(bytes)
+	float := math.Float32frombits(bits)
+	fmt.Println(float)
+
+	log.Println(float64(l)/float64(step))
+	log.Println(step/w)
+	log.Println(img.Encoding)
+	
+	_ = w
+	_ = step
+	_ = l
+	_ = h
 }

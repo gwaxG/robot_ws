@@ -2,13 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="62f8675e-a32c-462e-9970-553a67054b13" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/perception.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/perception.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/ROS.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/ROS.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmd/beamer/beamer_app.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/beamer/beamer_app.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/beamer_app" beforeDir="false" afterPath="$PROJECT_DIR$/beamer_app" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/beam_features/core.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/beam_features/core.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/beam_features/msg.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/beam_features/msg.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/launch/perception.launch" beforeDir="false" afterPath="$PROJECT_DIR$/launch/perception.launch" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
