@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/gwaxG/robot_ws/perception/pkg/bridge"
 	"log"
 	"math"
 )
@@ -25,7 +26,7 @@ func (c *Core) Start () {
 
 
 func (c *Core) Handle(img *sensor_msgs.Image) {
-	depthImage := de
+	_ = bridge.Decode(img, "depth")
 	h := img.Height
 	w := img.Width
 	step := img.Step
