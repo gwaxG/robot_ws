@@ -22,19 +22,26 @@ func (c *Core) Start () {
 	select {}
 }
 
+
+
 func (c *Core) Handle(img *sensor_msgs.Image) {
+	depthImage := de
 	h := img.Height
 	w := img.Width
 	step := img.Step
 	l := uint32(len(img.Data))
-	data := []byte{uint8(img.Data[:4]}
+	bytes := []byte{}
+	for i:=0;i<4;i++{
+		bytes = append(bytes, img.Data[614400 + i])
+	}
 	bits := binary.LittleEndian.Uint32(bytes)
 	float := math.Float32frombits(bits)
-	fmt.Println(float)
-
-	log.Println(float64(l)/float64(step))
+	fmt.Println(l)
+	fmt.Printf("float %f %T\n ", float, float)
+	// log.Println("is Big endian", img.IsBigendian)
+	/*log.Println(float64(l)/float64(step))
 	log.Println(step/w)
-	log.Println(img.Encoding)
+	log.Println(img.Encoding)*/
 	
 	_ = w
 	_ = step
