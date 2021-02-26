@@ -1,21 +1,32 @@
 package beam_features
 
 import (
-	"encoding/binary"
-	"fmt"
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/gwaxG/robot_ws/perception/pkg/bridge"
 	"log"
 	"math"
+	"sync"
 )
+
+const BandWidth = 10
 
 type Core struct {
 	ros RosProxy
+	HeightFeatNum int
+	WidthFeatNum int
+	BandWidth int
 }
 
 func (c *Core) Init() {
+	var err error
 	c.ros = RosProxy{}
 	c.ros.Init(c.Handle)
+	c.HeightFeatNum, err = c.ros.conn.ParamGetInt("feature_height")
+	FailOnError(err, "can not get param")
+	c.WidthFeatNum, err = c.ros.conn.ParamGetInt("feature_width")
+	FailOnError(err, "can not get param")
+	c.BandWidth, err = c.ros.conn.ParamGetInt("band_width")
+	FailOnError(err, "can not get param")
 }
 
 func (c *Core) Start () {
@@ -23,29 +34,76 @@ func (c *Core) Start () {
 	select {}
 }
 
+func calcMean(values []float32) float32 {
+	if len(values) == 0 {
+		return 0.0
+	}
+	num := 0
+	var sum float32
+	for _, val := range values{
+		num += 1
+		sum += val
+	}
+	return sum / float32(num)
+}
 
+func (c *Core) handleSlice(isHeight bool, img *bridge.Image, dst *[]float32, wg *sync.WaitGroup){
+	defer wg.Done()
+	var (
+		step   uint32
+		center uint32
+		beam   = []float32{}
+	)
+	if isHeight {
+		step = uint32(float32(img.Height) / float32(c.HeightFeatNum))
+		center = img.Width/2
+		for sliceN:=0; uint32(sliceN)< img.Height; sliceN++ {
+			for pixelN:=center-uint32(c.BandWidth/2); pixelN<center+uint32(c.BandWidth/2); pixelN++ {
+				if !math.IsNaN(float64(img.Rows[sliceN][pixelN])) {
+					beam = append(beam, img.Rows[sliceN][pixelN])
+				}
+			}
+			if uint32(sliceN) % step == 0 {
+				*dst = append(*dst, calcMean(beam))
+				beam = nil
+			}
+		}
+		if beam != nil {
+			*dst = append(*dst, calcMean(beam))
+		}
+	} else {
+		step = uint32(float32(img.Width) / float32(c.WidthFeatNum))
+		center = img.Height/2
+		for sliceN:=0; uint32(sliceN)< img.Width; sliceN++ {
+			for pixelN:=center-uint32(c.BandWidth/2); pixelN<center+uint32(c.BandWidth/2); pixelN++ {
+				if !math.IsNaN(float64(img.Rows[pixelN][sliceN])) {
+					beam = append(beam, img.Rows[pixelN][sliceN])
+				}
+			}
+			if uint32(sliceN) % step == 0 {
+				*dst = append(*dst, calcMean(beam))
+				beam = nil
+			}
+		}
+		if beam != nil {
+			*dst = append(*dst, calcMean(beam))
+		}
+	}
+}
 
 func (c *Core) Handle(img *sensor_msgs.Image) {
-	_ = bridge.Decode(img, "depth")
-	h := img.Height
-	w := img.Width
-	step := img.Step
-	l := uint32(len(img.Data))
-	bytes := []byte{}
-	for i:=0;i<4;i++{
-		bytes = append(bytes, img.Data[614400 + i])
-	}
-	bits := binary.LittleEndian.Uint32(bytes)
-	float := math.Float32frombits(bits)
-	fmt.Println(l)
-	fmt.Printf("float %f %T\n ", float, float)
-	// log.Println("is Big endian", img.IsBigendian)
-	/*log.Println(float64(l)/float64(step))
-	log.Println(step/w)
-	log.Println(img.Encoding)*/
-	
-	_ = w
-	_ = step
-	_ = l
-	_ = h
+	beamsHeight := []float32{}
+	beamsWidth := []float32{}
+
+	decoded := bridge.Decode(img, "depth")
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go c.handleSlice(false, decoded, &beamsWidth, &wg)
+	go c.handleSlice(true, decoded, &beamsHeight, &wg)
+	wg.Wait()
+
+	beamsHeight = append(beamsHeight, beamsWidth...)
+	c.ros.Publish(beamsHeight, beamsWidth, img.Header.FrameId)
 }

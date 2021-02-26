@@ -12,10 +12,8 @@ import (
 type BeamMsg struct {
 	msg.Package `ros:"perception"`
 	Header		std_msgs.Header
-	Width 		int64
-	Height 		int64
-	Horizontal 	[]float64
-	Vertical 	[]float64
+	Horizontal 	std_msgs.Float32MultiArray
+	Vertical 	std_msgs.Float32MultiArray
 }
 
 type RosProxy struct {
@@ -53,17 +51,19 @@ func (r * RosProxy) Init(subs func(*sensor_msgs.Image)) {
 	FailOnError(err, "Can not create subscriber")
 }
 
-func (r *RosProxy) Publish(H []float64, V []float64, frame string) {
+func (r *RosProxy) Publish(Height []float32, Width []float32, frame string) {
 	r.featurePub.Write(&BeamMsg{
 		Header:     std_msgs.Header{
 			Seq:     r.seq,
 			Stamp:   time.Time{},
 			FrameId: frame,
 		},
-		Width:      int64(len(H)),
-		Height:     int64(len(V)),
-		Horizontal: H,
-		Vertical:   V,
+		Horizontal: std_msgs.Float32MultiArray{
+			Data: Height,
+		},
+		Vertical:   std_msgs.Float32MultiArray{
+			Data: Width,
+		},
 	})
 	r.seq++
 }

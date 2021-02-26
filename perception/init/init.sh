@@ -5,9 +5,11 @@ echo "Building: "$FILE_PATH
 go build $FILE_PATH
 echo "Built: "${ROS_PACKAGE_PATH%:*}"/robot_ws/perception/beamer_app"
 echo "Launching..."
+
 ${ROS_PACKAGE_PATH%:*}/robot_ws/perception/beamer_app
 
-while (true)
+while  true
 do
-	sleep 1
+    sleep 1
 done
+

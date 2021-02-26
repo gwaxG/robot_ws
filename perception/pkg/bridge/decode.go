@@ -30,16 +30,14 @@ type Image struct {
 	// IsBigEndian bool
 	// ChanNum 	uint8
 	// Rows, numeration starts from the upper left corner
-	Rows []interface{}
+	Rows [][]float32
 }
 
-func (i *Image) appendRow(row interface{}) {
-	switch row.(type){
-	case float32:
-		i.Rows = append(i.Rows, row)
-	default:
-		panic("strange type")
-	}
+func appendPixel(pixel *[]byte, Row *[]float32){
+	bits := binary.LittleEndian.Uint32(*pixel)
+	float := math.Float32frombits(bits)
+	*Row = append(*Row, float)
+	*pixel = nil
 }
 
 func Decode(img *sensor_msgs.Image, t string) *Image {
@@ -47,27 +45,17 @@ func Decode(img *sensor_msgs.Image, t string) *Image {
 		t,
 		img.Width,
 		img.Height,
-		[]interface{},
+		[][]float32{},
 	}
 	pixel := []byte{}
 	Row := []float32{}
-	for i, byt := range img.Data {
-		if i > 0 && i % 4 == 0 {
-			bits := binary.LittleEndian.Uint32(pixel)
-			float := math.Float32frombits(bits)
-			Row = append(Row, float)
-			pixel = nil
-			if len(Row) == int(img.Width) {
-				proc.appendRow(Row)
-				Row= nil
-			}
+	for i:=0; i<len(img.Data)/4; i++ {
+		pixel = []byte{img.Data[i*4], img.Data[i*4+1], img.Data[i*4+2], img.Data[i*4+3]}
+		appendPixel(&pixel, &Row)
+		if len(Row) == int(img.Width) {
+			proc.Rows = append(proc.Rows, Row)
+			Row= nil
 		}
-
-		pixel = append(pixel, byt)
-	}
-	bytes := []byte{}
-	for i:=0;i<4;i++{
-		bytes = append(bytes, img.Data[614400 + i])
 	}
 	return &proc
 }

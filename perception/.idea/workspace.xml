@@ -4,8 +4,15 @@
     <list default="true" id="62f8675e-a32c-462e-9970-553a67054b13" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/libraries/ROS.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/ROS.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/beamer_app" beforeDir="false" afterPath="$PROJECT_DIR$/beamer_app" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/init/init.sh" beforeDir="false" afterPath="$PROJECT_DIR$/init/init.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/beam_features/core.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/beam_features/core.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/beam_features/msg.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/beam_features/msg.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/launch/perception.launch" beforeDir="false" afterPath="$PROJECT_DIR$/launch/perception.launch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.xml" beforeDir="false" afterPath="$PROJECT_DIR$/package.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pkg/bridge/decode.go" beforeDir="false" afterPath="$PROJECT_DIR$/pkg/bridge/decode.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/features_beams.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/features_beams.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,6 +71,22 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
+  <component name="RunManager">
+    <configuration name="go build beamer_app.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="perception" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/cmd/beamer/beamer_app.go" />
+      <package value="github.com/gwaxG/robot_ws/perception" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build beamer_app.go" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
@@ -82,5 +105,16 @@
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/features_beams.py</url>
+          <line>3</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
