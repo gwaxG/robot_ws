@@ -19,6 +19,9 @@ In case of a scenario launch:
   
   `roslaunh launch_scenario deploy.launch`.
 
+## Build:  
+This work space uses both Python and Go, therefore a python tool to build Go packages is provided.  
+Launch `python build.py` and all nested Go targets located in `cmd` folders will be built and placed into package `bin` folders.
 
 ## Packages:
 ***
@@ -30,4 +33,8 @@ Gazebo environment flat/multi-floor simulation and robot spawning accordingly to
 ***
 ### control
 Real/simulated robot control package.
+### perception
+Feature extraction from the RGBD image.
+### monitor
+Task progress and criteria observer.
 ***
