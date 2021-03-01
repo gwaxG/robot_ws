@@ -1,0 +1,11 @@
+string  experiment
+int32   seq
+string  sensors
+bool    arm
+bool    angular
+float32 progress
+float32 reward
+float32 cog_deviation
+float32 cog_height
+---
+bool    received

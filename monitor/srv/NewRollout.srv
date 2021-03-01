@@ -1,0 +1,7 @@
+string  experiment
+int32   seq
+string  sensors
+bool    arm
+bool    angular
+---
+bool    received
