@@ -6,13 +6,15 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/std_srvs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
-	"github.com/gwaxG/robot_ws/simulation/pkg/structs"
+	simStructs "github.com/gwaxG/robot_ws/simulation/pkg/structs"
 	"log"
 )
 
 type ROS struct {
 	node         	*goroslib.Node
 	addToBackend 	*goroslib.ServiceClient
+	goalInfo	 	*goroslib.ServiceClient
+	stairInfo	 	*goroslib.ServiceClient
 	newRollout	 	*goroslib.ServiceProvider
 	startNewRollout	*goroslib.ServiceProvider
 	stepReturn		*goroslib.ServiceProvider
@@ -84,8 +86,14 @@ func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, o
 	//
 	r.goalInfo, err = goroslib.NewServiceClient(goroslib.ServiceClientConf{
 		Node: r.node,
-		Name: "analytics",
-		Srv:  &structs.GoalInfo{},
+		Name: "goal_info",
+		Srv:  &simStructs.GoalInfo{},
+	})
+	FailOnError(err)
+	r.stairInfo, err = goroslib.NewServiceClient(goroslib.ServiceClientConf{
+		Node: r.node,
+		Name: "stair_info",
+		Srv:  &simStructs.StairInfo{},
 	})
 	FailOnError(err)
 }

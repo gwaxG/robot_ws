@@ -18,9 +18,10 @@ github.com/go-git/go-billy/v5 v5.0.0/go.mod h1:pmpqyWchKfYfrkb/UVH4otLvyi/5gJlGI
 github.com/go-git/go-git-fixtures/v4 v4.0.2-0.20200613231340-f56387b50c12/go.mod h1:m+ICp2rF3jDhFgEZ/8yziagdT1C+ZpZcrJjappBCDSw=
 github.com/go-git/go-git/v5 v5.2.0/go.mod h1:kh02eMX+wdqqxgNMEyq8YgwlIOsDOa9homkUq1PoTMs=
 github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
-github.com/gwaxG/robot_ws v0.0.0-20210301094707-767445a39183 h1:qbHfb9F5ggszaL426QBK+XVRLR0l6uJ7P6Pz+I/OrrI=
 github.com/gwaxG/robot_ws/control v0.0.0-20210301094707-767445a39183 h1:9y7Z/bX9WyFoAn9ECQax/1FwtGtpfYchT3nYczlJE4I=
 github.com/gwaxG/robot_ws/control v0.0.0-20210301094707-767445a39183/go.mod h1:1HVgofxblg61YfeX7/ZkXqhZ3wXqaMnvjsKt5fSq3Pc=
+github.com/gwaxG/robot_ws/simulation v0.0.0-20210301234102-593e56668930 h1:f18N4OnUpeQ2bdfpK8lbNndF1Iy+y6SiM4h5LZL3RhU=
+github.com/gwaxG/robot_ws/simulation v0.0.0-20210301234102-593e56668930/go.mod h1:6D4HF6ysmJCwJi/sUI/JxvxBj0LIx8wrGgr5UVjy1pg=
 github.com/imdario/mergo v0.3.9/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
