@@ -20,10 +20,7 @@
     <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1  /world /map 100" />
     <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 /map /odom 100" />
 
-
     <node name="env_gen_services" pkg="simulation" type="env_gen_services.py" output="screen"/>
     <node name="robot_spawn_service" pkg="simulation" type="robot_spawn_service.py" output="screen"/>
-    <node name="odometry" pkg="simulation" type="odometry.py"  output="screen"/>
-    <node name="arm_coupling" pkg="simulation" type="arm_coupling.py"  output="screen"/>
 
 </launch>

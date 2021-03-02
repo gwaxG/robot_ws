@@ -4,6 +4,7 @@
 import rospy
 from representation import Env
 import render
+import time
 from simulation.srv import EnvGen, EnvGenResponse
 from simulation.srv import GoalInfo, GoalInfoResponse
 from simulation.srv import StairInfo, StairInfoResponse
@@ -11,6 +12,8 @@ import render
 
 class EnvGenerator:
     def __init__(self):
+        # Wait time to prevent node crashing
+        time.sleep(1)
         rospy.init_node('env_gen_services')
         self.env = Env()
         s = rospy.Service('env_gen', EnvGen, self.router)
