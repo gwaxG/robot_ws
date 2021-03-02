@@ -51,8 +51,8 @@ type Analytics struct {
 //-----------------------------
 type NewRolloutReq struct {
 	Experiment  	string
-	Sensors 		string
 	Seq 			int32
+	Sensors 		string
 	Arm				bool
 	Angular			bool
 }
@@ -63,8 +63,8 @@ type NewRolloutRes struct {
 
 type NewRollout struct {
 	msg.Package `ros:"monitor"`
-	AnalyticsReq
-	AnalyticsRes
+	NewRolloutReq
+	NewRolloutRes
 }
 
 //-----------------------------

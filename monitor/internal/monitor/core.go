@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"fmt"
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/simulation_structs"
@@ -19,13 +20,13 @@ type Core struct {
 	initCh			chan bool
 	robotState		state.State
 	robotPose		nav_msgs.Odometry
-	goal			*simulation_structs.GoalInfoRes
+	goal			simulation_structs.GoalInfoRes
 }
 
 func (c *Core) Init() {
 	c.rolloutState = structs.RolloutState{}
 	c.ros = ROS{}
-	c.goal = nil
+	c.goal = simulation_structs.GoalInfoRes{}
 	c.robotStateCh = make(chan state.State)
 	c.robotState = state.State{}
 	c.robotPose = nav_msgs.Odometry{}
@@ -50,30 +51,42 @@ func (c *Core) Start () {
 // Be sure to, first, wait untill the robot is spawned at a new location!
 // After that you can call create a new rollout e.g. call "new_rollout".
 func (c *Core) PreRolloutInit() {
+	fmt.Println("Prerollout", c.goal)
 	// update goal
-	c.ros.goalInfo.Call(&simulation_structs.GoalInfoReq{}, c.goal)
+	c.ros.goalInfo.Call(&simulation_structs.GoalInfoReq{}, &c.goal)
+	fmt.Println("Prerollout1", c.goal)
 	// update closest distance
 	c.rolloutState.Closest = c.GetDistance()
+	fmt.Println("Prerollout2")
 	c.rolloutState.MaximumDist = c.GetDistance()
+	fmt.Println("Prerollout3")
 }
 
 func (c *Core) Estimate() {
-	log.Println("State ", c.robotState)
-	log.Println("State ", c.robotPose)
+	fmt.Println("Estimate")
+	// log.Println("State ", c.robotState)
+	// log.Println("Robot pose ", c.robotPose)
+	// log.Println("Rollout state ", c.rolloutState)
 	if c.rolloutState.Started && !c.rolloutState.Done {
-		log.Println("It was started")
 		dist := c.GetDistance()
+		fmt.Println("STARTED goal robot dist", dist)
 		if dist < c.rolloutState.Closest {
+			fmt.Println("CLOSER")
 			diff := (c.rolloutState.Closest - dist) / c.rolloutState.MaximumDist
 			c.rolloutState.Progress += diff
 			c.rolloutState.Reward += diff
 			c.rolloutState.StepReward += diff
+			c.rolloutState.Closest = dist
+			if dist < 0.3 {
+				c.rolloutState.Done = true
+			}
 		}
 	}
 	if c.rolloutState.Done && !c.rolloutState.Published {
+		log.Println("ENDED")
 		c.ros.SendToBackend()
 		c.rolloutState.Published = true
-		c.goal = nil
+		c.goal = simulation_structs.GoalInfoRes{}
 	}
 }
 
