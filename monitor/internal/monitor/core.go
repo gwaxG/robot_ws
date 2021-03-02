@@ -1,19 +1,15 @@
 package monitor
 
 import (
-	"fmt"
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/simulation_structs"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
-	"log"
 	"math"
 )
 
-
-
 type Core struct {
-	rolloutState 			structs.RolloutState
+	rolloutState 	structs.RolloutState
 	ros 			ROS
 	robotStateCh	chan state.State
 	odometryCh		chan nav_msgs.Odometry
@@ -51,27 +47,20 @@ func (c *Core) Start () {
 // Be sure to, first, wait untill the robot is spawned at a new location!
 // After that you can call create a new rollout e.g. call "new_rollout".
 func (c *Core) PreRolloutInit() {
-	fmt.Println("Prerollout", c.goal)
 	// update goal
 	c.ros.goalInfo.Call(&simulation_structs.GoalInfoReq{}, &c.goal)
-	fmt.Println("Prerollout1", c.goal)
 	// update closest distance
 	c.rolloutState.Closest = c.GetDistance()
-	fmt.Println("Prerollout2")
 	c.rolloutState.MaximumDist = c.GetDistance()
-	fmt.Println("Prerollout3")
 }
 
 func (c *Core) Estimate() {
-	fmt.Println("Estimate")
 	// log.Println("State ", c.robotState)
 	// log.Println("Robot pose ", c.robotPose)
 	// log.Println("Rollout state ", c.rolloutState)
 	if c.rolloutState.Started && !c.rolloutState.Done {
 		dist := c.GetDistance()
-		fmt.Println("STARTED goal robot dist", dist)
-		if dist < c.rolloutState.Closest {
-			fmt.Println("CLOSER")
+		if c.rolloutState.Closest - dist > 0.01{
 			diff := (c.rolloutState.Closest - dist) / c.rolloutState.MaximumDist
 			c.rolloutState.Progress += diff
 			c.rolloutState.Reward += diff
@@ -83,7 +72,6 @@ func (c *Core) Estimate() {
 		}
 	}
 	if c.rolloutState.Done && !c.rolloutState.Published {
-		log.Println("ENDED")
 		c.ros.SendToBackend()
 		c.rolloutState.Published = true
 		c.goal = simulation_structs.GoalInfoRes{}

@@ -1,9 +1,11 @@
 package monitor
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_srvs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
@@ -13,7 +15,7 @@ import (
 
 type ROS struct {
 	node         	*goroslib.Node
-	addToBackend 	*goroslib.ServiceClient
+	addToBackend 	*goroslib.Publisher
 	goalInfo	 	*goroslib.ServiceClient
 	stairInfo	 	*goroslib.ServiceClient
 	newRollout	 	*goroslib.ServiceProvider
@@ -41,10 +43,10 @@ func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, o
 	FailOnError(err)
 	/* Communication infrastructure */
 	// Send to backend client
-	r.addToBackend, err = goroslib.NewServiceClient(goroslib.ServiceClientConf{
-		Node: r.node,
-		Name: "analytics/rollout",
-		Srv:  &structs.Analytics{},
+	r.addToBackend, err = goroslib.NewPublisher(goroslib.PublisherConf{
+		Node:  r.node,
+		Topic: "/analytics/rollout",
+		Msg:   &std_msgs.String{},
 	})
 	FailOnError(err)
 	// New rollout service
@@ -102,12 +104,10 @@ func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, o
 }
 
 func (r *ROS) onOdometry(odom *nav_msgs.Odometry) {
-	fmt.Println("odometry received")
 	r.odometryCh <- *odom
 }
 
 func (r *ROS) onRobotState(robotState *state.State) {
-	fmt.Println("robot state received")
 	r.robotStateCh <- *robotState
 }
 func onNewRollout(_ *structs.NewRolloutReq) *structs.NewRolloutRes{
@@ -140,14 +140,12 @@ func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes{
 
 // Reset the rollout state
 func (r *ROS) onStartNewRollout(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes{
-	log.Println("Start new rollout call")
 	r.rolloutState.Started = true
 	return &std_srvs.TriggerRes{Success: true, Message: ""}
 }
 
 // Handler of the StepReturn service
 func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes{
-	log.Println("Step return call")
 	msg := &structs.StepReturnRes{
 		Reward: r.rolloutState.StepReward,
 		Done:   r.rolloutState.Done,
@@ -160,8 +158,7 @@ func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes{
 
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
-	fmt.Println("TO BACKEND")
-	msg := structs.AnalyticsReq{
+	msg := structs.Analytics{
 		Experiment:   r.rolloutState.Experiment,
 		Seq:          r.rolloutState.Seq,
 		Sensors:      r.rolloutState.Sensors,
@@ -172,11 +169,10 @@ func (r *ROS) SendToBackend() {
 		CogDeviation: r.rolloutState.CogDeviation,
 		CogHeight:    r.rolloutState.CogHeight,
 	}
-	resp := structs.AnalyticsRes{}
-	log.Println("DBG2")
-
-	FailOnError(r.addToBackend.Call(msg, &resp))
-	log.Printf("Send to backed %s %d\n", r.rolloutState.Experiment, r.rolloutState.Seq)
+	encoded, _ := json.Marshal(msg)
+	r.addToBackend.Write(&std_msgs.String{
+		Data:    string(encoded),
+	})
 }
 
 func (r *ROS) Close() {

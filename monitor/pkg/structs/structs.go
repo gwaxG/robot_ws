@@ -26,7 +26,7 @@ type RolloutState struct {
 }
 
 //-----------------------------
-type AnalyticsReq struct {
+type Analytics struct {
 	Experiment  	string
 	Seq 			int32
 	Sensors 		string
@@ -36,16 +36,7 @@ type AnalyticsReq struct {
 	Reward			float32
 	CogDeviation 	float32
 	CogHeight		float32
-}
-
-type AnalyticsRes struct {
-	Received		bool
-}
-
-type Analytics struct {
-	msg.Package `ros:"monitor"`
-	AnalyticsReq
-	AnalyticsRes
+	Accidents		string
 }
 
 //-----------------------------
