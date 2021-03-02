@@ -23,10 +23,11 @@ type RolloutState struct {
 	Closest				float32
 	MaximumDist			float32
 	Published 			bool
+	Accidents			string
 }
 
 //-----------------------------
-type Analytics struct {
+type RolloutAnalytics struct {
 	Experiment  	string
 	Seq 			int32
 	Sensors 		string

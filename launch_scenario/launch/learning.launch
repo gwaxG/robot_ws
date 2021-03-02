@@ -6,6 +6,10 @@
     <arg name="gui" default="true"/>
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
+    
+    <!-- Exp. series name defines database where learning results will be stored. -->
+    <arg name="exp_series_name" default="first_tests"/>
+    <param name="exp_series_name" type="str" value="$(exp_series_name)" />
 
     <!-- Spawn world-->
     <include file="$(find simulation)/launch/simulation.launch">

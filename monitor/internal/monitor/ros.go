@@ -158,7 +158,7 @@ func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes{
 
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
-	msg := structs.Analytics{
+	msg := structs.RolloutAnalytics{
 		Experiment:   r.rolloutState.Experiment,
 		Seq:          r.rolloutState.Seq,
 		Sensors:      r.rolloutState.Sensors,
@@ -168,6 +168,7 @@ func (r *ROS) SendToBackend() {
 		Reward:       r.rolloutState.Reward,
 		CogDeviation: r.rolloutState.CogDeviation,
 		CogHeight:    r.rolloutState.CogHeight,
+		Accidents: 	  r.rolloutState.Accidents,
 	}
 	encoded, _ := json.Marshal(msg)
 	r.addToBackend.Write(&std_msgs.String{

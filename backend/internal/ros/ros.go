@@ -13,6 +13,8 @@ type Ros struct {
 	node 			*goroslib.Node
 	addAnalytics 	*goroslib.Subscriber
 	analyticsCh		chan structs.Analytics
+
+	ExpSeriesName	string
 }
 
 func (r *Ros) Init(analyticsCh chan structs.Analytics) {
@@ -28,6 +30,8 @@ func (r *Ros) Init(analyticsCh chan structs.Analytics) {
 		Topic:    "/analytics/rollout",
 		Callback: r.onAddingAnalytics,
 	})
+	common.FailOnError(err)
+	r.ExpSeriesName, err = r.node.ParamGetString("exp_series_name")
 	common.FailOnError(err)
 }
 
