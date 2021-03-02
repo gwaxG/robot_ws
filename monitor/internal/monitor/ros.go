@@ -6,7 +6,7 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/std_srvs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
-	simStructs "github.com/gwaxG/robot_ws/simulation/pkg/structs"
+	"github.com/gwaxG/robot_ws/monitor/pkg/simulation_structs"
 	"log"
 )
 
@@ -23,12 +23,14 @@ type ROS struct {
 	rolloutState 	*structs.RolloutState
 	robotStateCh	chan state.State
 	odometryCh		chan nav_msgs.Odometry
+	initCh 			chan bool
 }
 
-func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, odometryCh chan nav_msgs.Odometry){
+func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, odometryCh chan nav_msgs.Odometry, initCh chan bool){
 	r.robotStateCh	= robotStateCh
 	r.odometryCh = odometryCh
 	r.rolloutState = state
+	r.initCh = initCh
 
 	var err error
 	r.node, err = goroslib.NewNode(goroslib.NodeConf{
@@ -87,13 +89,13 @@ func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, o
 	r.goalInfo, err = goroslib.NewServiceClient(goroslib.ServiceClientConf{
 		Node: r.node,
 		Name: "goal_info",
-		Srv:  &simStructs.GoalInfo{},
+		Srv:  &simulation_structs.GoalInfo{},
 	})
 	FailOnError(err)
 	r.stairInfo, err = goroslib.NewServiceClient(goroslib.ServiceClientConf{
 		Node: r.node,
 		Name: "stair_info",
-		Srv:  &simStructs.StairInfo{},
+		Srv:  &simulation_structs.StairInfo{},
 	})
 	FailOnError(err)
 }
@@ -123,7 +125,10 @@ func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes{
 	r.rolloutState.Done = false
 	r.rolloutState.Started = false
 	r.rolloutState.Closest = 10000.0
+	r.rolloutState.MaximumDist = 0.
 	r.rolloutState.Published = false
+
+	r.initCh <- true
 	return &structs.NewRolloutRes{Received: true}
 }
 

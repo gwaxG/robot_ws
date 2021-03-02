@@ -21,6 +21,7 @@ type RolloutState struct {
 	Done 				bool
 	Started 			bool
 	Closest				float32
+	MaximumDist			float32
 	Published 			bool
 }
 
