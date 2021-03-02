@@ -11,13 +11,16 @@ The service `env_gen` works with EnvGen.srv:
 ```
 string action
 string model
+string props
 ---
 bool result
 string err
 ```
 where the action could be `generate` or `delete`, supported models are `ground_obstacles`, `stair_floor` and `floor_obstacles`. 
 The "stair_floor" model relates to the staircase with the floor.
-The field `result` indicates if generation was succesful, if `false`, the field `err` explains why.
+The field `result` indicates if generation was succesful, if `false`, the field `err` explains why.  
+The goal can be spawned through `action=generate/delete`, `model=goal` and `props=task_rand` where task could be ascent, descent or flat and rand is 0 or 1. 
+
 
 The service `stair_info` operates with StairInfo.srv:
 ```
@@ -46,5 +49,6 @@ string err
 ```
 
 where the place is `ground` or `floor`, the task is `flat`, `ascent` or `descent`, random is `0` or `1`.
+
 
 
