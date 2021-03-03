@@ -55,8 +55,8 @@ github.com/google/go-cmp v0.3.0/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/go-cmp v0.5.2 h1:X2ev0eStA3AbceY54o37/0PQ/UWqKEiiO2dKL5OPaFM=
 github.com/google/go-cmp v0.5.2/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/gwaxG/robot_ws/control v0.0.0-20210301094707-767445a39183/go.mod h1:1HVgofxblg61YfeX7/ZkXqhZ3wXqaMnvjsKt5fSq3Pc=
-github.com/gwaxG/robot_ws/monitor v0.0.0-20210302233237-3807f53ce7bf h1:NSo2PFN2j4aFkBBY6oGWex/9NDN1uuwhBfUxySeLVws=
-github.com/gwaxG/robot_ws/monitor v0.0.0-20210302233237-3807f53ce7bf/go.mod h1:98RUaNH1XBQtlyn71AA3zDEShaWpiGZixowM26ffVzk=
+github.com/gwaxG/robot_ws/monitor v0.0.0-20210303122922-c715e4bd4ed8 h1:t0ybjAXDuQ1fwZWt/IDshMaTen112pmUIQoF/V+n5Ek=
+github.com/gwaxG/robot_ws/monitor v0.0.0-20210303122922-c715e4bd4ed8/go.mod h1:98RUaNH1XBQtlyn71AA3zDEShaWpiGZixowM26ffVzk=
 github.com/gwaxG/robot_ws/simulation v0.0.0-20210301234102-593e56668930/go.mod h1:6D4HF6ysmJCwJi/sUI/JxvxBj0LIx8wrGgr5UVjy1pg=
 github.com/imdario/mergo v0.3.9/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=

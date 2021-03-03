@@ -6,6 +6,7 @@ import (
 
 //-----------------------------
 type RolloutState struct {
+	ExpSeries			string
 	Experiment  		string
 	Seq 				int32
 	Sensors 			string
@@ -28,17 +29,17 @@ type RolloutState struct {
 
 //-----------------------------
 type RolloutAnalytics struct {
-	ExpSeries  		string
-	Experiment  	string
-	Seq 			int32
-	Sensors 		string
-	Arm				bool
-	Angular			bool
-	Progress		float32
-	Reward			float32
-	CogDeviation 	float32
-	CogHeight		float32
-	Accidents		string
+	ExpSeries  		string 	`bson:"exp_series" json:"exp_series"`
+	Experiment  	string 	`bson:"experiment" json:"experiment"`
+	Seq 			int32 	`bson:"seq" json:"seq"`
+	Sensors 		string 	`bson:"Sensors" json:"Sensors"`
+	Arm				bool 	`bson:"arm" json:"arm"`
+	Angular			bool 	`bson:"angular" json:"angular"`
+	Progress		float32 `bson:"progress" json:"progress"`
+	Reward			float32 `bson:"reward" json:"reward"`
+	CogDeviation 	float32 `bson:"cog_deviation" json:"cog_deviation"`
+	CogHeight		float32 `bson:"cog_height" json:"cog_height"`
+	Accidents		string 	`bson:"accidents" json:"accidents"`
 }
 
 //-----------------------------

@@ -27,6 +27,8 @@ type ROS struct {
 	robotStateCh	chan state.State
 	odometryCh		chan nav_msgs.Odometry
 	initCh 			chan bool
+
+	expSeries		string
 }
 
 func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, odometryCh chan nav_msgs.Odometry, initCh chan bool){
@@ -101,7 +103,15 @@ func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, o
 		Srv:  &simulation_structs.StairInfo{},
 	})
 	FailOnError(err)
+
 }
+
+func (r *ROS) updateExpSeries() {
+	var err error
+	r.expSeries, err = r.node.ParamGetString("exp_series_name")
+	FailOnError(err)
+}
+
 
 func (r *ROS) onOdometry(odom *nav_msgs.Odometry) {
 	r.odometryCh <- *odom
@@ -110,12 +120,15 @@ func (r *ROS) onOdometry(odom *nav_msgs.Odometry) {
 func (r *ROS) onRobotState(robotState *state.State) {
 	r.robotStateCh <- *robotState
 }
+
 func onNewRollout(_ *structs.NewRolloutReq) *structs.NewRolloutRes{
 	return &structs.NewRolloutRes{Received: true}
 }
 
 // Assign new parameters of rollout and put its values to the there
 func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes{
+	r.updateExpSeries()
+	r.rolloutState.ExpSeries = r.expSeries
 	r.rolloutState.Experiment = req.Experiment
 	r.rolloutState.Seq = req.Seq
 	r.rolloutState.Sensors = req.Sensors
@@ -159,6 +172,7 @@ func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes{
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
 	msg := structs.RolloutAnalytics{
+		ExpSeries:    r.rolloutState.ExpSeries,
 		Experiment:   r.rolloutState.Experiment,
 		Seq:          r.rolloutState.Seq,
 		Sensors:      r.rolloutState.Sensors,

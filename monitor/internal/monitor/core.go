@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"fmt"
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/simulation_structs"
@@ -61,6 +62,7 @@ func (c *Core) Estimate() {
 	// log.Println("Rollout state ", c.rolloutState)
 	if c.rolloutState.Started && !c.rolloutState.Done {
 		dist := c.GetDistance()
+		fmt.Printf("Distance %f\n", dist)
 		if c.rolloutState.Closest - dist > 0.01{
 			diff := (c.rolloutState.Closest - dist) / (c.rolloutState.MaximumDist - extRadius)
 			c.rolloutState.Progress += diff

@@ -6,6 +6,7 @@ import (
 	"github.com/gwaxG/robot_ws/backend/internal/database"
 	"github.com/gwaxG/robot_ws/backend/internal/ros"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
+	"log"
 )
 
 type Core struct {
@@ -19,17 +20,24 @@ func (c *Core) Init() {
 	c.ros = ros.Ros{}
 	c.ros.Init(c.analyticsCh)
 	c.database = database.DataBase{}
-	c.database.Init(c.ros.ExpSeriesName)
+	c.database.Init()
 }
 
 func (c *Core) Start() {
-	var (
-		analytics structs.RolloutAnalytics
-	)
+	// Closing connections on error
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recovered in Core.Start()", r)
+			c.Close()
+		}
+	}()
+
+	var analytics structs.RolloutAnalytics
+
 	for {
 		select {
 			case analytics = <- c.analyticsCh:
-				c.database.AddNewRolloutAnalytics(analytics)
+				go c.database.AddNewRolloutAnalytics(analytics)
 		}
 	}
 }
