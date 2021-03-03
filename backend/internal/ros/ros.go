@@ -12,12 +12,12 @@ import (
 type Ros struct {
 	node 			*goroslib.Node
 	addAnalytics 	*goroslib.Subscriber
-	analyticsCh		chan structs.Analytics
+	analyticsCh		chan structs.RolloutAnalytics
 
 	ExpSeriesName	string
 }
 
-func (r *Ros) Init(analyticsCh chan structs.Analytics) {
+func (r *Ros) Init(analyticsCh chan structs.RolloutAnalytics) {
 	r.analyticsCh = analyticsCh
 	var err error
 	r.node, err = goroslib.NewNode(goroslib.NodeConf{
@@ -36,7 +36,7 @@ func (r *Ros) Init(analyticsCh chan structs.Analytics) {
 }
 
 func (r *Ros) onAddingAnalytics(msg *std_msgs.String) {
-	var analytics structs.Analytics
+	var analytics structs.RolloutAnalytics
 	common.FailOnError(json.Unmarshal([]byte(msg.Data), &analytics))
 	fmt.Println("Received rollout analytics", analytics)
 	r.analyticsCh <- analytics

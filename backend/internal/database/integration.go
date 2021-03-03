@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const _DBAddr = "mongodb://localhost:27017"
+
 type DataBase struct {
 	client  		*mongo.Client
 	ExpSeriesName	string
@@ -18,7 +20,7 @@ type DataBase struct {
 func (db *DataBase) Init (ExpSeriesName string) {
 	db.ExpSeriesName = ExpSeriesName
 	var err error
-	db.client, err = mongo.NewClient(options.Client().ApplyURI("<ATLAS_URI_HERE>"))
+	db.client, err = mongo.NewClient(options.Client().ApplyURI(_DBAddr))
 	common.FailOnError(err)
 }
 
@@ -27,7 +29,7 @@ func (db *DataBase) getContext () context.Context{
 	return ctx
 }
 
-func (db *DataBase) addNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
+func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
 	ctx := db.getContext()
 	err := db.client.Connect(ctx)
 	common.FailOnError(err)
@@ -46,4 +48,7 @@ func (db *DataBase) addNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
 		{Key: "accidents", Value: analytics.Accidents},
 	})
 	common.FailOnError(err)
+}
+
+func (db *DataBase) Close() {
 }

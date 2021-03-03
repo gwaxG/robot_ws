@@ -1,23 +1,21 @@
 package core
 
 import (
-	"fmt"
-	"github.com/aler9/goroslib"
-	"github.com/gwaxG/robot_ws/backend/internal/common"
+	_ "github.com/aler9/goroslib"
+	_ "github.com/gwaxG/robot_ws/backend/internal/common"
 	"github.com/gwaxG/robot_ws/backend/internal/database"
 	"github.com/gwaxG/robot_ws/backend/internal/ros"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
-
 )
 
 type Core struct {
 	ros			ros.Ros
 	database	database.DataBase
-	analyticsCh	chan structs.Analytics
+	analyticsCh	chan structs.RolloutAnalytics
 }
 
 func (c *Core) Init() {
-	c.analyticsCh = make(chan structs.Analytics)
+	c.analyticsCh = make(chan structs.RolloutAnalytics)
 	c.ros = ros.Ros{}
 	c.ros.Init(c.analyticsCh)
 	c.database = database.DataBase{}
@@ -26,18 +24,14 @@ func (c *Core) Init() {
 
 func (c *Core) Start() {
 	var (
-		analytics structs.Analytics
+		analytics structs.RolloutAnalytics
 	)
 	for {
 		select {
 			case analytics = <- c.analyticsCh:
-				c.RegisterRollout(analytics)
+				c.database.AddNewRolloutAnalytics(analytics)
 		}
 	}
-}
-
-func (c *Core) RegisterRollout(analytics structs.Analytics) {
-		fmt.Println("Registering", analytics)
 }
 
 func (c *Core) Close() {

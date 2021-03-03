@@ -55,18 +55,19 @@ func (c *Core) PreRolloutInit() {
 }
 
 func (c *Core) Estimate() {
+	var extRadius float32 = 0.3
 	// log.Println("State ", c.robotState)
 	// log.Println("Robot pose ", c.robotPose)
 	// log.Println("Rollout state ", c.rolloutState)
 	if c.rolloutState.Started && !c.rolloutState.Done {
 		dist := c.GetDistance()
 		if c.rolloutState.Closest - dist > 0.01{
-			diff := (c.rolloutState.Closest - dist) / c.rolloutState.MaximumDist
+			diff := (c.rolloutState.Closest - dist) / (c.rolloutState.MaximumDist - extRadius)
 			c.rolloutState.Progress += diff
 			c.rolloutState.Reward += diff
 			c.rolloutState.StepReward += diff
 			c.rolloutState.Closest = dist
-			if dist < 0.3 {
+			if dist < extRadius {
 				c.rolloutState.Done = true
 			}
 		}
