@@ -2,53 +2,59 @@ package database
 
 import (
 	"context"
+	"github.com/fatih/color"
 	"github.com/gwaxG/robot_ws/backend/internal/common"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
+	"log"
 )
 
 const _DBAddr = "mongodb://localhost:27017"
 
 type DataBase struct {
 	client  		*mongo.Client
+	database		*mongo.Database
+	collection 		*mongo.Collection
 	ExpSeriesName	string
+	CollectionName	string
 }
 
-func (db *DataBase) Init (ExpSeriesName string) {
-	db.ExpSeriesName = ExpSeriesName
+func (db *DataBase) Init () {
 	var err error
-	db.client, err = mongo.NewClient(options.Client().ApplyURI(_DBAddr))
-	common.FailOnError(err)
+	db.client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
+	if err == nil {
+		color.Green("Connected to MongoDB")
+	} else {
+		color.Red("Check if `sudo systemctl start mongod` was executed")
+		common.FailOnError(err)
+	}
 }
 
-func (db *DataBase) getContext () context.Context{
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	return ctx
+func (db *DataBase) changeDatabase (databaseName string) {
+	db.database = db.client.Database(databaseName)
+}
+
+func (db *DataBase) changeCollection (collectionName string) {
+	db.collection = db.database.Collection(collectionName)
+}
+
+func (db *DataBase) check (analytics *structs.RolloutAnalytics) {
+	dbName := analytics.Experiment
+	collName := analytics.Exp
+	if db.database == nil {
+
+	}
+
 }
 
 func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
-	ctx := db.getContext()
-	err := db.client.Connect(ctx)
-	common.FailOnError(err)
-	defer db.client.Disconnect(ctx)
-	experimentSeries := db.client.Database(db.ExpSeriesName)
-	experimentCollection := experimentSeries.Collection(analytics.Experiment)
-	_, err = experimentCollection.InsertOne(ctx, bson.D{
-		{Key: "seq", Value: analytics.Seq},
-		{Key: "sensors", Value: analytics.Sensors},
-		{Key: "arm", Value: analytics.Arm},
-		{Key: "angular", Value: analytics.Angular},
-		{Key: "progress", Value: analytics.Progress},
-		{Key: "reward", Value: analytics.Reward},
-		{Key: "cog_deviation", Value: analytics.CogDeviation},
-		{Key: "cog_height", Value: analytics.CogHeight},
-		{Key: "accidents", Value: analytics.Accidents},
-	})
+	db.check(&analytics)
+	insertResult, err := db.collection.InsertOne(context.TODO(), analytics)
+	log.Println("Inserted a single rollout: ", insertResult.InsertedID)
 	common.FailOnError(err)
 }
 
 func (db *DataBase) Close() {
+	db.client.Disconnect(context.TODO())
 }

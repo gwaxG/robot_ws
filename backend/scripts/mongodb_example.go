@@ -3,15 +3,15 @@ package main
 import (
     "context"
     "fmt"
+    "go.mongodb.org/mongo-driver/bson"
+    "github.com/fatih/color"
     // "time"
 
-    "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
     // "go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// You will be using this Trainer type later in the program
 type Trainer struct {
     Name string
     Age  int
@@ -25,30 +25,33 @@ type TrainerE struct {
     Cmt  string
 }
 
-
 func play(){
-    client, _ := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
+    client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
+    if err == nil {
+        color.Green("Connected to MongoDB!")
+    }
     defer client.Disconnect(context.TODO())
-    _ = client.Ping(context.TODO(), nil)
+    err = client.Ping(context.TODO(), nil)
+    if err == nil {
+        color.Green("MongoDB pinged")
+    }
 
     collection := client.Database("test").Collection("trainers")
     
-    /* Create
+    /* Create*/
     
     ash := Trainer{"Ash", 10, "Pallet Town"}
     insertResult, _ := collection.InsertOne(context.TODO(), ash)
     fmt.Println("Inserted a single document: ", insertResult.InsertedID)
     misty := Trainer{"Misty", 10, "Cerulean City"}
-    brock := Trainer{"Brock", 15, "Pewter City"}    
-
-    
+    brock := Trainer{"Brock", 15, "Pewter City"}
 
     trainers := []interface{}{misty, brock}
     insertManyResult, _ := collection.InsertMany(context.TODO(), trainers)
     fmt.Println("Inserted multiple documents: ", insertManyResult.InsertedIDs) 
     te := TrainerE{"Ash", 10, "Pallet Town", "example"}
     insertResult, _ = collection.InsertOne(context.TODO(), te)
-    fmt.Println("Inserted a single document: ", insertResult.InsertedID)*/
+    fmt.Println("Inserted a single document: ", insertResult.InsertedID)
 
     /* Update 
     
@@ -63,12 +66,12 @@ func play(){
     fmt.Println(updateResult)
     */
     
-    /* Read single
+    /* Read single*/
     
     var result Trainer
     filter := bson.D{{"name", "Ash"}}
     _ = collection.FindOne(context.TODO(), filter).Decode(&result)
-    fmt.Printf("Found a single document: %+v\n", result) */
+    fmt.Printf("Found a single document: %+v\n", result)
     
     /*Read multiple
     
@@ -90,21 +93,17 @@ func play(){
     fmt.Printf("Found multiple documents (array of pointers): %+v\n", results)
     */
     /*Delete
-    
+
     CollectionDrop to delete collection
     DeleteMany to delete multiple docs
     DeleteOne to delete one doc
 
-    Example of all bson docs delete
-    filter := bson.M{}
-    deleteResult, _ := collection.DeleteMany(context.TODO(), filter)
-    fmt.Printf("Deleted %v documents in the trainers collection\n", deleteResult.DeletedCount)
-    */    
-
+    Example of all bson docs delete in the collection*/
+    filterM := bson.M{}
+    deleteResult, _ := collection.DeleteMany(context.TODO(), filterM)
+    color.Red("Deleted %v documents in the trainers collection\n", deleteResult.DeletedCount)
 }
 
 func main() {
     play()
-
-    fmt.Println("Connected to MongoDB!")
 }

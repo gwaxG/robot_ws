@@ -28,6 +28,7 @@ type RolloutState struct {
 
 //-----------------------------
 type RolloutAnalytics struct {
+	ExpSeries  		string
 	Experiment  	string
 	Seq 			int32
 	Sensors 		string
