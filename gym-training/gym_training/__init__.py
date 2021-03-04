@@ -7,5 +7,7 @@ register(
         'arm': True,
         'angular': True,
         'sigma': 0.0,
+        'task': 'ascent',
+        'rand': False,
     }
 )
