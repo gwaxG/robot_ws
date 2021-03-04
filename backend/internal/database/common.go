@@ -4,10 +4,8 @@ import (
 	"context"
 	"github.com/fatih/color"
 	"github.com/gwaxG/robot_ws/backend/internal/common"
-	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
 	"sync"
 )
 
@@ -53,16 +51,6 @@ func (db *DataBase) check (dbName, collName string) {
 	}
 }
 
-// Append new rollout analytics to corresponding database and collection
-func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
-	db.check(analytics.ExpSeries, analytics.Experiment)
-	log.Printf("Inserting new to db %s collection %s\n",  db.database.Name(), db.collection.Name())
-	db.mutex.Lock()
-	insertResult, err := db.collection.InsertOne(context.TODO(), analytics)
-	db.mutex.Unlock()
-	common.FailOnError(err)
-	log.Println("Successfully inserted a single rollout: ", insertResult.InsertedID)
-}
 
 // Disconnect client from the DB server
 func (db *DataBase) Close() {
