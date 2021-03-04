@@ -3,6 +3,7 @@
 
 import gym
 import rospy
+import numpy as np
 from gym import spaces
 from control.msg import State
 from monitor.msg import StepReturn, StepReturnRequest
@@ -48,15 +49,37 @@ class TrainingEnv(gym.Env):
         )
 
     def get_spaces(self):
-        # TODO FINISH
-        aspace = spaces.Box(
-            np.array([-dMA, -dMA, -dMA_ARM, -dMA_ARM]),
-            np.array([dMA, dMA, dMA_ARM, dMA_ARM])
-        )
-        ospace = spaces.Box(
-            np.array([-HORIZON_X, -HORIZON_Z, -HORIZON_X, -HORIZON_Z, -MA, -MA, -ARM_ANGLE_1_MIN, -ARM_ANGLE_2_MIN]),
-            np.array([HORIZON_X, HORIZON_Z, HORIZON_X, HORIZON_Z, MA, MA, ARM_ANGLE_1_MAX, ARM_ANGLE_2_MAX])
-        )
+        ANGLE =np.pi / 4
+        dMA = np.pi / 10.0
+        VEL = 1.0
+        amin = []
+        amax = []
+        omin = []
+        omax = []
+        fmin = []
+        fmax = []
+
+        for k, v in self.active_action_fields.items():
+            if v == "linear" or v == "angular":
+                amin.append(-Vel)
+                amax.append(Vel)
+                omin.append(-VEL)
+                omax.append(VEL)
+            elif v == "front_flippers" or v == "rear_flippers" or v == "arm_joint1" or v == "arm_joint2":
+                amin.append(-dMA)
+                amax.append(dMA)
+                omin.append(-ANGLE)
+                omax.append(ANGLE)
+
+        height = rospy.get_param("feature_height")
+        width = rospy.get_param("feature_width")
+        fmin = [0.0 for i in range(height+width)]
+        fmax = [3.0 for i in range(height+width)]
+        omin += fmin
+        omax += fmax
+
+        aspace = spaces.Box(np.array(amin), np.array(amax))
+        ospace = spaces.Box(np.array(omin), np.array(omax))
         return aspace, ospace
 
     def build_action_fields(self):
@@ -144,10 +167,21 @@ class TrainingEnv(gym.Env):
             rand=self.rand,
         ))
 
+    def return_robot_to_initial_state(self):
+        self.pub_robot_cmd.publish(
+            State(
+                front_flipeprs = -self.robot_state.front_flippers,
+                rear_flippers=-self.robot_state.rear_flippers,
+                arm_joint1=-self.robot_state.arm_joint1,
+                arm_joint2=-self.robot_state.arm_joint2,
+            )
+        )
+
     def reset(self, goal=""):
         # self.enb_gen.call(EnvGenRequest(action="generate",model="goal",props=self.task + "_" + self.rand,))
         self.regenerate_obstacles()
         self.respawn_robot()
+        self.return_robot_to_initial_state()
         return self.get_transformed_state()
 
     def step(self, action):
