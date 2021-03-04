@@ -7,6 +7,8 @@ import numpy as np
 from gym import spaces
 from control.msg import State
 from monitor.msg import StepReturn, StepReturnRequest
+from monitor.msg import NewRollout, NewRolloutRequest
+from std_srvs.srv import Trigger, TriggerRequest
 from simulation.srv import RobotSpawn, RobotSpawnResponse, RobotSpawnRequest
 from simulation.srv import EnvGen, EnvGenResponse, EnvGenRequest
 from perception.msg import BeamMsg
@@ -15,12 +17,16 @@ from std_msgs.msg import String
 class TrainingEnv(gym.Env):
     ACTION_TIME = 1.0
     def __init__(self, **kwargs):
+        self.experiment = kwargs['experiment']
         self.arm_is_used = kwargs['arm']
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
+        self.seq = 0
+        # TODO it should be variable in future
+        self.sensors_info = "depth_"+str(rospy.get_param("feature_height"))+"_"+str(rospy.get_param("feature_width"))
         #####
         # linear and angular are set, other fields are incremental
         self.action = State()
@@ -37,6 +43,8 @@ class TrainingEnv(gym.Env):
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
         self.robot_spawner = rospy.ServiceProxy('robot_spawn', RobotSpawn)
         self.enb_gen = rospy.ServiceProxy('env_gen', EnvGen)
+        self.new_rollout = rospy.ServiceProxy('/rollout/new', NewRollout)
+        self.start_rollout = rospy.ServiceProxy('/rollout/start', Trigger)
         # Spaces
         self.action_space, self.observation_space = self.get_spaces()
         #
@@ -178,10 +186,21 @@ class TrainingEnv(gym.Env):
         )
 
     def reset(self, goal=""):
+        self.seq += 1
         # self.enb_gen.call(EnvGenRequest(action="generate",model="goal",props=self.task + "_" + self.rand,))
+        self.new_rollout.call(
+            NewRolloutRequest(
+                experiment=self.experiment,
+                seq=self.seq,
+                sensors=self.sensors_info,
+                angular=self.angular_is_used,
+                arm = self.arm_is_used,
+            )
+        )
         self.regenerate_obstacles()
         self.respawn_robot()
         self.return_robot_to_initial_state()
+        self.start_rollout.call(TriggerRequest())
         return self.get_transformed_state()
 
     def step(self, action):
