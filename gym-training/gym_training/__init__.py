@@ -7,6 +7,7 @@ register(
         'experiment': "not_defined",
         'arm': True,
         'angular': True,
+        'time_step_limit': 50,
         'sigma': 0.0,
         'task': 'ascent',
         'rand': False,

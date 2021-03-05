@@ -50,12 +50,13 @@ func calcMean(values []float32) float32 {
 func (c *Core) handleSlice(isHeight bool, img *bridge.Image, dst *[]float32, wg *sync.WaitGroup){
 	defer wg.Done()
 	var (
-		step   uint32
-		center uint32
-		beam   = []float32{}
+		step  		float32
+		index 		uint32 = 1
+		center 		uint32
+		beam   		= []float32{}
 	)
 	if isHeight {
-		step = uint32(float32(img.Height) / float32(c.HeightFeatNum))
+		step = float32(img.Height) / float32(c.HeightFeatNum)
 		center = img.Width/2
 		for sliceN:=0; uint32(sliceN)< img.Height; sliceN++ {
 			for pixelN:=center-uint32(c.BandWidth/2); pixelN<center+uint32(c.BandWidth/2); pixelN++ {
@@ -63,16 +64,14 @@ func (c *Core) handleSlice(isHeight bool, img *bridge.Image, dst *[]float32, wg 
 					beam = append(beam, img.Rows[sliceN][pixelN])
 				}
 			}
-			if uint32(sliceN) % step == 0 {
+			if float32(sliceN) > step * float32(index) {
 				*dst = append(*dst, calcMean(beam))
 				beam = nil
+				index++
 			}
 		}
-		if beam != nil {
-			*dst = append(*dst, calcMean(beam))
-		}
 	} else {
-		step = uint32(float32(img.Width) / float32(c.WidthFeatNum))
+		step = float32(img.Width) / float32(c.WidthFeatNum)
 		center = img.Height/2
 		for sliceN:=0; uint32(sliceN)< img.Width; sliceN++ {
 			for pixelN:=center-uint32(c.BandWidth/2); pixelN<center+uint32(c.BandWidth/2); pixelN++ {
@@ -80,15 +79,14 @@ func (c *Core) handleSlice(isHeight bool, img *bridge.Image, dst *[]float32, wg 
 					beam = append(beam, img.Rows[pixelN][sliceN])
 				}
 			}
-			if uint32(sliceN) % step == 0 {
+			if float32(sliceN) > step * float32(index) {
 				*dst = append(*dst, calcMean(beam))
 				beam = nil
+				index++
 			}
 		}
-		if beam != nil {
-			*dst = append(*dst, calcMean(beam))
-		}
 	}
+	*dst = append(*dst, calcMean(beam))
 }
 
 func (c *Core) Handle(img *sensor_msgs.Image) {
@@ -99,11 +97,9 @@ func (c *Core) Handle(img *sensor_msgs.Image) {
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-
-	go c.handleSlice(false, decoded, &beamsWidth, &wg)
 	go c.handleSlice(true, decoded, &beamsHeight, &wg)
+	go c.handleSlice(false, decoded, &beamsWidth, &wg)
 	wg.Wait()
 
-	beamsHeight = append(beamsHeight, beamsWidth...)
 	c.ros.Publish(beamsHeight, beamsWidth, img.Header.FrameId)
 }

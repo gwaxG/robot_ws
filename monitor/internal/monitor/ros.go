@@ -27,15 +27,17 @@ type ROS struct {
 	robotStateCh	chan state.State
 	odometryCh		chan nav_msgs.Odometry
 	initCh 			chan bool
+	stepReqCh 	chan bool
 
 	expSeries		string
 }
 
-func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, odometryCh chan nav_msgs.Odometry, initCh chan bool){
+func (r *ROS) Init(state *structs.RolloutState, robotStateCh chan state.State, odometryCh chan nav_msgs.Odometry, initCh, stepCh chan bool){
 	r.robotStateCh	= robotStateCh
 	r.odometryCh = odometryCh
 	r.rolloutState = state
 	r.initCh = initCh
+	r.stepReqCh = stepCh
 	fmt.Println("ROS init")
 	var err error
 	r.node, err = goroslib.NewNode(goroslib.NodeConf{
@@ -112,7 +114,6 @@ func (r *ROS) updateExpSeries() {
 	FailOnError(err)
 }
 
-
 func (r *ROS) onOdometry(odom *nav_msgs.Odometry) {
 	r.odometryCh <- *odom
 }
@@ -121,12 +122,13 @@ func (r *ROS) onRobotState(robotState *state.State) {
 	r.robotStateCh <- *robotState
 }
 
-func onNewRollout(_ *structs.NewRolloutReq) *structs.NewRolloutRes{
-	return &structs.NewRolloutRes{Received: true}
-}
+// func on_NewRollout(_ *structs.NewRolloutReq) *structs.NewRolloutRes{
+// 	return &structs.NewRolloutRes{Received: true}
+// }
 
 // Assign new parameters of rollout and put its values to the there
 func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes{
+	log.Println("NEW ROLLOUT", req)
 	r.updateExpSeries()
 	r.rolloutState.ExpSeries = r.expSeries
 	r.rolloutState.Experiment = req.Experiment
@@ -134,6 +136,7 @@ func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes{
 	r.rolloutState.Sensors = req.Sensors
 	r.rolloutState.Arm = req.Arm
 	r.rolloutState.Angular = req.Angular
+	r.rolloutState.TimeStepLimit = req.TimeStepLimit
 	r.rolloutState.Progress = 0.
 	r.rolloutState.Reward = 0.
 	r.rolloutState.StepReward = 0.
@@ -146,13 +149,12 @@ func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes{
 	r.rolloutState.Closest = 10000.0
 	r.rolloutState.MaximumDist = 0.
 	r.rolloutState.Published = false
-
-	r.initCh <- true
 	return &structs.NewRolloutRes{Received: true}
 }
 
 // Reset the rollout state
 func (r *ROS) onStartNewRollout(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes{
+	r.initCh <- true
 	r.rolloutState.Started = true
 	return &std_srvs.TriggerRes{Success: true, Message: ""}
 }
@@ -163,14 +165,13 @@ func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes{
 		Reward: r.rolloutState.StepReward,
 		Done:   r.rolloutState.Done,
 	}
-	r.rolloutState.StepReward = 0
-	r.rolloutState.StepCogDeviation = 0
-	r.rolloutState.StepCogHeight = 0
+	r.stepReqCh <- true
 	return msg
 }
 
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
+	fmt.Println("sending to backend")
 	msg := structs.RolloutAnalytics{
 		ExpSeries:    r.rolloutState.ExpSeries,
 		Experiment:   r.rolloutState.Experiment,

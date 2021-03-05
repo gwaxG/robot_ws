@@ -3,11 +3,12 @@
 
 import gym
 import rospy
+from termcolor import colored
 import numpy as np
 from gym import spaces
 from control.msg import State
-from monitor.msg import StepReturn, StepReturnRequest
-from monitor.msg import NewRollout, NewRolloutRequest
+from monitor.srv import StepReturn, StepReturnRequest
+from monitor.srv import NewRollout, NewRolloutRequest
 from std_srvs.srv import Trigger, TriggerRequest
 from simulation.srv import RobotSpawn, RobotSpawnResponse, RobotSpawnRequest
 from simulation.srv import EnvGen, EnvGenResponse, EnvGenRequest
@@ -22,6 +23,7 @@ class TrainingEnv(gym.Env):
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
+        self.time_step_limit = kwargs['time_step_limit']
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
         self.seq = 0
@@ -41,20 +43,13 @@ class TrainingEnv(gym.Env):
         self.features = BeamMsg()
         # Service callers
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
-        self.robot_spawner = rospy.ServiceProxy('robot_spawn', RobotSpawn)
-        self.enb_gen = rospy.ServiceProxy('env_gen', EnvGen)
+        self.robot_spawn = rospy.ServiceProxy('robot_spawn', RobotSpawn)
+        self.env_gen = rospy.ServiceProxy('env_gen', EnvGen)
         self.new_rollout = rospy.ServiceProxy('/rollout/new', NewRollout)
         self.start_rollout = rospy.ServiceProxy('/rollout/start', Trigger)
         # Spaces
         self.action_space, self.observation_space = self.get_spaces()
-        #
-        self.enb_gen.call(
-            EnvGenRequest(
-                action="generate",
-                model="goal",
-                props=self.task + "_" + self.rand,
-            )
-        )
+
 
     def get_spaces(self):
         ANGLE =np.pi / 4
@@ -69,8 +64,8 @@ class TrainingEnv(gym.Env):
 
         for k, v in self.active_action_fields.items():
             if v == "linear" or v == "angular":
-                amin.append(-Vel)
-                amax.append(Vel)
+                amin.append(-VEL)
+                amax.append(VEL)
                 omin.append(-VEL)
                 omax.append(VEL)
             elif v == "front_flippers" or v == "rear_flippers" or v == "arm_joint1" or v == "arm_joint2":
@@ -143,20 +138,21 @@ class TrainingEnv(gym.Env):
         """
         state = []
         for k, v in self.active_action_fields.items():
-            state.append(getattr(self.robot_state), v, 0.)
+            state.append(getattr(self.robot_state, v, 0.))
         state += self.features.vertical.data
         state += self.features.horizontal.data
+
         return state
 
     def regenerate_obstacles(self):
-        self.enb_gen.call(
+        self.env_gen.call(
             EnvGenRequest(
                 action="delete",
                 model=self.obstacle,
                 props=self.task + "_" + self.rand,
             )
         )
-        self.enb_gen.call(
+        self.env_gen.call(
             EnvGenRequest(
                 action="generate",
                 model=self.obstacle,
@@ -178,28 +174,50 @@ class TrainingEnv(gym.Env):
     def return_robot_to_initial_state(self):
         self.pub_robot_cmd.publish(
             State(
-                front_flipeprs = -self.robot_state.front_flippers,
+                front_flippers = -self.robot_state.front_flippers,
                 rear_flippers=-self.robot_state.rear_flippers,
                 arm_joint1=-self.robot_state.arm_joint1,
                 arm_joint2=-self.robot_state.arm_joint2,
             )
         )
 
-    def reset(self, goal=""):
-        self.seq += 1
-        # self.enb_gen.call(EnvGenRequest(action="generate",model="goal",props=self.task + "_" + self.rand,))
+    def spawn_goal(self):
+        self.env_gen.call(
+            EnvGenRequest(
+                action="delete",
+                model="goal",
+                props=self.task + "_" + self.rand,
+            )
+        )
+        rospy.sleep(0.1)
+        self.env_gen.call(
+            EnvGenRequest(
+                action="generate",
+                model="goal",
+                props=self.task + "_" + self.rand,
+            )
+        )
+
+    def create_new_rollout(self):
         self.new_rollout.call(
             NewRolloutRequest(
                 experiment=self.experiment,
                 seq=self.seq,
+                time_step_limit=self.time_step_limit,
                 sensors=self.sensors_info,
                 angular=self.angular_is_used,
                 arm = self.arm_is_used,
             )
         )
+
+    def reset(self, goal=""):
+        # TODO CHECK SIDE OF MONITOR FOR CORRECT GOAL INFO RETRIEVAL
+        self.seq += 1
         self.regenerate_obstacles()
-        self.respawn_robot()
+        _ = self.spawn_goal()
+        self.create_new_rollout()
         self.return_robot_to_initial_state()
+        self.respawn_robot()
         self.start_rollout.call(TriggerRequest())
         return self.get_transformed_state()
 
@@ -207,7 +225,7 @@ class TrainingEnv(gym.Env):
         self.update_action(action)
         self.pub_robot_cmd.publish(self.action)
         rospy.sleep(TrainingEnv.ACTION_TIME)
-        step_return = self.step_return.call(StepReturnReq())
+        step_return = self.step_return.call(StepReturnRequest())
         reward = step_return.reward
         done = step_return.done
         return self.get_transformed_state(), reward, done, {}

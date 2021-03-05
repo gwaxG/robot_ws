@@ -1,5 +1,6 @@
 string  experiment
 int32   seq
+int32   time_step_limit
 string  sensors
 bool    arm
 bool    angular

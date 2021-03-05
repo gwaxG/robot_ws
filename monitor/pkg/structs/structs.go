@@ -12,6 +12,7 @@ type RolloutState struct {
 	Sensors 			string
 	Arm					bool
 	Angular				bool
+	TimeStepLimit 		int32
 	Progress			float32
 	Reward				float32
 	StepReward			float32
@@ -46,6 +47,7 @@ type RolloutAnalytics struct {
 type NewRolloutReq struct {
 	Experiment  	string
 	Seq 			int32
+	TimeStepLimit	int32
 	Sensors 		string
 	Arm				bool
 	Angular			bool

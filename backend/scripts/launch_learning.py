@@ -4,25 +4,13 @@
 
 from policies import *
 import os
-import numpy as np
 import argparse
-from stable_baselines3.common.vec_env import DummyVecEnv as DummyVecEnv_sb3
 from stable_baselines.common.vec_env import DummyVecEnv as DummyVecEnv_sb1
-from stable_baselines import TD3
-from stable_baselines.ddpg.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
-from stable_baselines.td3.policies import MlpPolicy as TD3sb1MlpPolicy
 from stable_baselines import PPO2 as PPO_sb1
-from stable_baselines3 import PPO as PPO_sb3
-from std_msgs.msg import String
 import rospy
 from stable_baselines.common.policies import MlpPolicy as PPO2MlpPolicy
-from stable_baselines.common.policies import MlpLnLstmPolicy
 import json
-# from policies.CustomPolicies import *
-from stable_baselines.sac.policies import MlpPolicy as SacMlpPolicy
-from stable_baselines import SAC
-from stable_baselines3 import SAC as SAC3
-from stable_baselines3.sac.policies import SACPolicy as SACPolicySB3
+from gym_training.envs.training_env import TrainingEnv
 
 class LearningOpenAI:
     def __init__(self, fname="config1.json"):
@@ -35,15 +23,18 @@ class LearningOpenAI:
         :param fname: configuration file name
         """
         self.prms = self.load_prms(fname)
+        rospy.init_node(self.prms["experiment"]+"_training_node")
         kwargs = {
             'experiment': self.prms['experiment'],
             'arm': self.prms['arm'],
             'angular': self.prms['angular'],
+            'time_step_limit': self.prms['time_step_limit'],
             'sigma': self.prms['sigma'],
             'task': self.prms['task'],
             'rand': self.prms['rand'],
         }
-        env = gym.make("TrainingEnv-v1", **kwargs)
+        # env = gym.make("TrainingEnv-v1", **kwargs)
+        env = TrainingEnv(**kwargs)
         self.env = DummyVecEnv_sb1([lambda: env])
 
         model_parameters = self.prms['model_parameters']

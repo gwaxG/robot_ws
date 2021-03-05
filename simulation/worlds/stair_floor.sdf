@@ -4,7 +4,7 @@
     <model name="stair_floor">
         <static>true</static>
         <link name="back">
-            <pose>15.29757003873586 0.0 2.454097664522850.0 0.0 0</pose>
+            <pose>14.828227745374162 0.0 2.44077139472450530.0 0.0 0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -21,7 +21,7 @@
             </visual>
         </link>
         <link name="right">
-            <pose>9.29757003873586 -5.0 2.454097664522850.0 0.0 1.5707963267948966</pose>
+            <pose>8.828227745374162 -5.0 2.44077139472450530.0 0.0 1.5707963267948966</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -38,7 +38,7 @@
             </visual>
         </link>
         <link name="left">
-            <pose>9.29757003873586 5.0 2.454097664522850.0 0.0 1.5707963267948966</pose>
+            <pose>8.828227745374162 5.0 2.44077139472450530.0 0.0 1.5707963267948966</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -55,7 +55,7 @@
             </visual>
         </link>
         <link name="front_right">
-            <pose>3.29757003873586 -3.0 2.454097664522850.0 0.0 0</pose>
+            <pose>2.8282277453741624 -3.0 2.44077139472450530.0 0.0 0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -72,7 +72,7 @@
             </visual>
         </link>
         <link name="front_left">
-            <pose>3.29757003873586 3.0 2.454097664522850.0 0.0 0</pose>
+            <pose>2.8282277453741624 3.0 2.44077139472450530.0 0.0 0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -89,41 +89,41 @@
             </visual>
         </link>
         <link name="side_left">
-            <pose>1.64878501936793 1.0 1.7270488322614250.0 0.0 1.5707963267948966</pose>
+            <pose>1.4141138726870812 1.0 1.72038569736225270.0 0.0 1.5707963267948966</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.01 3.29757003873586 3.45409766452285</size>
+                        <size>0.01 2.8282277453741624 3.4407713947245053</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.01 3.29757003873586 3.45409766452285</size>
+                        <size>0.01 2.8282277453741624 3.4407713947245053</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="side_right">
-            <pose>1.64878501936793 -1.0 1.7270488322614250.0 0.0 1.5707963267948966</pose>
+            <pose>1.4141138726870812 -1.0 1.72038569736225270.0 0.0 1.5707963267948966</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.01 3.29757003873586 3.45409766452285</size>
+                        <size>0.01 2.8282277453741624 3.4407713947245053</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.01 3.29757003873586 3.45409766452285</size>
+                        <size>0.01 2.8282277453741624 3.4407713947245053</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="floor">
-            <pose>9.29757003873586 0.0 1.44909766452285020.0 0.0 0.0</pose>
+            <pose>8.828227745374162 0.0 1.43577139472450570.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -140,120 +140,137 @@
             </visual>
         </link>
         <link name="step_0">
-            <pose>0.23554071705256144 0.0 0.10386411889448930.0 0.0 0.0</pose>
+            <pose>0.17676423408588515 0.0 0.09004821217028160.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="step_1">
-            <pose>0.7066221511576843 0.0 0.311592356683467850.0 0.0 0.0</pose>
+            <pose>0.5302927022576555 0.0 0.27014463651084480.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="step_2">
-            <pose>1.1777035852628073 0.0 0.51932059447244650.0 0.0 0.0</pose>
+            <pose>0.8838211704294258 0.0 0.450241060851407970.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="step_3">
-            <pose>1.64878501936793 0.0 0.7270488322614250.0 0.0 0.0</pose>
+            <pose>1.237349638601196 0.0 0.63033748519197120.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="step_4">
-            <pose>2.119866453473053 0.0 0.93477707005040370.0 0.0 0.0</pose>
+            <pose>1.5908781067729665 0.0 0.81043390953253440.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="step_5">
-            <pose>2.590947887578176 0.0 1.14250530783938230.0 0.0 0.0</pose>
+            <pose>1.9444065749447366 0.0 0.99053033387309750.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="step_6">
-            <pose>3.062029321683299 0.0 1.35023354562836070.0 0.0 0.0</pose>
+            <pose>2.297935043116507 0.0 1.1706267582136610.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>0.4710814341051229 2.0 0.2077282377889786</size>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="step_7">
+            <pose>2.651463511288277 0.0 1.3507231825542240.0 0.0 0.0</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>0.3535284681717703 2.0 0.1800964243405632</size>
                     </box>
                 </geometry>
             </visual>

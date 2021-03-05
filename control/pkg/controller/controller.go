@@ -141,8 +141,6 @@ func (c *Controller) Start () {
 		if end {
 			break
 		} else {
-			log.Println("StateAction ", StateAction)
-			log.Println("Change ", Change)
 			c.publishState <- StateAction
 			c.toOutput <- []state.State{StateAction, Change}
 			if c.save != nil {
