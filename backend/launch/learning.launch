@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<launch>
+    <!--Input arguments-->
+    <arg name="paused" default="False"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+    
+    <!--Exp. series name defines database where learning results will be stored.
+        It has to be replaced manually or in the -->
+    <param name="exp_series_name" type="str" value="test_exps" />
+
+    <!-- Spawn world-->
+    <include file="$(find simulation)/launch/simulation.launch">
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+    <!-- Spawn robot-->
+    <include file="$(find simulation)/launch/spawn.launch">
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+    <!-- Start perception-->
+    <include file="$(find perception)/launch/perception.launch">
+        <arg name="debug" value="$(arg debug)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+    <!-- Nodes -->
+    <!-- Write to database -->
+    <node name="database_writer" pkg="backend" type="db_writer_app" output="screen"/>
+    <!-- Monitor progress -->
+    <node name="monitor" pkg="monitor" type="monitor_app" output="screen"/>
+    <!-- Robot control -->
+    <node name="control" pkg="control" type="control_app" output="screen"/>
+
+</launch>

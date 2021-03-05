@@ -7,6 +7,7 @@ from gazebo_msgs.msg import ModelStates
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance
+from termcolor import colored
 
 
 """
@@ -30,7 +31,11 @@ class Odom:
         else:
             self.sync_time = rospy.get_time()
         names = msg.name
-        jaguar_index = names.index("jaguar")
+        try:
+            jaguar_index = names.index("jaguar")
+        except ValueError as _:
+            print(colored('Jaguar model is not in simulation yet', 'red'))
+            return None
         pose = msg.pose[jaguar_index]
         twist = msg.twist[jaguar_index]
         self.odom_pub.publish(

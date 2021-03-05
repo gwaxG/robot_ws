@@ -17,13 +17,10 @@
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
 
-    <!-- <node name="beamer" pkg="perception" type="beamer_app"
+    <node name="beamer" pkg="perception" type="beamer_app"
       output="screen">
-    </node> -->
-
-    <!--Build and and launch go nodes-->
-    <node name="bash_init" pkg="perception" type="init.sh"
-          output="screen">
     </node>
+
+
 
 </launch>
