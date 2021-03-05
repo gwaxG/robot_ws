@@ -22,9 +22,17 @@ type Core struct {
 	goal         simulation_structs.GoalInfoRes
 	timeStep     int32
 	stepReqCh    chan bool
+	comm 		 map[string]interface{}
 }
 
 func (c *Core) Init() {
+	c.comm = make(map[string]interface{})
+	/*c.comm["NewRollout"] = r.onNewRollout
+	c.comm["StartRollout"] = r.onStartRollout
+	c.comm["StepReturn"] = r.onStepReturn
+	c.comm["RobotState"] = r.onRobotState
+	c.comm["Odometry"] = r.onOdometry */
+
 	c.rolloutState = structs.RolloutState{}
 	c.ros = ROS{}
 	c.goal = simulation_structs.GoalInfoRes{}
