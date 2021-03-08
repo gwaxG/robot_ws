@@ -5,7 +5,7 @@
   "total_timesteps": 10000,
   "save_path": "/home/r1d1/dev/catkin_ws/src/robot_ws/backend/data/models",
   "experiment": "test_exp",
-  "time_step_limit": 5,
+  "time_step_limit": 50,
   "arm": true,
   "angular": true,
   "sigma": 0.0,

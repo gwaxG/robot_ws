@@ -205,7 +205,6 @@ class TrainingEnv(gym.Env):
         )
 
     def reset(self, goal=""):
-        # TODO CHECK SIDE OF MONITOR FOR CORRECT GOAL INFO RETRIEVAL
         self.seq += 1
         self.return_robot_to_initial_state()
         self.respawn_robot()
@@ -217,11 +216,12 @@ class TrainingEnv(gym.Env):
 
     def step(self, action):
         self.update_action(action)
-        self.pub_robot_cmd.publish(self.action)
+        # self.pub_robot_cmd.publish(self.action)
         rospy.sleep(TrainingEnv.ACTION_TIME)
         step_return = self.step_return.call(StepReturnRequest())
         reward = step_return.reward
         done = step_return.done
+        print("reward", reward)
         return self.get_transformed_state(), reward, done, {}
 
     def render(self, mode='human'):

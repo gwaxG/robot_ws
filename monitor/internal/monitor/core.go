@@ -105,23 +105,24 @@ func (c *Core) Start() {
 // After that you can call create a new rollout e.g. call "new_rollout".
 func (c *Core) CheckTippingOver() {
 	roll, pitch, _ := c.getEuler()
+	accident := false
 	if roll > math.Pi/2 && !c.rolloutState.Done{
 		c.rolloutState.Accidents = "Front tipping over"
-		c.rolloutState.Done = true
-		c.rolloutState.StepReward += TippingReward
+		accident = true
 	} else if roll < -math.Pi/2 && !c.rolloutState.Done {
 		c.rolloutState.Accidents = "Rear tipping over"
-		c.rolloutState.Done = true
-		c.rolloutState.StepReward += TippingReward
+		accident = true
 	}
 	if pitch > math.Pi/2 && !c.rolloutState.Done{
 		c.rolloutState.Accidents = "Right tipping over"
-		c.rolloutState.Done = true
-		c.rolloutState.StepReward += TippingReward
 	} else if pitch < -math.Pi/2 && !c.rolloutState.Done {
 		c.rolloutState.Accidents = "Left tippîng over"
+		accident = true
+	}
+	if accident {
 		c.rolloutState.Done = true
 		c.rolloutState.StepReward += TippingReward
+		c.rolloutState.Reward += TippingReward
 	}
 }
 
@@ -140,7 +141,9 @@ func (c *Core) Estimate() {
 			c.rolloutState.Closest = dist
 		}
 	}
-	c.rolloutState.Done = c.isDone(dist)
+	if !c.rolloutState.Done {
+		c.rolloutState.Done = c.isDoneByDistance(dist)
+	}
 	if c.rolloutState.Done && !c.rolloutState.Published {
 		c.ros.SendToBackend()
 		c.rolloutState.Published = true
@@ -148,7 +151,7 @@ func (c *Core) Estimate() {
 	}
 }
 
-func (c *Core) isDone(dist float32) bool{
+func (c *Core) isDoneByDistance(dist float32) bool{
 	res := false
 	if dist < EXTRADIUS || c.timeStep >= c.rolloutState.TimeStepLimit{
 		res = true
