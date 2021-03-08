@@ -102,13 +102,16 @@ def string_pose(obj):
     else:
         return str(obj.x) + " " + str(obj.y) + " " + str(obj.z) + " 0 0 0"
 
+
 def string_size(wall):
     return str(wall.box_x) + " " + str(wall.box_y) + " " + str(wall.box_z)
+
 
 def spawn(model):
     launch_file = os.path.join(world_folder_path(), model.name+".sdf")
     subprocess.run('rosrun gazebo_ros spawn_model -file ' + launch_file + ' -sdf -model ' + model.name,
                    shell=True, check=True)
+
 
 def apply(model):
     """

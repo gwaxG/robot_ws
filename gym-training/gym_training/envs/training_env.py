@@ -44,6 +44,7 @@ class TrainingEnv(gym.Env):
         # Service callers
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
         self.robot_spawn = rospy.ServiceProxy('robot_spawn', RobotSpawn)
+        self.robot_reset = rospy.ServiceProxy('/robot/reset', Trigger)
         self.env_gen = rospy.ServiceProxy('env_gen', EnvGen)
         self.new_rollout = rospy.ServiceProxy('/rollout/new', NewRollout)
         self.start_rollout = rospy.ServiceProxy('/rollout/start', Trigger)
@@ -172,14 +173,7 @@ class TrainingEnv(gym.Env):
         ))
 
     def return_robot_to_initial_state(self):
-        self.pub_robot_cmd.publish(
-            State(
-                front_flippers = -self.robot_state.front_flippers,
-                rear_flippers=-self.robot_state.rear_flippers,
-                arm_joint1=-self.robot_state.arm_joint1,
-                arm_joint2=-self.robot_state.arm_joint2,
-            )
-        )
+        _ = self.robot_reset.call(TriggerRequest())
 
     def spawn_goal(self):
         self.env_gen.call(
@@ -213,11 +207,11 @@ class TrainingEnv(gym.Env):
     def reset(self, goal=""):
         # TODO CHECK SIDE OF MONITOR FOR CORRECT GOAL INFO RETRIEVAL
         self.seq += 1
+        self.return_robot_to_initial_state()
+        self.respawn_robot()
         self.regenerate_obstacles()
         _ = self.spawn_goal()
         self.create_new_rollout()
-        self.return_robot_to_initial_state()
-        self.respawn_robot()
         self.start_rollout.call(TriggerRequest())
         return self.get_transformed_state()
 

@@ -206,8 +206,8 @@ class StairFloor(Group):
         # steps
         step_n = random.randint(5, 10)
         length = StairFloor.min_step_length + random.random() * (StairFloor.max_step_length - StairFloor.min_step_length)
-        height = StairFloor.min_step_height + random.random() * (StairFloor.max_step_length - StairFloor.min_step_height)
-
+        height = StairFloor.min_step_height + random.random() * (StairFloor.max_step_height - StairFloor.min_step_height)
+        print("Generating staircase of parameters:", length, height)
         self.step_height = height
         self.step_length = length
         self.step_n = step_n
@@ -333,9 +333,6 @@ class StairFloor(Group):
         ]
 
 
-
-
-
 if __name__ == "__main__":
     import render
     e = Env()
@@ -347,5 +344,3 @@ if __name__ == "__main__":
     e.floor_obstacles.shift_z = e.stair_floor.shift_z
     e.floor_obstacles.generate()
     render.apply(e.floor_obstacles)
-
-

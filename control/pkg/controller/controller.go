@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/input"
 	"github.com/gwaxG/robot_ws/control/pkg/output"
@@ -121,7 +122,6 @@ func (c *Controller) Start () {
 	var set, end bool
 	var StateAction, Change state.State
 	log.Println("Controller started...")
-
 	// control workflow
 	for {
 		select {
@@ -130,6 +130,7 @@ func (c *Controller) Start () {
 		case _ = <-c.done:
 			end = true
 		case actions := <- c.fromInput:
+			fmt.Println()
 			select{
 			case <- c.keyboardUsage:
 				set = false
