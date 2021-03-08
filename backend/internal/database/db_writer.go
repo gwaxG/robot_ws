@@ -7,7 +7,6 @@ import (
 	"log"
 )
 
-
 // Append new rollout analytics to corresponding database and collection
 func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
 	db.check(analytics.ExpSeries, analytics.Experiment)

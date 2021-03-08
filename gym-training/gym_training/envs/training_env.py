@@ -16,7 +16,7 @@ from perception.msg import BeamMsg
 from std_msgs.msg import String
 
 class TrainingEnv(gym.Env):
-    ACTION_TIME = 1.0
+    ACTION_TIME = 0.25
     def __init__(self, **kwargs):
         self.experiment = kwargs['experiment']
         self.arm_is_used = kwargs['arm']
@@ -216,12 +216,11 @@ class TrainingEnv(gym.Env):
 
     def step(self, action):
         self.update_action(action)
-        # self.pub_robot_cmd.publish(self.action)
+        self.pub_robot_cmd.publish(self.action)
         rospy.sleep(TrainingEnv.ACTION_TIME)
         step_return = self.step_return.call(StepReturnRequest())
         reward = step_return.reward
         done = step_return.done
-        print("reward", reward)
         return self.get_transformed_state(), reward, done, {}
 
     def render(self, mode='human'):

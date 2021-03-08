@@ -9,7 +9,7 @@
     
     <!--Exp. series name defines database where learning results will be stored.
         It has to be replaced manually or in the -->
-    <param name="exp_series_name" type="str" value="test_exps" />
+    <param name="exp_series_name" type="str" value="first_launch" />
 
     <!-- Spawn world-->
     <include file="$(find simulation)/launch/simulation.launch">
