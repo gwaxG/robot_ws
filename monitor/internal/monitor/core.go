@@ -2,6 +2,7 @@ package monitor
 
 import "C"
 import (
+	"fmt"
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/simulation_structs"
@@ -10,6 +11,7 @@ import (
 )
 
 const EXTRADIUS float32 = 0.3
+const TippingReward float32 = -1.0
 
 type Core struct {
 	rolloutState structs.RolloutState
@@ -87,21 +89,44 @@ func (c *Core) Start() {
 	for {
 		select {
 		case c.robotState = <- c.comm["RobotState"].(chan state.State):
-			go c.Estimate()
+			go func() {
+				c.Estimate()
+			}()
 		case c.robotPose = <- c.comm["Odometry"].(chan nav_msgs.Odometry):
-			go c.Estimate()
+			go func() {
+				c.CheckTippingOver()
+				c.Estimate()
+			}()
 		}
 	}
 }
+
 // Be sure to, first, wait untill the robot is spawned at a new location!
 // After that you can call create a new rollout e.g. call "new_rollout".
-
 func (c *Core) CheckTippingOver() {
-
+	roll, pitch, _ := c.getEuler()
+	if roll > math.Pi/2 && !c.rolloutState.Done{
+		c.rolloutState.Accidents = "Front tipping over"
+		c.rolloutState.Done = true
+		c.rolloutState.StepReward += TippingReward
+	} else if roll < -math.Pi/2 && !c.rolloutState.Done {
+		c.rolloutState.Accidents = "Rear tipping over"
+		c.rolloutState.Done = true
+		c.rolloutState.StepReward += TippingReward
+	}
+	if pitch > math.Pi/2 && !c.rolloutState.Done{
+		c.rolloutState.Accidents = "Right tipping over"
+		c.rolloutState.Done = true
+		c.rolloutState.StepReward += TippingReward
+	} else if pitch < -math.Pi/2 && !c.rolloutState.Done {
+		c.rolloutState.Accidents = "Left tippîng over"
+		c.rolloutState.Done = true
+		c.rolloutState.StepReward += TippingReward
+	}
 }
 
 func (c *Core) CheckBorders() {
-
+	fmt.Println("not implemented")
 }
 
 func (c *Core) Estimate() {
@@ -122,7 +147,6 @@ func (c *Core) Estimate() {
 		c.goal = simulation_structs.GoalInfoRes{}
 	}
 }
-
 
 func (c *Core) isDone(dist float32) bool{
 	res := false
@@ -153,4 +177,18 @@ func (c *Core) GetDistance() float32 {
 	return float32(math.Pow(dist, 0.5))
 }
 
-
+func (c *Core) getEuler() (float64, float64, float64) {
+	X := c.robotPose.Pose.Pose.Orientation.X
+	Y := c.robotPose.Pose.Pose.Orientation.Y
+	Z := c.robotPose.Pose.Pose.Orientation.Z
+	W := c.robotPose.Pose.Pose.Orientation.W
+	k := math.Sqrt( W*W + X*X + Y*Y + Z*Z)
+	X = X / k
+	Y = Y / k
+	Z = Z / k
+	W = W / k
+	roll := math.Atan2(2*(W * X+Y * Z), 1-2*(X * X + Y * Y))
+	pitch := math.Asin(2 * (W * Y -  Z * X))
+	yaw := math.Atan2(2*(X * Y+W * Z), 1-2*(Y * Y + Z * Z))
+	return roll, pitch, yaw
+}
