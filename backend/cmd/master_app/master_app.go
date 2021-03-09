@@ -1,9 +1,9 @@
 package main
 
-import core "github.com/gwaxG/robot_ws/backend/internal/master"
+import "github.com/gwaxG/robot_ws/backend/internal/master"
 
 func main() {
-	app := core.Core{}
+	app := master.Server{}
 	defer app.Close()
 	app.Init()
 	app.Start()
