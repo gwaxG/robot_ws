@@ -3,6 +3,7 @@ package monitor
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
@@ -39,7 +40,7 @@ func (r *ROS) Init(state *structs.RolloutState, comm *map[string]interface{}){
 	var err error
 	r.node, err = goroslib.NewNode(goroslib.NodeConf{
 		Name:          "monitor",
-		MasterAddress: "127.0.0.1:11311",
+		MasterAddress: os.Getenv("ROS_MASTER_URI"),
 	})
 	FailOnError(err)
 	/* Communication infrastructure */

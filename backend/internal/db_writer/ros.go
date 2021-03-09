@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
-	"github.com/gwaxG/robot_ws/backend/internal/common"
+	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
+	"os"
 )
 
 type Ros struct {
@@ -20,7 +21,7 @@ func (r *Ros) Init(analyticsCh chan structs.RolloutAnalytics) {
 	var err error
 	r.node, err = goroslib.NewNode(goroslib.NodeConf{
 		Name:          "db_writer",
-		MasterAddress: "127.0.0.1:11311",
+		MasterAddress: os.Getenv("ROS_MASTER_URI"),
 	})
 	common.FailOnError(err)
 	r.addAnalytics, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
