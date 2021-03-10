@@ -83,7 +83,7 @@ func (s *Server) visualize(c *gin.Context) {
 
 // Get template algorithm configs
 func (s *Server) getConfigs(c *gin.Context) {
-	c.JSON(200, map[string]interface{}{})
+	var configs []string = s.launcher.ListConfigs()
 }
 
 // 	CRUD queue tasks.

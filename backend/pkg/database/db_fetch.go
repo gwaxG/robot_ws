@@ -78,6 +78,11 @@ type ResponseVisualize struct {
 localhost:10000/visualize?database=test_exps&collection=test_rollout&fields=reward_progress_cogheight
 */
 func (db *DataBase) FetchVisualize(dbName, collName, fieldString string) (*ResponseVisualize, error){
+	defer func (){
+		if r := recover(); r!=nil{
+
+		}
+	}()
 	msg := ResponseVisualize{
 		Data: map[string][]float64{},
 		Msg: "",
@@ -104,3 +109,5 @@ func (db *DataBase) FetchVisualize(dbName, collName, fieldString string) (*Respo
 	}
 	return &msg, nil
 }
+
+//
