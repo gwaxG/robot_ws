@@ -64,15 +64,21 @@ func (s *Server) listColls(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, nil)
 	}
-	c.JSON(200, map[string]interface{}{})
 }
 
 // Draw figures based on fields from a database collection
 func (s *Server) visualize(c *gin.Context) {
-	_ = c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
-	_ = c.Query("collection") // shortcut for c.Request.URL.Query().Get("lastname")
-	_ = c.Query("fields") // shortcut for c.Request.URL.Query().Get("lastname")
-	c.JSON(200, map[string]interface{}{})
+	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
+	collName := c.Query("collection") // shortcut for c.Request.URL.Query().Get("lastname")
+	fields := c.Query("fields") // shortcut for c.Request.URL.Query().Get("lastname")
+	data, err := s.db.FetchVisualize(dbName, collName, fields)
+	if err == nil {
+		c.JSON(200, data)
+	} else {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, nil)
+	}
+
 }
 
 // Get template algorithm configs

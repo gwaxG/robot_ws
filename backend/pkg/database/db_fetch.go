@@ -3,24 +3,14 @@ package database
 import (
 	"context"
 	"errors"
-	"fmt"
+	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"strings"
 )
 
 type ResponseDbs struct {
 	Data	[]string `json:"data"`
-	Msg		string `json:"msg"`
-}
-
-
-type Coll struct{
-	Name 	string `json:"name"`
-	Fields 	[]string `json:"fields"`
-}
-
-type ResponseColls struct {
-	Colls	[]Coll `json:"colls"`
-	Msg		string `json:"msg"`
+	Msg		string   `json:"msg"`
 }
 
 // Append new rollout analytics to corresponding database and collection
@@ -42,28 +32,75 @@ func (db *DataBase) FetchDbs() (*ResponseDbs, error){
 	return msg, nil
 }
 
+type ResponseColls struct {
+	Colls	[]string `json:"colls"`
+	Fields 	[]string `json:"fields"`
+	Msg		string 	 `json:"msg"`
+}
+
 // We guaranty that one collection has the same set of fields because one rollout corresponds to one experiment.
+// Same for databases. Convention: one database has collections where documents has same fields
 func (db *DataBase) FetchColls(dst string) (*ResponseColls, error){
-	// TODO Continue there
 	db.changeDatabase(dst)
 	collNames, err := db.database.ListCollectionNames(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, errors.New("can not fetch collection names")
 	}
-	msg := ResponseColls{
-		Colls: []Coll{},
+	msg := &ResponseColls{
+		Colls: []string{},
+		Fields: []string{},
 		Msg:  "",
 	}
-	for _, collName := range collNames {
-		fields := []string{}
-		db.changeCollection(collName)
-		//jsonStr, _ := db.collection.FindOne(context.TODO(), bson.M{}).Decode()
-		jsonMap := make(map[string]interface{})
-		// err = json.Unmarshal(jsonStr, &jsonMap)
-		fmt.Println(err)
-		fmt.Println(jsonMap)
-		coll := Coll{Name: collName, Fields: fields}
-		msg.Colls = append(msg.Colls, coll)
+	// composing array of collection names
+	for i, collName := range collNames {
+		msg.Colls = append(msg.Colls, collName)
+		// putting first collection first document field names into an array
+		if i == 0 {
+			db.changeCollection(collName)
+			doc := map[string]interface{}{}
+			common.FailOnError(db.collection.FindOne(context.TODO(), bson.M{}).Decode(&doc))
+			for k, _ := range doc {
+				if k != "_id" {
+					msg.Fields = append(msg.Fields, k)
+				}
+			}
+		}
+	}
+	return msg, nil
+}
+
+type ResponseVisualize struct {
+	Data	map[string][]float64 		`json:"data"`
+	Msg		string 	 				`json:"msg"`
+}
+
+/*
+localhost:10000/visualize?database=test_exps&collection=test_rollout&fields=reward_progress_cogheight
+*/
+func (db *DataBase) FetchVisualize(dbName, collName, fieldString string) (*ResponseVisualize, error){
+	msg := ResponseVisualize{
+		Data: map[string][]float64{},
+		Msg: "",
+	}
+	db.changeDatabase(dbName)
+	db.changeCollection(collName)
+	var fields []string = strings.Split(fieldString, "_")
+
+	for _, field := range fields {
+		msg.Data[field] = []float64{}
+	}
+
+	cursor, err := db.collection.Find(context.TODO(), bson.M{})
+	common.FailOnError(err)
+
+	var docs []bson.M
+	err = cursor.All(context.TODO(), &docs)
+	common.FailOnError(err)
+
+	for _, doc := range docs {
+		for _, field := range fields {
+			msg.Data[field] = append(msg.Data[field], doc[field].(float64))
+		}
 	}
 	return &msg, nil
 }
