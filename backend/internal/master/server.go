@@ -38,32 +38,22 @@ func (s *Server) InitAPI(){
 	s.api.GET("/dbs", s.listDbs) // +
 	s.api.GET("/colls", s.listColls) //
 	s.api.GET("/visualize", s.visualize)
-	s.api.GET("/queue", s.listQueue)
 	s.api.GET("/configs", s.getConfigs)
-	s.api.GET("/tasks", s.crudTasks)
+	s.api.GET("/queue", s.listQueue)
+	s.api.GET("/task/:config/*action", s.crudTask)
 }
 
 // List all databases
 func (s *Server) listDbs(c *gin.Context) {
 	data, err := s.db.FetchDbs()
-	if err == nil {
-		c.JSON(200, data)
-	} else {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, nil)
-	}
+	s.formJson(data, err, c)
 }
 
 // List a database collection with corresponding fields of the first entity
 func (s *Server) listColls(c *gin.Context) {
 	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
-	colls, err := s.db.FetchColls(dbName)
-	if err == nil {
-		c.JSON(200, colls)
-	} else {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, nil)
-	}
+	data, err := s.db.FetchColls(dbName)
+	s.formJson(data, err, c)
 }
 
 // Draw figures based on fields from a database collection
@@ -72,27 +62,36 @@ func (s *Server) visualize(c *gin.Context) {
 	collName := c.Query("collection") // shortcut for c.Request.URL.Query().Get("lastname")
 	fields := c.Query("fields") // shortcut for c.Request.URL.Query().Get("lastname")
 	data, err := s.db.FetchVisualize(dbName, collName, fields)
-	if err == nil {
-		c.JSON(200, data)
-	} else {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, nil)
-	}
-
+	s.formJson(data, err, c)
 }
 
 // Get template algorithm configs
 func (s *Server) getConfigs(c *gin.Context) {
-	var configs []string = s.launcher.ListConfigs()
+	data, err := s.launcher.ListConfigs()
+	s.formJson(data, err, c)
 }
 
 // 	CRUD queue tasks.
 // You can not change being executed tasks.
-func (s *Server) crudTasks(c *gin.Context) {
-	c.JSON(200, map[string]interface{}{})
+// view task queue, add task to queue, delete task from queue, update task in queue
+func (s *Server) crudTask(c *gin.Context) {
+	config := c.Param("config")
+	action := c.Param("action")
+	data, err := s.launcher.CrudTask(config, action)
+	s.formJson(data, err, c)
 }
 
 // List being executed tasks and waiting tasks
 func (s *Server) listQueue(c *gin.Context) {
-	c.JSON(200, map[string]interface{}{})
+	data, err := s.launcher.ListQueue()
+	s.formJson(data, err, c)
+}
+
+func (s *Server) formJson(data interface{}, err error, c *gin.Context) {
+	if err == nil {
+		c.JSON(http.StatusOK, data)
+	} else {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, nil)
+	}
 }
