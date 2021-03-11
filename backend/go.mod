@@ -7,5 +7,5 @@ require (
 	github.com/fatih/color v1.10.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/gwaxG/robot_ws/monitor v0.0.0-20210303122922-c715e4bd4ed8
-	go.mongodb.org/mongo-driver v1.4.6
+	go.mongodb.org/mongo-driver v1.5.0
 )

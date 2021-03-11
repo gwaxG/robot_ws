@@ -70,7 +70,7 @@ func (db *DataBase) FetchColls(dst string) (*ResponseColls, error){
 }
 
 type ResponseVisualize struct {
-	Data	map[string][]float64 		`json:"data"`
+	Data	map[string][]float64 	`json:"data"`
 	Msg		string 	 				`json:"msg"`
 }
 

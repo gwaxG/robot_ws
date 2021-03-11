@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"github.com/gwaxG/robot_ws/backend/pkg/database"
-
 )
 
 type Server struct {
@@ -15,7 +14,7 @@ type Server struct {
 }
 
 // Core module organizes communication between UI (server), database (rpc) and learning env. (launcher).
-func (s *Server) Init() {
+func (s *Server) Init(poolSize uint8) {
 	s.api = gin.Default()
 	s.InitAPI()
 	// database
@@ -23,7 +22,7 @@ func (s *Server) Init() {
 	s.db.Init()
 	// launcher
 	s.launcher = Launcher{}
-	s.launcher.Init()
+	s.launcher.Init(poolSize)
 }
 
 func (s *Server) Start() {

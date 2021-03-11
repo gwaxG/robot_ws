@@ -38,3 +38,6 @@ Feature extraction from the RGBD image.
 ### monitor
 Task progress and criteria observer.
 ***
+
+## Dependencies  
+sshpass & rsync

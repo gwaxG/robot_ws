@@ -24,7 +24,8 @@ def separate(path, num):
 
 if __name__ == "__main__":
     current = os.getcwd()
-
+	
+    # TODO rewrite next line to rid off of check_output
     r = subprocess.check_output('go list ./... | grep /cmd/',shell=True) 
     folders = []
     relatives = []
