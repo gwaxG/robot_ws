@@ -14,6 +14,8 @@ One file per cmd folder.
 Files are placed in bin, therefore their names should be different inside of one package to avoid collisions.
 """
 
+os.environ["GO111MODULE"] = "auto"
+
 def separate(path, num):
     end = ""
     for i in range(num):
@@ -61,9 +63,9 @@ if __name__ == "__main__":
             print(e.output.decode("UTF-8").strip())
 
     if float(cnt)/len(folders) == 1:
-        print(colored(f"Sucess", "green"), end=" ")
+        print("Status:", colored(f"sucess", "green"))
     else: 
-        print(colored(f"Fail", "red"), end=" ")
-    print(f"{cnt}/{len(folders)}")
+        print("Status:", colored(f"fail", "red"))
+    print(f"Done: {cnt}/{len(folders)}")
 
 
