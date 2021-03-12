@@ -6,8 +6,8 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"log"
-	"time"
 	"os"
+	"time"
 )
 
 type BeamMsg struct {
@@ -33,9 +33,11 @@ func (r * RosProxy) Init(subs func(*sensor_msgs.Image)) {
 	r.seq = 1
 	r.conn, err = goroslib.NewNode(goroslib.NodeConf{
 		Name:          "features",
-		MasterAddress: os.Getenv("ROS_MASTER_URI"),
+		MasterAddress: os.Getenv("ROS_MASTER_URI"), // 127.0.0.1:11311
 	})
 	FailOnError(err, "Can not create node")
+
+
 	depthImageTopic, err = r.conn.ParamGetString("depth_image_topic")
 	FailOnError(err, "Can not get param string")
 	r.featurePub, err = goroslib.NewPublisher(goroslib.PublisherConf{

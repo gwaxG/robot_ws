@@ -66,17 +66,33 @@ func (s *Server) visualize(c *gin.Context) {
 
 // Get template algorithm configs
 func (s *Server) getConfigs(c *gin.Context) {
-	data, err := s.launcher.ListConfigs()
+	data, err := s.launcher.GetConfigs()
 	s.formJson(data, err, c)
 }
 
 // 	CRUD queue tasks.
 // You can not change being executed tasks.
 // view task queue, add task to queue, delete task from queue, update task in queue
-func (s *Server) crudTask(c *gin.Context) {
-	config := c.Param("config")
-	action := c.Param("action")
-	data, err := s.launcher.CrudTask(config, action)
+func (s *Server) createTask(c *gin.Context) {
+	data, err := s.launcher.CreateTask(...)
+	s.formJson(data, err, c)
+}
+
+func (s *Server) readTask(c *gin.Context) {
+	task := c.Param("task")
+	data, err := s.launcher.ReadTask(task)
+	s.formJson(data, err, c)
+}
+
+func (s *Server) updateTask(c *gin.Context) {
+	task := c.Param("task")
+	data, err := s.launcher.UpdateTask(task)
+	s.formJson(data, err, c)
+}
+
+func (s *Server) deleteTask(c *gin.Context) {
+	task := c.Param("task")
+	data, err := s.launcher.DeleteTask(task)
 	s.formJson(data, err, c)
 }
 

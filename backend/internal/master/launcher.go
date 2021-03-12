@@ -61,16 +61,14 @@ type ResponseListConfigs struct {
 	Msg		string `json:"msg"`
 }
 
-func (l *Launcher) ListConfigs() (ResponseListConfigs, error){
+func (l *Launcher) GetConfigs() (ResponseListConfigs, error){
 	resp := ResponseListConfigs{}
 	return resp, nil
 }
 
-type ResponseCrudTask struct {
+type ResponseCreateTask struct {}
 
-}
-
-func (l *Launcher) CrudTask(config, action string) (ResponseCrudTask, error){
+func (l *Launcher) CreateTask(config, action string) (ResponseCrudTask, error){
 	resp := ResponseCrudTask{}
 	return resp, nil
 }
