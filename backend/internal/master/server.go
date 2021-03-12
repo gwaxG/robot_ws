@@ -1,10 +1,15 @@
 package master
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/gwaxG/robot_ws/backend/pkg/common"
+	"github.com/gwaxG/robot_ws/backend/pkg/database"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"github.com/gwaxG/robot_ws/backend/pkg/database"
+	"strconv"
 )
 
 type Server struct {
@@ -38,21 +43,24 @@ func (s *Server) InitAPI(){
 	s.api.GET("/colls", s.listColls) //
 	s.api.GET("/visualize", s.visualize)
 	s.api.GET("/configs", s.getConfigs)
-	s.api.GET("/queue", s.listQueue)
-	s.api.GET("/task/:config/*action", s.crudTask)
+	s.api.GET("/queue", s.getQueue)
+	s.api.GET("/task/create", s.createTask)
+	s.api.GET("/task/read", s.readTask)
+	s.api.GET("/task/update", s.updateTask)
+	s.api.GET("/task/delete", s.deleteTask)
 }
 
 // List all databases
 func (s *Server) listDbs(c *gin.Context) {
 	data, err := s.db.FetchDbs()
-	s.formJson(data, err, c)
+	formJson(data, err, c)
 }
 
 // List a database collection with corresponding fields of the first entity
 func (s *Server) listColls(c *gin.Context) {
 	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
 	data, err := s.db.FetchColls(dbName)
-	s.formJson(data, err, c)
+	formJson(data, err, c)
 }
 
 // Draw figures based on fields from a database collection
@@ -61,52 +69,64 @@ func (s *Server) visualize(c *gin.Context) {
 	collName := c.Query("collection") // shortcut for c.Request.URL.Query().Get("lastname")
 	fields := c.Query("fields") // shortcut for c.Request.URL.Query().Get("lastname")
 	data, err := s.db.FetchVisualize(dbName, collName, fields)
-	s.formJson(data, err, c)
+	formJson(data, err, c)
 }
 
 // Get template algorithm configs
 func (s *Server) getConfigs(c *gin.Context) {
 	data, err := s.launcher.GetConfigs()
-	s.formJson(data, err, c)
+	formJson(data, err, c)
+}
+
+// List being executed tasks and waiting tasks
+func (s *Server) getQueue(c *gin.Context) {
+	data, err := s.launcher.GetQueue()
+	formJson(data, err, c)
 }
 
 // 	CRUD queue tasks.
 // You can not change being executed tasks.
 // view task queue, add task to queue, delete task from queue, update task in queue
 func (s *Server) createTask(c *gin.Context) {
-	data, err := s.launcher.CreateTask(...)
-	s.formJson(data, err, c)
+	data, err := s.launcher.CreateTask(retrieveJson(c.Request.Body))
+	formJson(data, err, c)
 }
 
 func (s *Server) readTask(c *gin.Context) {
-	task := c.Param("task")
-	data, err := s.launcher.ReadTask(task)
-	s.formJson(data, err, c)
+	task, err := strconv.Atoi(c.Param("task"))
+	common.FailOnError(err)
+	data, err := s.launcher.ReadTask(uint8(task))
+	formJson(data, err, c)
 }
 
 func (s *Server) updateTask(c *gin.Context) {
-	task := c.Param("task")
-	data, err := s.launcher.UpdateTask(task)
-	s.formJson(data, err, c)
+	task, err := strconv.Atoi(c.Param("task"))
+	common.FailOnError(err)
+	data, err := s.launcher.UpdateTask(uint8(task), retrieveJson(c.Request.Body))
+	formJson(data, err, c)
 }
 
 func (s *Server) deleteTask(c *gin.Context) {
-	task := c.Param("task")
-	data, err := s.launcher.DeleteTask(task)
-	s.formJson(data, err, c)
+	task, err := strconv.Atoi(c.Param("task"))
+	common.FailOnError(err)
+	data, err := s.launcher.DeleteTask(uint8(task))
+	formJson(data, err, c)
 }
 
-// List being executed tasks and waiting tasks
-func (s *Server) listQueue(c *gin.Context) {
-	data, err := s.launcher.ListQueue()
-	s.formJson(data, err, c)
-}
-
-func (s *Server) formJson(data interface{}, err error, c *gin.Context) {
+func formJson(data interface{}, err error, c *gin.Context) {
 	if err == nil {
 		c.JSON(http.StatusOK, data)
 	} else {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, nil)
 	}
+}
+
+func retrieveJson(body io.Reader) map[string]interface{} {
+	jsonBytes, err := ioutil.ReadAll(body)
+	common.FailOnError(err)
+	jsonData := map[string]interface{}{}
+	err = json.Unmarshal(jsonBytes, &jsonData)
+	common.FailOnError(err)
+	return jsonData
 }
