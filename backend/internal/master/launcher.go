@@ -2,8 +2,9 @@ package master
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
+	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -73,35 +74,177 @@ func (l *Launcher) GetQueue() (ResponseGetQueue, error) {
 	return resp, nil
 }
 
-type ResponseCreateTask struct {
+type RequestCreateTask struct {
 	Config 		map[string]interface{}  `json:"config"`
 	LaunchFile	string 					`json:"launch_file"`
 	Msg 		string 					`json:"msg"`
 }
 
-func (l *Launcher) CreateTask(c *gin.Context) (ResponseCreateTask, error){
-	// GOGOGO TODO
-	resp := ResponseCreateTask{}
-	return resp, nil
+type ResponseCreateTask struct {
+	Msg 		string 					`json:"msg"`
 }
 
-type ResponseReadTask struct {}
+// Add a task to the config
+func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error){
+	req := RequestCreateTask{}
+	body, err := ioutil.ReadAll(reqRaw)
+	common.FailOnError(err)
+	err = json.Unmarshal(body, &req)
+	common.FailOnError(err)
+	l.ConfigPool = append(l.ConfigPool, req.Config)
+	l.LaunchFiles = append(l.LaunchFiles, req.LaunchFile)
+	return ResponseCreateTask{}, nil
+}
 
-func (l *Launcher) ReadTask(task uint8) (ResponseReadTask, error){
+
+type RequestReadTask struct {
+	TaskId 		int  					`json:"task_id"`
+}
+
+type ResponseReadTask struct {
+	Config 		map[string]interface{}  `json:"config"`
+	LaunchFile	string 					`json:"launch_file"`
+	Found		bool					`json:"found"`
+	Msg 		string 					`json:"msg"`
+}
+
+func (l *Launcher) ReadTask(reqRaw io.ReadCloser) (ResponseReadTask, error){
+	req := RequestReadTask{}
+	body, err := ioutil.ReadAll(reqRaw)
+	common.FailOnError(err)
+	err = json.Unmarshal(body, &req)
+	common.FailOnError(err)
+
+	taskId := req.TaskId
+
 	resp := ResponseReadTask{}
+	if len(l.ConfigPool) < taskId {
+		resp.Found = false
+		resp.Msg   = "taskId is higher than queue length"
+		return resp, nil
+	}
+	resp.Config = l.ConfigPool[taskId]
+	resp.LaunchFile = l.LaunchFiles[taskId]
+	resp.Found = true
 	return resp, nil
 }
 
-type ResponseUpdateTask struct {}
+type RequestUpdateTask struct {
+	Config 		map[string]interface{}  `json:"config"`
+	TaskId 		int  					`json:"task_id"`
+}
 
-func (l *Launcher) UpdateTask(task uint8, taskDescr map[string]interface{}) (ResponseUpdateTask, error){
+type ResponseUpdateTask struct {
+	Found		bool					`json:"found"`
+	Msg 		string 					`json:"msg"`
+}
+
+func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
+	req := RequestUpdateTask{}
 	resp := ResponseUpdateTask{}
+	body, err := ioutil.ReadAll(reqRaw)
+	common.FailOnError(err)
+	err = json.Unmarshal(body, &req)
+	common.FailOnError(err)
+
+	taskId := req.TaskId
+
+	// check for correct number of requested task id update
+	if len(l.ConfigPool) < taskId {
+		resp.Found = false
+		resp.Msg   = "taskId is higher than queue length"
+		return resp, nil
+	}
+
+	// check for correctness of requested config
+	var keysPoolConf []string
+	for k, _ := range l.ConfigPool[taskId] {
+		keysPoolConf = append(keysPoolConf, k)
+	}
+	for k, _ := range req.Config {
+		if !contains(keysPoolConf, k) {
+			resp.Found = false
+			resp.Msg = "configuration keys are not the same"
+			return resp, nil
+		}
+	}
+
+	l.ConfigPool[taskId] = req.Config
+	resp.Found = true
 	return resp, nil
 }
 
-type ResponseDeleteTask struct {}
+type RequestDeleteTask struct {
+	TaskId 		int  					`json:"task_id"`
+}
 
-func (l *Launcher) DeleteTask(task uint8) (ResponseDeleteTask, error){
+type ResponseDeleteTask struct {
+	Found		bool					`json:"found"`
+	Msg 		string 					`json:"msg"`
+}
+
+func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
+	req := RequestDeleteTask{}
 	resp := ResponseDeleteTask{}
+	body, err := ioutil.ReadAll(reqRaw)
+	common.FailOnError(err)
+	err = json.Unmarshal(body, &req)
+	common.FailOnError(err)
+
+	taskId := req.TaskId
+
+	// check for correct number of requested task id update
+	if len(l.ConfigPool) < taskId {
+		resp.Found = false
+		resp.Msg   = "taskId is higher than queue length"
+		return resp, nil
+	}
+
+	var result bool
+	l.ConfigPool, result = deleteConfig(l.ConfigPool, taskId)
+	if result == false {
+		resp.Found = false
+		resp.Msg   = "could not delete from config pool"
+		return resp, nil
+	}
+
+	l.LaunchFiles, result = deleteLaunchFile(l.LaunchFiles, taskId)
+	if result == false {
+		resp.Found = false
+		resp.Msg   = "could not delete from launch files"
+		return resp, nil
+	}
+
+	resp.Found = true
 	return resp, nil
+}
+
+// custom contains function
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+func deleteConfig(a []map[string]interface{}, i int) ([]map[string]interface{}, bool){
+	defer func (){
+		if r:=recover(); r!=nil{}
+	}()
+	var aNew []map[string]interface{}
+	aNew = a[:i]
+	aNew = append(aNew, a[i+1:]...)
+	return aNew, true
+}
+
+func deleteLaunchFile(a []string, i int) ([]string, bool){
+	defer func (){
+		if r:=recover(); r!=nil{}
+	}()
+	var aNew []string
+	aNew = a[:i]
+	aNew = append(aNew, a[i+1:]...)
+	return aNew, true
 }

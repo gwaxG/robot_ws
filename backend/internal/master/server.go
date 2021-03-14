@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 type Server struct {
@@ -88,28 +87,22 @@ func (s *Server) getQueue(c *gin.Context) {
 // You can not change being executed tasks.
 // view task queue, add task to queue, delete task from queue, update task in queue
 func (s *Server) createTask(c *gin.Context) {
-	data, err := s.launcher.CreateTask(retrieveJson(c.Request.Body))
+	data, err := s.launcher.CreateTask(c.Request.Body)
 	formJson(data, err, c)
 }
 
 func (s *Server) readTask(c *gin.Context) {
-	task, err := strconv.Atoi(c.Param("task"))
-	common.FailOnError(err)
-	data, err := s.launcher.ReadTask(uint8(task))
+	data, err := s.launcher.ReadTask(c.Request.Body)
 	formJson(data, err, c)
 }
 
 func (s *Server) updateTask(c *gin.Context) {
-	task, err := strconv.Atoi(c.Param("task"))
-	common.FailOnError(err)
-	data, err := s.launcher.UpdateTask(uint8(task), retrieveJson(c.Request.Body))
+	data, err := s.launcher.UpdateTask(c.Request.Body)
 	formJson(data, err, c)
 }
 
 func (s *Server) deleteTask(c *gin.Context) {
-	task, err := strconv.Atoi(c.Param("task"))
-	common.FailOnError(err)
-	data, err := s.launcher.DeleteTask(uint8(task))
+	data, err := s.launcher.DeleteTask(c.Request.Body)
 	formJson(data, err, c)
 }
 
