@@ -5,6 +5,7 @@ import (
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,52 +13,96 @@ import (
 )
 
 type Launcher struct {
-	ConfigPool 	[]map[string]interface{} 	`json:"config_pool"`
-	LaunchFiles []string 						`json:"launch_files"`
+	// wait queue
+	WaitQueue 	[]map[string]interface{} 	`json:"config_pool"`
+	WaitLaunchFiles []string 				`json:"launch_files"`
+	// worker pool
+	ActivePool 	map[int]*Job 				`json:"active_pool"`
 	PoolSize	uint8					 	`json:"pool_size"`
+	// workers
+	NeedToCheck	chan bool
 }
+
+
 
 func (l *Launcher) Init(poolSize uint8){
+	l.WaitQueue = []map[string]interface{}{}
+	l.WaitLaunchFiles = []string{}
+	l.ActivePool = map[int]*Job{}
+	for i := 0; i<int(poolSize); i++ {
+		l.ActivePool[i] = nil
+	}
 	l.PoolSize = poolSize
-	l.ConfigPool = []map[string]interface{}{}
+	l.NeedToCheck = make(chan bool)
 }
 
 
+type Job struct {
+	Config 		map[string]interface{}		`json:"config"`
+	WorkerId	string						`json:"worker_id"`
+	LaunchFile	string						`json:"launch_file"`
+}
 
 // start python script
-func (l *Launcher) worker(jobs <-chan int, results chan<- bool) {
+func (l *Launcher) worker(id int, jobs <-chan Job) {
+	var job Job
 	// start environment
-
-	// wait for jobs
-	for _ = range jobs {
-		time.Sleep(time.Duration(time.Second))
-		results <- true
+	for job = range jobs {
+		l.ActivePool[id] = &job
+		// start job
+		time.Sleep(time.Second*60)
+		l.ActivePool[id] = nil
+		l.NeedToCheck <- true
 	}
 }
+
+func (l *Launcher) checkPool() bool {
+	for _, v := range l.ActivePool {
+		if v == nil {
+			return true
+		}
+	}
+	return false
+}
+
 
 func (l *Launcher) Start(){
 	// create worker pool
-	jobs := make(chan int, l.PoolSize)
-	results := make(chan bool, l.PoolSize)
-	for i := 0; i < int(l.PoolSize); i++ {
-		go l.worker(jobs, results)
+	jobs := make(chan Job, l.PoolSize)
+	for id := 0; id < int(l.PoolSize); id++ {
+		go l.worker(id, jobs)
 	}
-	// endlessly check for new tasks
+	// trigger
 	for {
-
+		select  {
+			case _ = <- l.NeedToCheck:
+				empty := l.checkPool()
+				if len(l.WaitQueue) > 0 && empty{
+					log.Println("Trigger")
+					job := Job{
+						Config: l.WaitQueue[0],
+						LaunchFile: l.WaitLaunchFiles[0],
+					}
+					l.WaitQueue, _ = deleteMapStrInt(l.WaitQueue, 0)
+					l.WaitLaunchFiles, _ = deleteStrings(l.WaitLaunchFiles, 0)
+					jobs <- job
+					go func (){l.NeedToCheck <- true}()
+				}
+		}
 	}
 }
 
-
-
 type ResponseGetConfigs struct {
-	Configs		[]map[string]interface{}	`json:"configs"`
-	LaunchFiles	[]string					`json:"launch_files"`
-	Msg			string 						`json:"msg"`
+	Configs			[]map[string]interface{}	`json:"configs"`
+	WaitLaunchFiles	[]string					`json:"launch_files"`
+	Msg				string 						`json:"msg"`
 }
 
 // List configs in scripts/learning_scripts
-func (l *Launcher) GetConfigs() (ResponseGetConfigs, error){
+func (l *Launcher) GetConfigs(pat string) (ResponseGetConfigs, error){
+	if pat == "" {
+		pat = "template"
+	}
 	resp := ResponseGetConfigs{}
 	var templates []string
 	// list dir scripts/learning_scripts
@@ -71,7 +116,7 @@ func (l *Launcher) GetConfigs() (ResponseGetConfigs, error){
 	common.FailOnError(err)
 	for _, dirEntry := range files {
 		// fmt.Println(dirEntry.Info())
-		if strings.Contains(dirEntry.Name(), "template") {
+		if strings.Contains(dirEntry.Name(), pat) {
 			templates = append(templates, dirEntry.Name())
 		}
 	}
@@ -82,24 +127,43 @@ func (l *Launcher) GetConfigs() (ResponseGetConfigs, error){
 		common.FailOnError(err)
 		err = json.Unmarshal(f, &config)
 		resp.Configs = append(resp.Configs, config)
-		resp.LaunchFiles = append(resp.LaunchFiles, filepath.Join(dir, strings.Replace(template, "_template.json", "_launch.py", 1)))
+		resp.WaitLaunchFiles = append(resp.WaitLaunchFiles, filepath.Join(dir, strings.Replace(template, "_template.json", "_launch.py", 1)))
 	}
 	return resp, nil
 }
 
 type ResponseGetQueue struct {
-	ConfigPool	[]map[string]interface{}	`json:"pool"`
+	Queue		[]map[string]interface{}	`json:"queue"`
+	LaunchFiles []string 					`json:"launch_files"`
 	PoolSize 	uint8						`json:"pool_size"`
+	Msg			string 						`json:"msg"`
+}
+
+// return wait queue
+func (l *Launcher) GetQueue() (ResponseGetQueue, error) {
+	resp := ResponseGetQueue{}
+	resp.Queue = append(resp.Queue, l.WaitQueue...)
+	resp.LaunchFiles = append(resp.LaunchFiles, l.WaitLaunchFiles...)
+	resp.PoolSize = l.PoolSize
+	return resp, nil
+}
+
+type ResponseGetPool struct {
+	Pool		[]map[string]interface{}	`json:"pool"`
 	LaunchFiles []string 					`json:"launch_files"`
 	Msg			string 						`json:"msg"`
 }
 
-// returns the Launcher instance
-func (l *Launcher) GetQueue() (ResponseGetQueue, error) {
-	resp := ResponseGetQueue{}
-	resp.ConfigPool = l.ConfigPool
-	resp.PoolSize = l.PoolSize
-	resp.LaunchFiles = l.LaunchFiles
+// return active pool
+func (l *Launcher) GetPool() (ResponseGetPool, error) {
+	resp := ResponseGetPool{}
+
+	for _, job := range l.ActivePool {
+		if job != nil {
+			resp.Pool = append(resp.Pool, job.Config)
+			resp.LaunchFiles = append(resp.LaunchFiles, job.LaunchFile)
+		}
+	}
 	return resp, nil
 }
 
@@ -120,43 +184,14 @@ func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error){
 	common.FailOnError(err)
 	err = json.Unmarshal(body, &req)
 	common.FailOnError(err)
-	l.ConfigPool = append(l.ConfigPool, req.Config)
-	l.LaunchFiles = append(l.LaunchFiles, req.LaunchFile)
+
+	l.WaitQueue = append(l.WaitQueue, req.Config)
+	l.WaitLaunchFiles = append(l.WaitLaunchFiles, req.LaunchFile)
+	l.NeedToCheck <- true
 	return ResponseCreateTask{}, nil
 }
 
 
-type RequestReadTask struct {
-	TaskId 		int  					`json:"task_id"`
-}
-
-type ResponseReadTask struct {
-	Config 		map[string]interface{}  `json:"config"`
-	LaunchFile	string 					`json:"launch_file"`
-	Found		bool					`json:"found"`
-	Msg 		string 					`json:"msg"`
-}
-
-func (l *Launcher) ReadTask(reqRaw io.ReadCloser) (ResponseReadTask, error){
-	req := RequestReadTask{}
-	body, err := ioutil.ReadAll(reqRaw)
-	common.FailOnError(err)
-	err = json.Unmarshal(body, &req)
-	common.FailOnError(err)
-
-	taskId := req.TaskId
-
-	resp := ResponseReadTask{}
-	if len(l.ConfigPool) < taskId {
-		resp.Found = false
-		resp.Msg   = "taskId is higher than queue length"
-		return resp, nil
-	}
-	resp.Config = l.ConfigPool[taskId]
-	resp.LaunchFile = l.LaunchFiles[taskId]
-	resp.Found = true
-	return resp, nil
-}
 
 type RequestUpdateTask struct {
 	Config 		map[string]interface{}  `json:"config"`
@@ -168,6 +203,7 @@ type ResponseUpdateTask struct {
 	Msg 		string 					`json:"msg"`
 }
 
+// update task config in wait queue
 func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
 	req := RequestUpdateTask{}
 	resp := ResponseUpdateTask{}
@@ -179,15 +215,16 @@ func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
 	taskId := req.TaskId
 
 	// check for correct number of requested task id update
-	if len(l.ConfigPool) < taskId {
+	if len(l.WaitQueue) < taskId {
 		resp.Found = false
 		resp.Msg   = "taskId is higher than queue length"
 		return resp, nil
 	}
 
 	// check for correctness of requested config
-	var keysPoolConf []string
-	for k, _ := range l.ConfigPool[taskId] {
+	keysPoolConf := []string{}
+
+	for k, _ := range l.WaitQueue[taskId] {
 		keysPoolConf = append(keysPoolConf, k)
 	}
 	for k, _ := range req.Config {
@@ -198,7 +235,7 @@ func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
 		}
 	}
 
-	l.ConfigPool[taskId] = req.Config
+	l.WaitQueue[taskId] = req.Config
 	resp.Found = true
 	return resp, nil
 }
@@ -223,21 +260,21 @@ func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
 	taskId := req.TaskId
 
 	// check for correct number of requested task id update
-	if len(l.ConfigPool) < taskId {
+	if len(l.WaitQueue) < taskId {
 		resp.Found = false
 		resp.Msg   = "taskId is higher than queue length"
 		return resp, nil
 	}
 
 	var result bool
-	l.ConfigPool, result = deleteMapStrInt(l.ConfigPool, taskId)
+	l.WaitQueue, result = deleteMapStrInt(l.WaitQueue, taskId)
 	if result == false {
 		resp.Found = false
 		resp.Msg   = "could not delete from config pool"
 		return resp, nil
 	}
 
-	l.LaunchFiles, result = deleteStrings(l.LaunchFiles, taskId)
+	l.WaitLaunchFiles, result = deleteStrings(l.WaitLaunchFiles, taskId)
 	if result == false {
 		resp.Found = false
 		resp.Msg   = "could not delete from launch files"

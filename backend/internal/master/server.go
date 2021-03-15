@@ -42,11 +42,11 @@ func (s *Server) InitAPI(){
 	s.api.GET("/dbs", s.listDbs) // +
 	s.api.GET("/colls", s.listColls) //
 	s.api.GET("/visualize", s.visualize)
-	s.api.GET("/configs", s.getConfigs)
-	s.api.GET("/queue", s.getQueue)
-	s.api.GET("/task/create", s.createTask)
-	s.api.GET("/task/read", s.readTask)
-	s.api.GET("/task/update", s.updateTask)
+	s.api.GET("/configs", s.getConfigs) // +
+	s.api.GET("/queue", s.getQueue) // +
+	s.api.GET("/pool", s.getPool) // +
+	s.api.GET("/task/create", s.createTask) // +
+	s.api.GET("/task/update", s.updateTask) //
 	s.api.GET("/task/delete", s.deleteTask)
 }
 
@@ -74,13 +74,19 @@ func (s *Server) visualize(c *gin.Context) {
 
 // Get template algorithm configs
 func (s *Server) getConfigs(c *gin.Context) {
-	data, err := s.launcher.GetConfigs()
+	data, err := s.launcher.GetConfigs("")
 	formJson(data, err, c)
 }
 
-// List being executed tasks and waiting tasks
+// List  waiting tasks
 func (s *Server) getQueue(c *gin.Context) {
 	data, err := s.launcher.GetQueue()
+	formJson(data, err, c)
+}
+
+// List being executed tasks
+func (s *Server) getPool(c *gin.Context) {
+	data, err := s.launcher.GetPool()
 	formJson(data, err, c)
 }
 
@@ -89,11 +95,6 @@ func (s *Server) getQueue(c *gin.Context) {
 // view task queue, add task to queue, delete task from queue, update task in queue
 func (s *Server) createTask(c *gin.Context) {
 	data, err := s.launcher.CreateTask(c.Request.Body)
-	formJson(data, err, c)
-}
-
-func (s *Server) readTask(c *gin.Context) {
-	data, err := s.launcher.ReadTask(c.Request.Body)
 	formJson(data, err, c)
 }
 
