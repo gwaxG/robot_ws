@@ -47,10 +47,22 @@ type Job struct {
 func (l *Launcher) worker(id int, jobs <-chan Job) {
 	var job Job
 	// start environment
+	/* port := 11311 + id
+	os.Setenv("ROS_MASTER_URI", "http://localhost:"+strconv.Itoa(port))
+	cmd := exec.Command("roslaunch", "-p", strconv.Itoa(port), "backend", "learning.launch")
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	} */
+	// start serving
 	for job = range jobs {
 		l.ActivePool[id] = &job
 		// start job
-		time.Sleep(time.Second*60)
+		time.Sleep(time.Second*1)
+		/* cmd = exec.Command("python", job.LaunchFile)
+		if err := cmd.Start(); err != nil {
+			log.Fatal(err)
+		}*/
+
 		l.ActivePool[id] = nil
 		l.NeedToCheck <- true
 	}
