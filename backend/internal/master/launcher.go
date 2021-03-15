@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Launcher struct {
@@ -20,6 +21,34 @@ func (l *Launcher) Init(poolSize uint8){
 	l.PoolSize = poolSize
 	l.ConfigPool = []map[string]interface{}{}
 }
+
+
+
+// start python script
+func (l *Launcher) worker(jobs <-chan int, results chan<- bool) {
+	// start environment
+
+	// wait for jobs
+	for _ = range jobs {
+		time.Sleep(time.Duration(time.Second))
+		results <- true
+	}
+}
+
+func (l *Launcher) Start(){
+	// create worker pool
+	jobs := make(chan int, l.PoolSize)
+	results := make(chan bool, l.PoolSize)
+	for i := 0; i < int(l.PoolSize); i++ {
+		go l.worker(jobs, results)
+	}
+	// endlessly check for new tasks
+	for {
+
+	}
+}
+
+
 
 type ResponseGetConfigs struct {
 	Configs		[]map[string]interface{}	`json:"configs"`
@@ -201,14 +230,14 @@ func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
 	}
 
 	var result bool
-	l.ConfigPool, result = deleteConfig(l.ConfigPool, taskId)
+	l.ConfigPool, result = deleteMapStrInt(l.ConfigPool, taskId)
 	if result == false {
 		resp.Found = false
 		resp.Msg   = "could not delete from config pool"
 		return resp, nil
 	}
 
-	l.LaunchFiles, result = deleteLaunchFile(l.LaunchFiles, taskId)
+	l.LaunchFiles, result = deleteStrings(l.LaunchFiles, taskId)
 	if result == false {
 		resp.Found = false
 		resp.Msg   = "could not delete from launch files"
@@ -229,7 +258,8 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-func deleteConfig(a []map[string]interface{}, i int) ([]map[string]interface{}, bool){
+// custom delete from map[string]interface{} by index function
+func deleteMapStrInt(a []map[string]interface{}, i int) ([]map[string]interface{}, bool){
 	defer func (){
 		if r:=recover(); r!=nil{}
 	}()
@@ -239,7 +269,8 @@ func deleteConfig(a []map[string]interface{}, i int) ([]map[string]interface{}, 
 	return aNew, true
 }
 
-func deleteLaunchFile(a []string, i int) ([]string, bool){
+// custom delete from string array by index function
+func deleteStrings(a []string, i int) ([]string, bool){
 	defer func (){
 		if r:=recover(); r!=nil{}
 	}()

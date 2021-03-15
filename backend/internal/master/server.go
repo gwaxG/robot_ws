@@ -30,6 +30,7 @@ func (s *Server) Init(poolSize uint8) {
 }
 
 func (s *Server) Start() {
+	go s.launcher.Start()
 	s.api.Run(":10000")
 }
 
