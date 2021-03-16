@@ -13,16 +13,14 @@ import json
 from gym_training.envs.training_env import TrainingEnv
 
 class LearningOpenAI:
-    def __init__(self, fname="config1.json"):
+    def __init__(self):
         """
         Supported algs
         SACsb1, SACsb3
         PPO2sb1, PPOsb3
         TD3sb1
-
-        :param fname: configuration file name
         """
-        self.prms = self.load_prms(fname)
+        self.prms = self.load_prms(__file__.replace(".py", ".json"))
         rospy.init_node(self.prms["experiment"]+"_training_node")
         kwargs = {
             'experiment': self.prms['experiment'],
@@ -65,7 +63,8 @@ class LearningOpenAI:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-conf', type=str, default="config1.json", help='configuration file path')
+    parser.add_argument('-rmu', type=str, default="http://localhost:11311", help='ROS MASTER URI')
     args = parser.parse_args()
+    os.environ["ROS_MASTER_URI"] = args.rmu
 
-    LearningOpenAI(fname=args.conf).train_model()
+    LearningOpenAI().train_model()
