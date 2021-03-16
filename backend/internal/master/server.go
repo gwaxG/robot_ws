@@ -40,14 +40,14 @@ func (s *Server) Close() {
 
 func (s *Server) InitAPI(){
 	s.api.GET("/dbs", s.listDbs) // +
-	s.api.GET("/colls", s.listColls) //
+	s.api.GET("/colls", s.listColls) // +
 	s.api.GET("/visualize", s.visualize)
 	s.api.GET("/configs", s.getConfigs) // +
 	s.api.GET("/queue", s.getQueue) // +
 	s.api.GET("/pool", s.getPool) // +
 	s.api.GET("/task/create", s.createTask) // +
-	s.api.GET("/task/update", s.updateTask) //
-	s.api.GET("/task/delete", s.deleteTask)
+	s.api.GET("/task/update", s.updateTask) // +
+	s.api.GET("/task/delete", s.deleteTask) // +
 }
 
 // List all databases
