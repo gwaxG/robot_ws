@@ -39,6 +39,8 @@ func (s *Server) Close() {
 }
 
 func (s *Server) InitAPI(){
+	s.api.Use(s.JSONMiddleware())
+	s.api.Use(s.CORSMiddleware())
 	s.api.GET("/dbs", s.listDbs) // +
 	s.api.GET("/colls", s.listColls) // +
 	s.api.GET("/visualize", s.visualize)
@@ -48,6 +50,7 @@ func (s *Server) InitAPI(){
 	s.api.GET("/task/create", s.createTask) // +
 	s.api.GET("/task/update", s.updateTask) // +
 	s.api.GET("/task/delete", s.deleteTask) // +
+
 }
 
 // List all databases
@@ -124,4 +127,18 @@ func retrieveJson(body io.Reader) map[string]interface{} {
 	err = json.Unmarshal(jsonBytes, &jsonData)
 	common.FailOnError(err)
 	return jsonData
+}
+
+func (s *Server) JSONMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "application/json")
+		c.Next()
+	}
+}
+
+func (s *Server) CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Next()
+	}
 }
