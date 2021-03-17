@@ -39,17 +39,20 @@ func (s *Server) Close() {
 }
 
 func (s *Server) InitAPI(){
-	s.api.Use(s.JSONMiddleware())
 	s.api.Use(s.CORSMiddleware())
-	s.api.GET("/dbs", s.listDbs) // +
-	s.api.GET("/colls", s.listColls) // +
+	s.api.Use(s.JSONMiddleware())
+	s.api.GET("/dbs", s.listDbs)
+	s.api.GET("/colls", s.listColls)
 	s.api.GET("/visualize", s.visualize)
-	s.api.GET("/configs", s.getConfigs) // +
-	s.api.GET("/queue", s.getQueue) // +
-	s.api.GET("/pool", s.getPool) // +
-	s.api.GET("/task/create", s.createTask) // +
-	s.api.GET("/task/update", s.updateTask) // +
-	s.api.GET("/task/delete", s.deleteTask) // +
+	s.api.GET("/configs", s.getConfigs)
+	s.api.GET("/queue", s.getQueue)
+	s.api.GET("/pool", s.getPool)
+	s.api.POST("/task/create", s.createTask)
+	s.api.OPTIONS("/task/create", s.preflight)
+	s.api.GET("/task/update", s.updateTask)
+	s.api.OPTIONS("/task/update", s.preflight)
+	s.api.GET("/task/delete", s.deleteTask)
+	s.api.OPTIONS("/task/delete", s.preflight)
 
 }
 
@@ -141,4 +144,12 @@ func (s *Server) CORSMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Next()
 	}
+}
+
+func (s* Server) preflight(c *gin.Context) {
+	c.Header("Access-Control-Allow-Origin", "*")
+	c.Header(
+		"Access-Control-Allow-Headers",
+		"access-control-allow-origin, access-control-allow-headers, content-type")
+	c.JSON(http.StatusOK, struct{}{})
 }

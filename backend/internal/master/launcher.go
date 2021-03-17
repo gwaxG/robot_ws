@@ -58,7 +58,7 @@ func (l *Launcher) worker(id int, jobs <-chan Job) {
 	for job = range jobs {
 		l.ActivePool[id] = &job
 		// start job
-		time.Sleep(time.Second*1)
+		time.Sleep(time.Second*1000)
 		/* cmd = exec.Command("python", job.LaunchFile, "-rmu", rmu)
 		if err := cmd.Start(); err != nil {
 			log.Fatal(err)
@@ -148,7 +148,7 @@ func (l *Launcher) GetConfigs(pat string) (ResponseGetConfigs, error){
 type ResponseGetQueue struct {
 	Queue		[]map[string]interface{}	`json:"queue"`
 	LaunchFiles []string 					`json:"launch_files"`
-	PoolSize 	uint8						`json:"pool_size"`
+	// PoolSize 	uint8						`json:"pool_size"`
 	Msg			string 						`json:"msg"`
 }
 
@@ -157,7 +157,7 @@ func (l *Launcher) GetQueue() (ResponseGetQueue, error) {
 	resp := ResponseGetQueue{}
 	resp.Queue = append(resp.Queue, l.WaitQueue...)
 	resp.LaunchFiles = append(resp.LaunchFiles, l.WaitLaunchFiles...)
-	resp.PoolSize = l.PoolSize
+	// resp.PoolSize = l.PoolSize
 	return resp, nil
 }
 
@@ -194,14 +194,17 @@ type ResponseCreateTask struct {
 func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error){
 	req := RequestCreateTask{}
 	body, err := ioutil.ReadAll(reqRaw)
-	common.FailOnError(err)
+	if err != nil {
+		return ResponseCreateTask{}, err
+	}
 	err = json.Unmarshal(body, &req)
-	common.FailOnError(err)
-
+	if err != nil {
+		return ResponseCreateTask{}, err
+	}
 	l.WaitQueue = append(l.WaitQueue, req.Config)
 	l.WaitLaunchFiles = append(l.WaitLaunchFiles, req.LaunchFile)
 	l.NeedToCheck <- true
-	return ResponseCreateTask{}, nil
+	return ResponseCreateTask{"Created with success!"}, nil
 }
 
 

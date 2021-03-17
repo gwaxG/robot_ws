@@ -44,13 +44,13 @@ def test_read_task():
 def test_queue():
     r = rq.get('http://localhost:10000/queue')
     if r.json()["queue"] is not None:
-        print("Q", [alg["alg"] for alg in r.json()["queue"]])
+        print("Q", [a for a in r.json()["queue"]])
 
 
 def test_pool():
     r = rq.get('http://localhost:10000/pool')
     if r.json()["pool"] is not None:
-        print("P",[alg["alg"] for alg in r.json()["pool"]])
+        print("P", [a for a in r.json()["pool"]])
 
 
 def call_pool_queue_case():
@@ -95,7 +95,8 @@ def test_delete():
 if __name__ == "__main__":
     # test_config()
     # test_create_task()
-    test_delete()
+    test_queue()
+    test_pool()
 
 
 
