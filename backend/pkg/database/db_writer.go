@@ -76,3 +76,42 @@ func (db *DataBase) SaveConfig(Config map[string]interface{}) {
 	}
 	_ = Experiment
 }
+
+// delete a config from collection HistoryConfigs
+func (db *DataBase) DeleteConfig(ExperimentSeries, Experiment string) {
+	defer func() {
+		if r:=recover(); r!=nil {
+			log.Println(
+				"Recoverd in db_writer.DeleteConfig on",
+				ExperimentSeries,
+				Experiment)
+		}
+	}()
+	db.check(ExperimentSeries, "HistoryConfigs")
+
+	// check if the experiment exists in the database
+	var exist = false
+	cursor, err := db.collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(context.TODO())
+	for cursor.Next(context.TODO()) {
+		var doc bson.M
+		if err = cursor.Decode(&doc); err != nil {
+			log.Fatal(err)
+		}
+		if doc["name"] == Experiment {
+			exist = true
+			break
+		}
+	}
+	// insert a new experiment or update one
+	if exist {
+		// Update
+		_, err := db.collection.DeleteOne(context.TODO(), bson.M{"name": Experiment})
+		if err != nil {
+			log.Panic(err)
+		}
+	}
+}

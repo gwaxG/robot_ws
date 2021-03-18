@@ -287,6 +287,7 @@ func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
 		return resp, nil
 	}
 
+	l.db.DeleteConfig(l.WaitQueue[taskId]["experiment_series"].(string), l.WaitQueue[taskId]["experiment"].(string))
 	var result bool
 	l.WaitQueue, result = deleteMapStrInt(l.WaitQueue, taskId)
 	if result == false {
@@ -301,7 +302,6 @@ func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
 		resp.Msg   = "could not delete from launch files"
 		return resp, nil
 	}
-
 	resp.Found = true
 	return resp, nil
 }

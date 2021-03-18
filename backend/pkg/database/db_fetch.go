@@ -110,4 +110,6 @@ func (db *DataBase) FetchVisualize(dbName, collName, fieldString string) (*Respo
 	return &msg, nil
 }
 
+
+
 //
