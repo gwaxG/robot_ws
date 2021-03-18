@@ -26,7 +26,7 @@ func (s *Server) Init(poolSize uint8) {
 	s.db.Init()
 	// launcher
 	s.launcher = Launcher{}
-	s.launcher.Init(poolSize)
+	s.launcher.Init(poolSize, &s.db)
 }
 
 func (s *Server) Start() {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
+	"github.com/gwaxG/robot_ws/backend/pkg/database"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,13 +21,15 @@ type Launcher struct {
 	// worker pool
 	ActivePool 	map[int]*Job 				`json:"active_pool"`
 	PoolSize	uint8					 	`json:"pool_size"`
+	db 										*database.DataBase
 	// workers
 	NeedToCheck	chan bool
 }
 
 
 
-func (l *Launcher) Init(poolSize uint8){
+func (l *Launcher) Init(poolSize uint8, db *database.DataBase){
+	l.db = db
 	l.WaitQueue = []map[string]interface{}{}
 	l.WaitLaunchFiles = []string{}
 	l.ActivePool = map[int]*Job{}
@@ -206,6 +209,7 @@ func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error){
 	l.WaitQueue = append(l.WaitQueue, req.Config)
 	l.WaitLaunchFiles = append(l.WaitLaunchFiles, req.LaunchFile)
 	l.NeedToCheck <- true
+	l.db.SaveConfig(req.Config)
 	return ResponseCreateTask{"Created with success!"}, nil
 }
 
@@ -253,6 +257,7 @@ func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
 
 	l.WaitQueue[taskId] = req.Config
 	resp.Found = true
+	l.db.SaveConfig(req.Config)
 	return resp, nil
 }
 
