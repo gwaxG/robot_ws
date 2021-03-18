@@ -2,6 +2,7 @@ package master
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"io"
 	"io/ioutil"
@@ -58,7 +59,7 @@ func (l *Launcher) worker(id int, jobs <-chan Job) {
 	for job = range jobs {
 		l.ActivePool[id] = &job
 		// start job
-		time.Sleep(time.Second*1000)
+		time.Sleep(time.Second*100000)
 		/* cmd = exec.Command("python", job.LaunchFile, "-rmu", rmu)
 		if err := cmd.Start(); err != nil {
 			log.Fatal(err)
@@ -156,6 +157,7 @@ type ResponseGetQueue struct {
 func (l *Launcher) GetQueue() (ResponseGetQueue, error) {
 	resp := ResponseGetQueue{}
 	resp.Queue = append(resp.Queue, l.WaitQueue...)
+	fmt.Println("Sent", len(resp.Queue))
 	resp.LaunchFiles = append(resp.LaunchFiles, l.WaitLaunchFiles...)
 	// resp.PoolSize = l.PoolSize
 	return resp, nil
@@ -206,8 +208,6 @@ func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error){
 	l.NeedToCheck <- true
 	return ResponseCreateTask{"Created with success!"}, nil
 }
-
-
 
 type RequestUpdateTask struct {
 	Config 		map[string]interface{}  `json:"config"`

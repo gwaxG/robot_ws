@@ -49,9 +49,9 @@ func (s *Server) InitAPI(){
 	s.api.GET("/pool", s.getPool)
 	s.api.POST("/task/create", s.createTask)
 	s.api.OPTIONS("/task/create", s.preflight)
-	s.api.GET("/task/update", s.updateTask)
+	s.api.POST("/task/update", s.updateTask)
 	s.api.OPTIONS("/task/update", s.preflight)
-	s.api.GET("/task/delete", s.deleteTask)
+	s.api.POST("/task/delete", s.deleteTask)
 	s.api.OPTIONS("/task/delete", s.preflight)
 
 }
