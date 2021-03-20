@@ -337,3 +337,4 @@ func deleteStrings(a []string, i int) ([]string, bool){
 	aNew = append(aNew, a[i+1:]...)
 	return aNew, true
 }
+

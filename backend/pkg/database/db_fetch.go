@@ -2,9 +2,12 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"log"
 	"strings"
 )
 
@@ -21,7 +24,7 @@ func (db *DataBase) FetchDbs() (*ResponseDbs, error){
 	}
 	out := []string{}
 	for i:=0; i<len(res); i++ {
-		if res[i] != "admin" && res[i] != "local" && res[i] != "config"{
+		if strings.Contains(res[i], "exp") {
 			out = append(out, res[i])
 		}
 	}
@@ -110,6 +113,43 @@ func (db *DataBase) FetchVisualize(dbName, collName, fieldString string) (*Respo
 	return &msg, nil
 }
 
+type ResponseHistoryConfig struct {
+	Configs	[]map[string]interface{} `json:"configs"`
+	Msg string `json:"msg"`
+}
 
-
-//
+// fetch docs from a collection HistoryConfigs
+func (db *DataBase) FetchHistoryConfig(dbName string) (*ResponseHistoryConfig, error){
+	defer func (){
+		if r := recover(); r!=nil{
+		}
+	}()
+	msg := ResponseHistoryConfig{
+		Configs: []map[string]interface{}{},
+		Msg: "",
+	}
+	db.check(dbName, "HistoryConfigs")
+	cursor, err := db.collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(context.TODO())
+	for cursor.Next(context.TODO()) {
+		var doc bson.D
+		var convertedDoc map[string]interface{}
+		if err = cursor.Decode(&doc); err != nil {
+			log.Fatal(err)
+		}
+		tempBytes, err := bson.MarshalExtJSON(doc, true, true)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = json.Unmarshal(tempBytes, &convertedDoc)
+		if err != nil {
+			log.Fatal(err)
+		}
+		msg.Configs = append(msg.Configs, convertedDoc)
+	}
+	fmt.Println(msg)
+	return &msg, nil
+}

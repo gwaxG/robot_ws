@@ -44,6 +44,7 @@ func (s *Server) InitAPI(){
 	s.api.GET("/dbs", s.listDbs)
 	s.api.GET("/colls", s.listColls)
 	s.api.GET("/visualize", s.visualize)
+	s.api.GET("/hist", s.fetchHistoryConfigs)
 	s.api.GET("/configs", s.getConfigs)
 	s.api.GET("/queue", s.getQueue)
 	s.api.GET("/pool", s.getPool)
@@ -66,6 +67,13 @@ func (s *Server) listDbs(c *gin.Context) {
 func (s *Server) listColls(c *gin.Context) {
 	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
 	data, err := s.db.FetchColls(dbName)
+	formJson(data, err, c)
+}
+
+// List a database collection history collection where all configs of passed experiments are stored
+func (s *Server) fetchHistoryConfigs(c *gin.Context) {
+	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
+	data, err := s.db.FetchHistoryConfig(dbName)
 	formJson(data, err, c)
 }
 
