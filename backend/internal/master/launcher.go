@@ -2,7 +2,6 @@ package master
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"github.com/gwaxG/robot_ws/backend/pkg/database"
 	"io"
@@ -132,7 +131,6 @@ func (l *Launcher) GetConfigs(pat string) (ResponseGetConfigs, error){
 	files, err := os.ReadDir(dir)
 	common.FailOnError(err)
 	for _, dirEntry := range files {
-		// fmt.Println(dirEntry.Info())
 		if strings.Contains(dirEntry.Name(), pat) {
 			templates = append(templates, dirEntry.Name())
 		}
@@ -160,7 +158,6 @@ type ResponseGetQueue struct {
 func (l *Launcher) GetQueue() (ResponseGetQueue, error) {
 	resp := ResponseGetQueue{}
 	resp.Queue = append(resp.Queue, l.WaitQueue...)
-	fmt.Println("Sent", len(resp.Queue))
 	resp.LaunchFiles = append(resp.LaunchFiles, l.WaitLaunchFiles...)
 	// resp.PoolSize = l.PoolSize
 	return resp, nil

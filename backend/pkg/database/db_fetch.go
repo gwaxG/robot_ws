@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"io"
+	"io/ioutil"
 	"log"
 	"strings"
 )
@@ -37,39 +38,58 @@ func (db *DataBase) FetchDbs() (*ResponseDbs, error){
 
 type ResponseColls struct {
 	Colls	[]string `json:"colls"`
-	Fields 	[]string `json:"fields"`
+	Fields 	[][]string `json:"fields"`
 	Msg		string 	 `json:"msg"`
 }
 
-// We guaranty that one collection has the same set of fields because one rollout corresponds to one experiment.
-// Same for databases. Convention: one database has collections where documents has same fields
-func (db *DataBase) FetchColls(dst string) (*ResponseColls, error){
-	db.changeDatabase(dst)
+// Retrieve collections from a database with associated fields
+func (db *DataBase) FetchCollections(database string) (*ResponseColls, error){
+	msg := &ResponseColls{
+		Colls: []string{},
+		Fields: [][]string{},
+		Msg:  "",
+	}
+	// check if database exists
+	res, err := db.client.ListDatabaseNames(context.TODO(), bson.D{})
+	if err != nil {
+		return nil, errors.New("can not fetch database names")
+	}
+	exists := false
+	for i:=0; i<len(res); i++ {
+		if strings.Contains(res[i], database) {
+			exists = true
+		}
+	}
+	if !exists {
+		msg.Msg = "Database does not exist"
+		return msg, nil
+	}
+	db.changeDatabase(database)
 	collNames, err := db.database.ListCollectionNames(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, errors.New("can not fetch collection names")
 	}
-	msg := &ResponseColls{
-		Colls: []string{},
-		Fields: []string{},
-		Msg:  "",
-	}
-	// composing array of collection names
-	for i, collName := range collNames {
+	for _, collName := range collNames {
+		if collName == "HistoryConfigs" {
+			continue
+		}
 		msg.Colls = append(msg.Colls, collName)
-		// putting first collection first document field names into an array
-		if i == 0 {
-			db.changeCollection(collName)
-			doc := map[string]interface{}{}
-			common.FailOnError(db.collection.FindOne(context.TODO(), bson.M{}).Decode(&doc))
-			for k, _ := range doc {
-				if k != "_id" {
-					msg.Fields = append(msg.Fields, k)
-				}
+		var fields []string
+		db.changeCollection(collName)
+		doc := map[string]interface{}{}
+		common.FailOnError(db.collection.FindOne(context.TODO(), bson.M{}).Decode(&doc))
+		for fieldName, _ := range doc {
+			if fieldName != "_id" {
+				fields = append(fields, fieldName)
 			}
 		}
+		msg.Fields = append(msg.Fields, fields)
 	}
 	return msg, nil
+}
+
+type RequestVisualize struct {
+	Data	[]string 	`json:"data"`
 }
 
 type ResponseVisualize struct {
@@ -80,37 +100,48 @@ type ResponseVisualize struct {
 /*
 localhost:10000/visualize?database=test_exps&collection=test_rollout&fields=reward_progress_cogheight
 */
-func (db *DataBase) FetchVisualize(dbName, collName, fieldString string) (*ResponseVisualize, error){
+func (db *DataBase) FetchVisualize(dbName, collName string, reqRaw io.ReadCloser) (*ResponseVisualize, error){
 	defer func (){
-		if r := recover(); r!=nil{
-
-		}
+		if r := recover(); r!=nil{log.Println("Recovered in db_fetch.FetchVisualize")}
 	}()
 	msg := ResponseVisualize{
 		Data: map[string][]float64{},
 		Msg: "",
 	}
+	fields := RequestVisualize{}
+	body, err := ioutil.ReadAll(reqRaw)
+	if err != nil {
+		return &msg, err
+	}
+	err = json.Unmarshal(body, &fields)
+	if err != nil {
+		return &msg, err
+	}
 	db.changeDatabase(dbName)
 	db.changeCollection(collName)
-	var fields []string = strings.Split(fieldString, "_")
-
-	for _, field := range fields {
-		msg.Data[field] = []float64{}
-	}
-
 	cursor, err := db.collection.Find(context.TODO(), bson.M{})
 	common.FailOnError(err)
-
 	var docs []bson.M
 	err = cursor.All(context.TODO(), &docs)
 	common.FailOnError(err)
-
 	for _, doc := range docs {
-		for _, field := range fields {
-			msg.Data[field] = append(msg.Data[field], doc[field].(float64))
+		for k, v := range doc {
+			if contains(fields.Data, k) {
+				msg.Data[k] = append(msg.Data[k], v.(float64))
+			}
+
 		}
 	}
 	return &msg, nil
+}
+
+func contains(fields []string, field string) bool {
+	for _, v := range fields {
+		if v == field {
+			return true
+		}
+	}
+	return false
 }
 
 type ResponseHistoryConfig struct {
@@ -150,6 +181,5 @@ func (db *DataBase) FetchHistoryConfig(dbName string) (*ResponseHistoryConfig, e
 		}
 		msg.Configs = append(msg.Configs, convertedDoc)
 	}
-	fmt.Println(msg)
 	return &msg, nil
 }

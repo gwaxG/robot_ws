@@ -42,8 +42,9 @@ func (s *Server) InitAPI(){
 	s.api.Use(s.CORSMiddleware())
 	s.api.Use(s.JSONMiddleware())
 	s.api.GET("/dbs", s.listDbs)
-	s.api.GET("/colls", s.listColls)
-	s.api.GET("/visualize", s.visualize)
+	s.api.GET("/colls", s.fetchCollections)
+	s.api.OPTIONS("/visualize", s.preflight)
+	s.api.POST("/visualize", s.visualize)
 	s.api.GET("/hist", s.fetchHistoryConfigs)
 	s.api.GET("/configs", s.getConfigs)
 	s.api.GET("/queue", s.getQueue)
@@ -64,9 +65,9 @@ func (s *Server) listDbs(c *gin.Context) {
 }
 
 // List a database collection with corresponding fields of the first entity
-func (s *Server) listColls(c *gin.Context) {
+func (s *Server) fetchCollections(c *gin.Context) {
 	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
-	data, err := s.db.FetchColls(dbName)
+	data, err := s.db.FetchCollections(dbName)
 	formJson(data, err, c)
 }
 
@@ -81,8 +82,7 @@ func (s *Server) fetchHistoryConfigs(c *gin.Context) {
 func (s *Server) visualize(c *gin.Context) {
 	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
 	collName := c.Query("collection") // shortcut for c.Request.URL.Query().Get("lastname")
-	fields := c.Query("fields") // shortcut for c.Request.URL.Query().Get("lastname")
-	data, err := s.db.FetchVisualize(dbName, collName, fields)
+	data, err := s.db.FetchVisualize(dbName, collName, c.Request.Body)
 	formJson(data, err, c)
 }
 
