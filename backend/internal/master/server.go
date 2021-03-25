@@ -36,6 +36,7 @@ func (s *Server) Start() {
 
 func (s *Server) Close() {
 	s.db.Close()
+	s.launcher.Close()
 }
 
 func (s *Server) InitAPI(){

@@ -1,0 +1,18 @@
+{
+  "alg": "PPO2sb1",
+  "policy_type": "CustomMLPsb1",
+  "model_parameters": {
+    "cliprange":  0.2,
+    "ent_coef":  0.005,
+  },
+  "total_timesteps": 10000,
+  "save_path": "/home/r1d1/dev/catkin_ws/src/robot_ws/backend/data/models",
+  "experiment": "test_exp",
+  "time_step_limit": 50,
+  "arm": true,
+  "angular": true,
+  "sigma": 0.0,
+  "task": "ascent",
+  "rand": false,
+  "log_path": "/home/r1d1/dev/catkin_ws/src/robot_ws/backend/data/boards"
+}

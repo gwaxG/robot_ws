@@ -1,15 +1,21 @@
 package master
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"github.com/gwaxG/robot_ws/backend/pkg/database"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
+	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -23,6 +29,7 @@ type Launcher struct {
 	db 										*database.DataBase
 	// workers
 	NeedToCheck	chan bool
+	Done chan struct{}
 }
 
 
@@ -42,69 +49,152 @@ func (l *Launcher) Init(poolSize uint8, db *database.DataBase){
 
 type Job struct {
 	Config 		map[string]interface{}		`json:"config"`
-	WorkerId	string						`json:"worker_id"`
+	WorkerId	int							`json:"worker_id"`
 	LaunchFile	string						`json:"launch_file"`
+	TaskId 			int							`json:"task_id"`
 }
 
-// start python script
-func (l *Launcher) worker(id int, jobs <-chan Job) {
-	var job Job
-	// start environment
-	/* port := strconv.Itoa(11311 + id)
-	rmu := "http://localhost:" + port
-	// os.Setenv("ROS_MASTER_URI", "http://localhost:"+port)
-	cmd := exec.Command("roslaunch", "-p", port, "backend", "learning.launch")
-	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
-	} */
-	// start serving
-	for job = range jobs {
-		l.ActivePool[id] = &job
-		// start job
-		time.Sleep(time.Second*100000)
-		/* cmd = exec.Command("python", job.LaunchFile, "-rmu", rmu)
-		if err := cmd.Start(); err != nil {
-			log.Fatal(err)
-		}*/
-
-		l.ActivePool[id] = nil
-		l.NeedToCheck <- true
+// Launch a learning script.
+func (j *Job) Do (port int) (e error) {
+	defer func() {
+		if r := recover(); r!=nil {
+			err := r.(error)
+			e = fmt.Errorf("Something went wrong in job %d on port %d: %s\n", j.TaskId, port, err)
+		}
+	}()
+	// Form config file path.
+	log.Printf("Job %d on port %d starting scrpit\n", j.TaskId, port)
+	base := strings.Replace(path.Base(j.LaunchFile), ".py", ".json", 1)
+	configPath := path.Join(path.Dir(j.LaunchFile), base)
+	// Dump config map[string]interface{} into the json config file.
+	marshalled, err := json.Marshal(j.Config)
+	if err != nil {
+		return err
 	}
+	err = ioutil.WriteFile(configPath, marshalled, 0644)
+	log.Printf("Job %d on port %d creating launch config\n", j.TaskId, port)
+	if err != nil {
+		return err
+	}
+	// Launch learning script.
+	log.Printf("Job %d on port %d launch!\n", j.TaskId, port)
+	cmd := exec.Command("python", "-p", strconv.Itoa(port), j.LaunchFile)
+	cmd.Start()
+	cmd.Wait()
+	log.Printf("Job %d on port %d finished!\n", j.TaskId, port)
+	return nil
 }
 
-func (l *Launcher) checkPool() bool {
-	for _, v := range l.ActivePool {
-		if v == nil {
-			return true
+type JobResult struct {
+	Success 		bool
+	Description 	error
+	onJob 			Job
+}
+
+// Worker starts a learning script
+func (l *Launcher) worker(parent context.Context, id int, jobs <-chan Job, results chan<- JobResult) {
+	log.Printf("Worker %d started\n", id)
+	ctx, cancel := context.WithCancel(parent)
+	defer cancel()
+	port := 11311+id
+	e := Environment{}
+	e.Init(port, id)
+
+	onJobStart := make(chan struct{})
+	onJobFinish := make(chan struct{})
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	go e.Serve(ctx, onJobStart, onJobFinish, &wg)
+
+	L:
+	for {
+		select {
+		case _ = <-ctx.Done():
+			log.Printf("Worker %d cancel signal\n", id)
+			break L
+		case job := <-jobs:
+			log.Printf("Worker %d job %d assigned\n", id, job.TaskId)
+			onJobStart <- struct{}{}
+			time.Sleep(30*time.Second)
+			success := true
+			err := job.Do(port)
+			if err!=nil {
+				success = false
+				log.Printf("Worker %d job %d finished with an error\n", id, job.TaskId)
+			}
+			log.Printf("Worker %d job %d finished without errors\n", id, job.TaskId)
+			results <- JobResult{
+				Success:     success,
+				Description: err,
+				onJob:    	 job,
+			}
+			onJobFinish <- struct{}{}
 		}
 	}
-	return false
+	wg.Wait()
+}
+
+func (l *Launcher) checkPool() (bool, int) {
+	for k, v := range l.ActivePool {
+		if v == nil {
+			return true, k
+		}
+	}
+	return false, -1
 }
 
 
 func (l *Launcher) Start(){
-	// create worker pool
+	log.Println("Starting Launcher...")
+	// Create a pool of workers.
 	jobs := make(chan Job, l.PoolSize)
+	results := make(chan JobResult, l.PoolSize)
+	cancelFunctions := map[int]*context.CancelFunc{}
 	for id := 0; id < int(l.PoolSize); id++ {
-		go l.worker(id, jobs)
+		ctx, cancel := context.WithCancel(context.Background())
+		cancelFunctions[id] = &cancel
+		go l.worker(ctx, id, jobs, results)
 	}
 	// trigger
+	taskId := 0
 	for {
 		select  {
 			case _ = <- l.NeedToCheck:
-				empty := l.checkPool()
-				if len(l.WaitQueue) > 0 && empty{
-					log.Println("Trigger")
+				log.Print("Checking waiting queue")
+				anyEmpty, workerId := l.checkPool()
+				if len(l.WaitQueue) > 0 && anyEmpty{
+					log.Print("Found a new task to start!")
 					job := Job{
 						Config: l.WaitQueue[0],
 						LaunchFile: l.WaitLaunchFiles[0],
+						WorkerId: workerId,
+						TaskId: taskId,
 					}
 					l.WaitQueue, _ = deleteMapStrInt(l.WaitQueue, 0)
 					l.WaitLaunchFiles, _ = deleteStrings(l.WaitLaunchFiles, 0)
+					// to pool
+					l.ActivePool[workerId] = &job
 					jobs <- job
 					go func (){l.NeedToCheck <- true}()
 				}
+			case jobResult := <-results:
+				if !jobResult.Success {
+					log.Printf("Task %d failed and returned to queue\n", jobResult.onJob.TaskId)
+					l.WaitQueue = append(l.WaitQueue, jobResult.onJob.Config)
+					l.WaitLaunchFiles = append(l.WaitLaunchFiles, jobResult.onJob.LaunchFile)
+				}
+				log.Printf("Task %d success\n", jobResult.onJob.TaskId)
+				log.Printf("Worker %d is free\n", jobResult.onJob.WorkerId)
+				l.ActivePool[jobResult.onJob.WorkerId] = nil
+				go func (){l.NeedToCheck <- true}()
+			case <-l.Done:
+				for id, cancel := range cancelFunctions {
+					log.Printf("Cancel context %d\n", id)
+					(*cancel)()
+				}
 		}
+		taskId++
 	}
 }
 
@@ -314,9 +404,12 @@ func contains(s []string, e string) bool {
 }
 
 // custom delete from map[string]interface{} by index function
-func deleteMapStrInt(a []map[string]interface{}, i int) ([]map[string]interface{}, bool){
+func deleteMapStrInt(a []map[string]interface{}, i int) (m []map[string]interface{}, f bool){
 	defer func (){
-		if r:=recover(); r!=nil{}
+		if r:=recover(); r!=nil{
+			m = nil
+			f = false
+		}
 	}()
 	var aNew []map[string]interface{}
 	aNew = a[:i]
@@ -335,3 +428,6 @@ func deleteStrings(a []string, i int) ([]string, bool){
 	return aNew, true
 }
 
+func (l *Launcher) Close(){
+	l.Done <- struct {}{}
+}
