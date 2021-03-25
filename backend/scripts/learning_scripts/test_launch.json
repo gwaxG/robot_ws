@@ -1,1 +1,1 @@
-{"experiment":"test_1","experiment_series":"exp_test_off","id":"124","log_path":"/","model_parameters":{"cliprange":"0.2","ent_coef":"0.005"},"save_path":"/"}
+{"experiment":"test_1","experiment_series":"exp_test_off","id":0,"log_path":"/home/r1d1/dev/catkin_ws/src/robot_ws/backend/data/boards","model_parameters":{"cliprange":"0.2","ent_coef":"0.005"},"save_path":"/home/r1d1/dev/catkin_ws/src/robot_ws/backend/data/models"}
