@@ -1,6 +1,4 @@
-/home/r1d1/dev/catkin_ws/src/robot_ws/backend/scripts/learning_scripts/test_launch.py:19: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
-  self.p = rospy.Publisher("endless", String)
-2021-03-25 23:33:05.178064 Iteration on11311
-2021-03-25 23:33:06.179295 Iteration on11311
-2021-03-25 23:33:07.180639 Iteration on11311
-2021-03-25 23:33:08.181941 done
+2021-03-25 23:45:12.300115 Iteration on
+2021-03-25 23:45:12.300269 Iteration on
+2021-03-25 23:45:12.300322 Iteration on
+2021-03-25 23:45:12.300367 done
