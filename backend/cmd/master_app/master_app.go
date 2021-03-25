@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	poolSize := flag.Int("psize", 2, "Active worker pool size")
+	poolSize := flag.Int("psize", 1, "Active worker pool size")
 	flag.Parse()
 	app := master.Server{}
 	defer app.Close()

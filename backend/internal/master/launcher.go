@@ -55,7 +55,7 @@ type Job struct {
 }
 
 // Launch a learning script.
-func (j *Job) Do (port int) (e error) {
+func (j *Job) Do(port int) (e error) {
 	defer func() {
 		if r := recover(); r!=nil {
 			err := r.(error)
@@ -64,6 +64,7 @@ func (j *Job) Do (port int) (e error) {
 	}()
 	// Form config file path.
 	log.Printf("Job %d on port %d starting scrpit\n", j.TaskId, port)
+	log.Printf("python", "-p", strconv.Itoa(port), j.LaunchFile)
 	base := strings.Replace(path.Base(j.LaunchFile), ".py", ".json", 1)
 	configPath := path.Join(path.Dir(j.LaunchFile), base)
 	// Dump config map[string]interface{} into the json config file.
@@ -78,7 +79,8 @@ func (j *Job) Do (port int) (e error) {
 	}
 	// Launch learning script.
 	log.Printf("Job %d on port %d launch!\n", j.TaskId, port)
-	cmd := exec.Command("python", "-p", strconv.Itoa(port), j.LaunchFile)
+	log.Println("python", j.LaunchFile, "-p", strconv.Itoa(port))
+	cmd := exec.Command("python", j.LaunchFile, "-p", strconv.Itoa(port))
 	cmd.Start()
 	cmd.Wait()
 	log.Printf("Job %d on port %d finished!\n", j.TaskId, port)
@@ -116,9 +118,12 @@ func (l *Launcher) worker(parent context.Context, id int, jobs <-chan Job, resul
 		case job := <-jobs:
 			log.Printf("Worker %d job %d assigned\n", id, job.TaskId)
 			onJobStart <- struct{}{}
-			time.Sleep(30*time.Second)
+			log.Printf("30 second prevent waiting! // 2 for now", id, job.TaskId)
+			time.Sleep(2*time.Second)
 			success := true
+			log.Printf("Env %d job %d .Do started", id, job.TaskId)
 			err := job.Do(port)
+			log.Printf("Env %d job %d .Do FINISHED", id, job.TaskId)
 			if err!=nil {
 				success = false
 				log.Printf("Worker %d job %d finished with an error\n", id, job.TaskId)

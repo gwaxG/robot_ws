@@ -33,10 +33,14 @@ func (e *Environment) Init(port, id int) {
 func (e *Environment) start(ctx context.Context, wg *sync.WaitGroup) {
 	os.Setenv("ROS_MASTER_URI", e.addr)
 	// Start a process:
-	log.Printf("Environment started with id %d\n", e.id)
+	log.Printf("Environment started with id %d on port %d.\n", e.id, e.port)
 	cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "test", "test.launch")
+
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	cmd.Start()
+	err := cmd.Start()
+	if err!=nil {
+		panic("Critical panic env start")
+	}
 	select {
 	case _ = <-ctx.Done():
 		log.Printf("Signal to stop the simulation environment. %d\n", e.id)
@@ -46,7 +50,10 @@ func (e *Environment) start(ctx context.Context, wg *sync.WaitGroup) {
 			// NOte that minus sign is for the groupd pid.
 			syscall.Kill(-pgid, 15)
 		}
-		cmd.Wait()
+		err = cmd.Wait()
+		if err != nil{
+			log.Println("Do cmd wait did not succeed")
+		}
 		wg.Done()
 	}
 }
