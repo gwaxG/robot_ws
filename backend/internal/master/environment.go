@@ -34,7 +34,9 @@ func (e *Environment) start(ctx context.Context, wg *sync.WaitGroup) {
 	os.Setenv("ROS_MASTER_URI", e.addr)
 	// Start a process:
 	log.Printf("Environment started with id %d on port %d.\n", e.id, e.port)
-	cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "test", "test.launch")
+	// cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "test", "test.launch")
+	// cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "backend", "learning.launch")
+	cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "backend", "learning.launch", "port:=11315")
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	err := cmd.Start()
@@ -72,7 +74,8 @@ func (e *Environment) Serve(parent context.Context, onJobArrival, onJobFinish ch
 	)
 	os.Setenv("ROS_MASTER_URI", e.addr)
 	log.Printf("Contaienr %d started.\n", e.id)
-	timer = time.NewTimer(time.Minute * 15)
+	// Wait for 15 minutes without tasks; 1 for tests.
+	timer = time.NewTimer(time.Minute * 1)
 	loop:
 	for {
 		select {

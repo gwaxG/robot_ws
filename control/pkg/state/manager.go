@@ -3,7 +3,6 @@ package state
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"reflect"
 )
 
@@ -36,7 +35,6 @@ func (m *Manager) Monitor(set bool, change State) (State, State) {
 		min = reflect.ValueOf(m.limits).FieldByName(name).FieldByName("Min").Float()
 		max = reflect.ValueOf(m.limits).FieldByName(name).FieldByName("Max").Float()
 		if name == "Linear" || name == "Angular"{
-			log.Println("set", set, changeValue)
 			if set && changeValue != 0.0{
 				value = 0.0
 			}

@@ -56,5 +56,4 @@ class Base:
         sys.stderr = self.save_stderr
 
     def __del__(self):
-        print("del")
         self.close()

@@ -64,8 +64,7 @@ func (j *Job) Do(port int) (e error) {
 	}()
 	// Form config file path.
 	log.Printf("Job %d on port %d starting scrpit\n", j.TaskId, port)
-	log.Printf("python", "-p", strconv.Itoa(port), j.LaunchFile)
-	base := strings.Replace(path.Base(j.LaunchFile), ".py", ".json", 1)
+		base := strings.Replace(path.Base(j.LaunchFile), ".py", ".json", 1)
 	configPath := path.Join(path.Dir(j.LaunchFile), base)
 	// Dump config map[string]interface{} into the json config file.
 	marshalled, err := json.Marshal(j.Config)
@@ -118,8 +117,8 @@ func (l *Launcher) worker(parent context.Context, id int, jobs <-chan Job, resul
 		case job := <-jobs:
 			log.Printf("Worker %d job %d assigned\n", id, job.TaskId)
 			onJobStart <- struct{}{}
-			log.Printf("30 second prevent waiting! // 2 for now", id, job.TaskId)
-			time.Sleep(2*time.Second)
+			log.Printf("30 second prevent waiting! // 2 for tests", id, job.TaskId)
+			time.Sleep(30*time.Second)
 			success := true
 			log.Printf("Env %d job %d .Do started", id, job.TaskId)
 			err := job.Do(port)

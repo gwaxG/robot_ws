@@ -35,7 +35,6 @@ class CustomResnetCNN(CnnPolicy):
         # Re-ordering will be done by pre-preprocessing or wrapper
         self.cnn = torchvision.models.resnet18(pretrained=True)
         num_ftrs = self.cnn.fc.in_features
-        print(num_ftrs)
         # self.cnn.fc = nn.Linear(num_ftrs, 2)
         self.device = th.device("cuda:0" if th.cuda.is_available() else "cpu")
         self.cnn = self.cnn.to(self.device)

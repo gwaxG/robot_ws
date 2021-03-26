@@ -1,6 +1,6 @@
 {
-  "experiment_series": "exp_test",
-  "experiment": "test_1",
+  "experiment_series": "exp_test_25_03",
+  "experiment": "test_25_03",
   "alg": "PPO2sb1",
   "policy_type": "CustomMLPsb1",
   "model_parameters": {"cliprange":  "0.2", "ent_coef":  "0.005"},

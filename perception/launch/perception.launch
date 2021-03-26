@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+    
     <param name="feature_type" value="FeatureSliceVertical"/>
     <param name="image_height" type="int" value="480" />
     <param name="image_width" type="int" value="640" />
@@ -16,9 +17,10 @@
     <arg name="gui" default="true"/>
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
+    <arg name="port" default="11311"/>
 
     <node name="beamer" pkg="perception" type="beamer_app"
-      output="screen">
+      output="screen" args="$(arg port)"> 
     </node>
 
 

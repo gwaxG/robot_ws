@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
+    <!--Go-related port definition until goroslib corrected-->
+    <arg name="port" default="11311" />
     <!--Input arguments-->
     <arg name="paused" default="False"/>
     <arg name="use_sim_time" default="true"/>
@@ -36,14 +38,15 @@
         <arg name="paused" value="$(arg paused)"/>
         <arg name="use_sim_time" value="$(arg use_sim_time)"/>
         <arg name="headless" value="$(arg headless)"/>
+        <arg name="port" value="$(arg port)"/>
     </include>
 
     <!-- Nodes -->
     <!-- Write to database -->
-    <node name="database_writer" pkg="backend" type="db_writer_app" output="screen"/>
+    <node name="database_writer" pkg="backend" type="db_writer_app" output="screen" args="$(arg port)"/>
     <!-- Monitor progress -->
-    <node name="monitor" pkg="monitor" type="monitor_app" output="screen"/>
+    <node name="monitor" pkg="monitor" type="monitor_app" output="screen" args="$(arg port)"/>
     <!-- Robot control -->
-    <node name="control" pkg="control" type="control_app" output="screen"/>
+    <node name="control" pkg="control" type="control_app" output="screen" args="$(arg port)"/>
 
 </launch>

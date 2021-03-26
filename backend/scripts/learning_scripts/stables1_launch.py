@@ -10,9 +10,10 @@ from stable_baselines import PPO2 as PPO_sb1
 import rospy
 from stable_baselines.common.policies import MlpPolicy as PPO2MlpPolicy
 import json
+from utils.base import Base
 from gym_training.envs.training_env import TrainingEnv
 
-class LearningOpenAI:
+class Learner(Base):
     def __init__(self):
         """
         Supported algs
@@ -20,8 +21,8 @@ class LearningOpenAI:
         PPO2sb1, PPOsb3
         TD3sb1
         """
+        super(Learner, self).__init__()
         self.prms = self.load_prms(__file__.replace(".py", ".json"))
-        rospy.init_node(self.prms["experiment"]+"_training_node")
         kwargs = {
             'experiment': self.prms['experiment'],
             'arm': self.prms['arm'],
@@ -54,6 +55,7 @@ class LearningOpenAI:
         return prms
 
     def train_model(self):
+        self.log("Learning started!")
         self.model.learn(total_timesteps=self.prms['total_timesteps'])
         try:
             self.model.save(self.prms['save_path'])
@@ -62,9 +64,4 @@ class LearningOpenAI:
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-rmu', type=str, default="http://localhost:11311", help='ROS MASTER URI')
-    args = parser.parse_args()
-    os.environ["ROS_MASTER_URI"] = args.rmu
-
-    LearningOpenAI().train_model()
+    Learner().train_model()

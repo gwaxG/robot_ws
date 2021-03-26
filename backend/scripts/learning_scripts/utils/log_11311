@@ -1,4 +1,25 @@
-2021-03-25 23:45:12.300115 Iteration on
-2021-03-25 23:45:12.300269 Iteration on
-2021-03-25 23:45:12.300322 Iteration on
-2021-03-25 23:45:12.300367 done
+/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py:38: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
+  self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
+/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+2021-03-26 17:14:09.823959 Learning started!
+Traceback (most recent call last):
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/backend/scripts/learning_scripts/stables1_launch.py", line 67, in <module>
+    Learner().train_model()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/backend/scripts/learning_scripts/stables1_launch.py", line 59, in train_model
+    self.model.learn(total_timesteps=self.prms['total_timesteps'])
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/ppo2/ppo2.py", line 336, in learn
+    rollout = self.runner.run(callback)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/base_class.py", line 794, in runner
+    self._runner = self._make_runner()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/ppo2/ppo2.py", line 101, in _make_runner
+    gamma=self.gamma, lam=self.lam)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/ppo2/ppo2.py", line 449, in __init__
+    super().__init__(env=env, model=model, n_steps=n_steps)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/runners.py", line 31, in __init__
+    self.obs[:] = env.reset()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/vec_env/dummy_vec_env.py", line 62, in reset
+    self._save_obs(env_idx, obs)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/vec_env/dummy_vec_env.py", line 92, in _save_obs
+    self.buf_obs[key][env_idx] = obs
+ValueError: cannot copy sequence with size 6 to array axis with dimension 138
