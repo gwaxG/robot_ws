@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/gwaxG/robot_ws/backend/pkg/common"
-	"github.com/gwaxG/robot_ws/backend/pkg/database"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,54 +15,54 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gwaxG/robot_ws/backend/pkg/common"
+	"github.com/gwaxG/robot_ws/backend/pkg/database"
 )
 
 type Launcher struct {
 	// wait queue
-	WaitQueue 	[]map[string]interface{} 	`json:"config_pool"`
-	WaitLaunchFiles []string 				`json:"launch_files"`
+	WaitQueue       []map[string]interface{} `json:"config_pool"`
+	WaitLaunchFiles []string                 `json:"launch_files"`
 	// worker pool
-	ActivePool 	map[int]*Job 				`json:"active_pool"`
-	PoolSize	uint8					 	`json:"pool_size"`
-	db 										*database.DataBase
+	ActivePool map[int]*Job `json:"active_pool"`
+	PoolSize   uint8        `json:"pool_size"`
+	db         *database.DataBase
 	// workers
-	NeedToCheck	chan bool
-	Done chan struct{}
+	NeedToCheck chan bool
+	Done        chan struct{}
 }
 
-
-
-func (l *Launcher) Init(poolSize uint8, db *database.DataBase){
+func (l *Launcher) Init(poolSize uint8, db *database.DataBase) {
 	l.db = db
 	l.WaitQueue = []map[string]interface{}{}
 	l.WaitLaunchFiles = []string{}
 	l.ActivePool = map[int]*Job{}
-	for i := 0; i<int(poolSize); i++ {
+	for i := 0; i < int(poolSize); i++ {
 		l.ActivePool[i] = nil
 	}
 	l.PoolSize = poolSize
 	l.NeedToCheck = make(chan bool)
 }
 
-
 type Job struct {
-	Config 		map[string]interface{}		`json:"config"`
-	WorkerId	int							`json:"worker_id"`
-	LaunchFile	string						`json:"launch_file"`
-	TaskId 			int							`json:"task_id"`
+	Config     map[string]interface{} `json:"config"`
+	WorkerId   int                    `json:"worker_id"`
+	LaunchFile string                 `json:"launch_file"`
+	TaskId     int                    `json:"task_id"`
 }
 
 // Launch a learning script.
 func (j *Job) Do(port int) (e error) {
 	defer func() {
-		if r := recover(); r!=nil {
+		if r := recover(); r != nil {
 			err := r.(error)
 			e = fmt.Errorf("Something went wrong in job %d on port %d: %s\n", j.TaskId, port, err)
 		}
 	}()
 	// Form config file path.
 	log.Printf("Job %d on port %d starting scrpit\n", j.TaskId, port)
-		base := strings.Replace(path.Base(j.LaunchFile), ".py", ".json", 1)
+	base := strings.Replace(path.Base(j.LaunchFile), ".py", ".json", 1)
 	configPath := path.Join(path.Dir(j.LaunchFile), base)
 	// Dump config map[string]interface{} into the json config file.
 	marshalled, err := json.Marshal(j.Config)
@@ -87,9 +85,9 @@ func (j *Job) Do(port int) (e error) {
 }
 
 type JobResult struct {
-	Success 		bool
-	Description 	error
-	onJob 			Job
+	Success     bool
+	Description error
+	onJob       Job
 }
 
 // Worker starts a learning script
@@ -97,7 +95,7 @@ func (l *Launcher) worker(parent context.Context, id int, jobs <-chan Job, resul
 	log.Printf("Worker %d started\n", id)
 	ctx, cancel := context.WithCancel(parent)
 	defer cancel()
-	port := 11311+id
+	port := 11311 + id
 	e := Environment{}
 	e.Init(port, id)
 
@@ -108,7 +106,7 @@ func (l *Launcher) worker(parent context.Context, id int, jobs <-chan Job, resul
 
 	go e.Serve(ctx, onJobStart, onJobFinish, &wg)
 
-	L:
+L:
 	for {
 		select {
 		case _ = <-ctx.Done():
@@ -118,12 +116,12 @@ func (l *Launcher) worker(parent context.Context, id int, jobs <-chan Job, resul
 			log.Printf("Worker %d job %d assigned\n", id, job.TaskId)
 			onJobStart <- struct{}{}
 			log.Printf("30 second prevent waiting! // 2 for tests", id, job.TaskId)
-			time.Sleep(30*time.Second)
+			time.Sleep(10 * time.Second)
 			success := true
 			log.Printf("Env %d job %d .Do started", id, job.TaskId)
 			err := job.Do(port)
 			log.Printf("Env %d job %d .Do FINISHED", id, job.TaskId)
-			if err!=nil {
+			if err != nil {
 				success = false
 				log.Printf("Worker %d job %d finished with an error\n", id, job.TaskId)
 			}
@@ -131,7 +129,7 @@ func (l *Launcher) worker(parent context.Context, id int, jobs <-chan Job, resul
 			results <- JobResult{
 				Success:     success,
 				Description: err,
-				onJob:    	 job,
+				onJob:       job,
 			}
 			onJobFinish <- struct{}{}
 		}
@@ -148,8 +146,7 @@ func (l *Launcher) checkPool() (bool, int) {
 	return false, -1
 }
 
-
-func (l *Launcher) Start(){
+func (l *Launcher) Start() {
 	log.Println("Starting Launcher...")
 	// Create a pool of workers.
 	jobs := make(chan Job, l.PoolSize)
@@ -163,53 +160,53 @@ func (l *Launcher) Start(){
 	// trigger
 	taskId := 0
 	for {
-		select  {
-			case _ = <- l.NeedToCheck:
-				log.Print("Checking waiting queue")
-				anyEmpty, workerId := l.checkPool()
-				if len(l.WaitQueue) > 0 && anyEmpty{
-					log.Print("Found a new task to start!")
-					job := Job{
-						Config: l.WaitQueue[0],
-						LaunchFile: l.WaitLaunchFiles[0],
-						WorkerId: workerId,
-						TaskId: taskId,
-					}
-					l.WaitQueue, _ = deleteMapStrInt(l.WaitQueue, 0)
-					l.WaitLaunchFiles, _ = deleteStrings(l.WaitLaunchFiles, 0)
-					// to pool
-					l.ActivePool[workerId] = &job
-					jobs <- job
-					go func (){l.NeedToCheck <- true}()
+		select {
+		case _ = <-l.NeedToCheck:
+			log.Print("Checking waiting queue")
+			anyEmpty, workerId := l.checkPool()
+			if len(l.WaitQueue) > 0 && anyEmpty {
+				log.Print("Found a new task to start!")
+				job := Job{
+					Config:     l.WaitQueue[0],
+					LaunchFile: l.WaitLaunchFiles[0],
+					WorkerId:   workerId,
+					TaskId:     taskId,
 				}
-			case jobResult := <-results:
-				if !jobResult.Success {
-					log.Printf("Task %d failed and returned to queue\n", jobResult.onJob.TaskId)
-					l.WaitQueue = append(l.WaitQueue, jobResult.onJob.Config)
-					l.WaitLaunchFiles = append(l.WaitLaunchFiles, jobResult.onJob.LaunchFile)
-				}
-				log.Printf("Task %d success\n", jobResult.onJob.TaskId)
-				log.Printf("Worker %d is free\n", jobResult.onJob.WorkerId)
-				l.ActivePool[jobResult.onJob.WorkerId] = nil
-				go func (){l.NeedToCheck <- true}()
-			case <-l.Done:
-				for id, cancel := range cancelFunctions {
-					log.Printf("Cancel context %d\n", id)
-					(*cancel)()
-				}
+				l.WaitQueue, _ = deleteMapStrInt(l.WaitQueue, 0)
+				l.WaitLaunchFiles, _ = deleteStrings(l.WaitLaunchFiles, 0)
+				// to pool
+				l.ActivePool[workerId] = &job
+				jobs <- job
+				go func() { l.NeedToCheck <- true }()
+			}
+		case jobResult := <-results:
+			if !jobResult.Success {
+				log.Printf("Task %d failed and returned to queue\n", jobResult.onJob.TaskId)
+				l.WaitQueue = append(l.WaitQueue, jobResult.onJob.Config)
+				l.WaitLaunchFiles = append(l.WaitLaunchFiles, jobResult.onJob.LaunchFile)
+			}
+			log.Printf("Task %d success\n", jobResult.onJob.TaskId)
+			log.Printf("Worker %d is free\n", jobResult.onJob.WorkerId)
+			l.ActivePool[jobResult.onJob.WorkerId] = nil
+			go func() { l.NeedToCheck <- true }()
+		case <-l.Done:
+			for id, cancel := range cancelFunctions {
+				log.Printf("Cancel context %d\n", id)
+				(*cancel)()
+			}
 		}
 		taskId++
 	}
 }
 
 type ResponseGetConfigs struct {
-	Configs			[]map[string]interface{}	`json:"configs"`
-	WaitLaunchFiles	[]string					`json:"launch_files"`
-	Msg				string 						`json:"msg"`
+	Configs         []map[string]interface{} `json:"configs"`
+	WaitLaunchFiles []string                 `json:"launch_files"`
+	Msg             string                   `json:"msg"`
 }
 
 // List configs in scripts/learning_scripts
-func (l *Launcher) GetConfigs(pat string) (ResponseGetConfigs, error){
+func (l *Launcher) GetConfigs(pat string) (ResponseGetConfigs, error) {
 	if pat == "" {
 		pat = "template"
 	}
@@ -219,7 +216,7 @@ func (l *Launcher) GetConfigs(pat string) (ResponseGetConfigs, error){
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	common.FailOnError(err)
 	dir, _ = filepath.Split(dir)
-	dir = dir [:len(dir)-1]
+	dir = dir[:len(dir)-1]
 	dir = filepath.Join(dir, "scripts", "learning_scripts")
 	// keep only templates
 	files, err := os.ReadDir(dir)
@@ -242,10 +239,10 @@ func (l *Launcher) GetConfigs(pat string) (ResponseGetConfigs, error){
 }
 
 type ResponseGetQueue struct {
-	Queue		[]map[string]interface{}	`json:"queue"`
-	LaunchFiles []string 					`json:"launch_files"`
+	Queue       []map[string]interface{} `json:"queue"`
+	LaunchFiles []string                 `json:"launch_files"`
 	// PoolSize 	uint8						`json:"pool_size"`
-	Msg			string 						`json:"msg"`
+	Msg string `json:"msg"`
 }
 
 // return wait queue
@@ -258,9 +255,9 @@ func (l *Launcher) GetQueue() (ResponseGetQueue, error) {
 }
 
 type ResponseGetPool struct {
-	Pool		[]map[string]interface{}	`json:"pool"`
-	LaunchFiles []string 					`json:"launch_files"`
-	Msg			string 						`json:"msg"`
+	Pool        []map[string]interface{} `json:"pool"`
+	LaunchFiles []string                 `json:"launch_files"`
+	Msg         string                   `json:"msg"`
 }
 
 // return active pool
@@ -277,17 +274,17 @@ func (l *Launcher) GetPool() (ResponseGetPool, error) {
 }
 
 type RequestCreateTask struct {
-	Config 		map[string]interface{}  `json:"config"`
-	LaunchFile	string 					`json:"launch_file"`
-	Msg 		string 					`json:"msg"`
+	Config     map[string]interface{} `json:"config"`
+	LaunchFile string                 `json:"launch_file"`
+	Msg        string                 `json:"msg"`
 }
 
 type ResponseCreateTask struct {
-	Msg 		string 					`json:"msg"`
+	Msg string `json:"msg"`
 }
 
 // Add a task to the config
-func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error){
+func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error) {
 	req := RequestCreateTask{}
 	body, err := ioutil.ReadAll(reqRaw)
 	if err != nil {
@@ -305,17 +302,17 @@ func (l *Launcher) CreateTask(reqRaw io.ReadCloser) (ResponseCreateTask, error){
 }
 
 type RequestUpdateTask struct {
-	Config 		map[string]interface{}  `json:"config"`
-	TaskId 		int  					`json:"task_id"`
+	Config map[string]interface{} `json:"config"`
+	TaskId int                    `json:"task_id"`
 }
 
 type ResponseUpdateTask struct {
-	Found		bool					`json:"found"`
-	Msg 		string 					`json:"msg"`
+	Found bool   `json:"found"`
+	Msg   string `json:"msg"`
 }
 
 // update task config in wait queue
-func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
+func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error) {
 	req := RequestUpdateTask{}
 	resp := ResponseUpdateTask{}
 	body, err := ioutil.ReadAll(reqRaw)
@@ -328,7 +325,7 @@ func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
 	// check for correct number of requested task id update
 	if len(l.WaitQueue) < taskId {
 		resp.Found = false
-		resp.Msg   = "taskId is higher than queue length"
+		resp.Msg = "taskId is higher than queue length"
 		return resp, nil
 	}
 
@@ -353,15 +350,15 @@ func (l *Launcher) UpdateTask(reqRaw io.ReadCloser) (ResponseUpdateTask, error){
 }
 
 type RequestDeleteTask struct {
-	TaskId 		int  					`json:"task_id"`
+	TaskId int `json:"task_id"`
 }
 
 type ResponseDeleteTask struct {
-	Found		bool					`json:"found"`
-	Msg 		string 					`json:"msg"`
+	Found bool   `json:"found"`
+	Msg   string `json:"msg"`
 }
 
-func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
+func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error) {
 	req := RequestDeleteTask{}
 	resp := ResponseDeleteTask{}
 	body, err := ioutil.ReadAll(reqRaw)
@@ -374,7 +371,7 @@ func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
 	// check for correct number of requested task id update
 	if len(l.WaitQueue) < taskId {
 		resp.Found = false
-		resp.Msg   = "taskId is higher than queue length"
+		resp.Msg = "taskId is higher than queue length"
 		return resp, nil
 	}
 
@@ -383,14 +380,14 @@ func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error){
 	l.WaitQueue, result = deleteMapStrInt(l.WaitQueue, taskId)
 	if result == false {
 		resp.Found = false
-		resp.Msg   = "could not delete from config pool"
+		resp.Msg = "could not delete from config pool"
 		return resp, nil
 	}
 
 	l.WaitLaunchFiles, result = deleteStrings(l.WaitLaunchFiles, taskId)
 	if result == false {
 		resp.Found = false
-		resp.Msg   = "could not delete from launch files"
+		resp.Msg = "could not delete from launch files"
 		return resp, nil
 	}
 	resp.Found = true
@@ -408,9 +405,9 @@ func contains(s []string, e string) bool {
 }
 
 // custom delete from map[string]interface{} by index function
-func deleteMapStrInt(a []map[string]interface{}, i int) (m []map[string]interface{}, f bool){
-	defer func (){
-		if r:=recover(); r!=nil{
+func deleteMapStrInt(a []map[string]interface{}, i int) (m []map[string]interface{}, f bool) {
+	defer func() {
+		if r := recover(); r != nil {
 			m = nil
 			f = false
 		}
@@ -422,9 +419,10 @@ func deleteMapStrInt(a []map[string]interface{}, i int) (m []map[string]interfac
 }
 
 // custom delete from string array by index function
-func deleteStrings(a []string, i int) ([]string, bool){
-	defer func (){
-		if r:=recover(); r!=nil{}
+func deleteStrings(a []string, i int) ([]string, bool) {
+	defer func() {
+		if r := recover(); r != nil {
+		}
 	}()
 	var aNew []string
 	aNew = a[:i]
@@ -432,6 +430,6 @@ func deleteStrings(a []string, i int) ([]string, bool){
 	return aNew, true
 }
 
-func (l *Launcher) Close(){
-	l.Done <- struct {}{}
+func (l *Launcher) Close() {
+	l.Done <- struct{}{}
 }

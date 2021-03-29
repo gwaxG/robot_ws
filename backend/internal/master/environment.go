@@ -1,6 +1,7 @@
 package master
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/exec"
@@ -8,7 +9,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-	"context"
 )
 
 type Environment struct {
@@ -36,7 +36,8 @@ func (e *Environment) start(ctx context.Context, wg *sync.WaitGroup) {
 	log.Printf("Environment started with id %d on port %d.\n", e.id, e.port)
 	// cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "test", "test.launch")
 	// cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "backend", "learning.launch")
-	cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "backend", "learning.launch", "port:=11315")
+	sport := strconv.Itoa(e.port)
+	cmd := exec.Command("roslaunch", "-p", sport, "backend", "learning.launch", "port:="+sport)
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	err := cmd.Start()
@@ -74,8 +75,8 @@ func (e *Environment) Serve(parent context.Context, onJobArrival, onJobFinish ch
 	)
 	os.Setenv("ROS_MASTER_URI", e.addr)
 	log.Printf("Contaienr %d started.\n", e.id)
-	// Wait for 15 minutes without tasks; 1 for tests.
-	timer = time.NewTimer(time.Minute * 1)
+	// Wait for 2 minutes without tasks; 1 for tests.
+	timer = time.NewTimer(time.Minute * 2)
 	loop:
 	for {
 		select {

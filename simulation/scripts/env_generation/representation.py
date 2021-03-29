@@ -61,8 +61,8 @@ class Goal(Group):
         self.shift_z = 0.
         self.exist = False
 
-        self.x = 0.
-        self.y = 0.
+        self.x = 1.99
+        self.y = 1.99
         self.z = 0.085
 
         self.rand = False

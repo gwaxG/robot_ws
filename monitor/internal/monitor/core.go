@@ -3,11 +3,12 @@ package monitor
 import "C"
 import (
 	"fmt"
+	"math"
+
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"github.com/gwaxG/robot_ws/monitor/pkg/simulation_structs"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
-	"math"
 )
 
 const EXTRADIUS float32 = 0.3
@@ -24,7 +25,7 @@ type Core struct {
 	goal         simulation_structs.GoalInfoRes
 	timeStep     int32
 	stepReqCh    chan bool
-	comm 		 map[string]interface{}
+	comm         map[string]interface{}
 }
 
 func (c *Core) Init() {
@@ -67,6 +68,9 @@ func (c *Core) onNewRollout(req *structs.NewRolloutReq, expseries string) {
 	c.rolloutState.Closest = 10000.0
 	c.rolloutState.MaximumDist = 0.
 	c.rolloutState.Published = false
+	c.rolloutState.EverStarted = false
+	c.rolloutState.TimeSteps = 0
+
 }
 func (c *Core) onStartNewRollout() {
 	c.timeStep = 1
@@ -77,9 +81,12 @@ func (c *Core) onStartNewRollout() {
 	c.rolloutState.Closest = actualDistToGoal
 	c.rolloutState.MaximumDist = actualDistToGoal
 	c.rolloutState.Started = true
+	c.rolloutState.EverStarted = false
+	c.rolloutState.Done = false
 }
 func (c *Core) onStepReturn() {
 	c.timeStep++
+	c.rolloutState.TimeSteps = int(c.timeStep)
 	c.rolloutState.StepReward = 0
 	c.rolloutState.StepCogDeviation = 0
 	c.rolloutState.StepCogHeight = 0
@@ -88,11 +95,11 @@ func (c *Core) onStepReturn() {
 func (c *Core) Start() {
 	for {
 		select {
-		case c.robotState = <- c.comm["RobotState"].(chan state.State):
+		case c.robotState = <-c.comm["RobotState"].(chan state.State):
 			go func() {
 				c.Estimate()
 			}()
-		case c.robotPose = <- c.comm["Odometry"].(chan nav_msgs.Odometry):
+		case c.robotPose = <-c.comm["Odometry"].(chan nav_msgs.Odometry):
 			go func() {
 				c.CheckTippingOver()
 				c.Estimate()
@@ -106,14 +113,14 @@ func (c *Core) Start() {
 func (c *Core) CheckTippingOver() {
 	roll, pitch, _ := c.getEuler()
 	accident := false
-	if roll > math.Pi/2 && !c.rolloutState.Done{
+	if roll > math.Pi/2 && !c.rolloutState.Done {
 		c.rolloutState.Accidents = "Front tipping over"
 		accident = true
 	} else if roll < -math.Pi/2 && !c.rolloutState.Done {
 		c.rolloutState.Accidents = "Rear tipping over"
 		accident = true
 	}
-	if pitch > math.Pi/2 && !c.rolloutState.Done{
+	if pitch > math.Pi/2 && !c.rolloutState.Done {
 		c.rolloutState.Accidents = "Right tipping over"
 	} else if pitch < -math.Pi/2 && !c.rolloutState.Done {
 		c.rolloutState.Accidents = "Left tippîng over"
@@ -133,7 +140,7 @@ func (c *Core) CheckBorders() {
 func (c *Core) Estimate() {
 	dist := c.GetDistance()
 	if c.rolloutState.Started && !c.rolloutState.Done {
-		if c.rolloutState.Closest - dist > 0.01{
+		if c.rolloutState.Closest-dist > 0.01 {
 			diff := (c.rolloutState.Closest - dist) / (c.rolloutState.MaximumDist - EXTRADIUS)
 			c.rolloutState.Progress += diff
 			c.rolloutState.Reward += diff
@@ -144,16 +151,17 @@ func (c *Core) Estimate() {
 	if !c.rolloutState.Done {
 		c.rolloutState.Done = c.isDoneByDistance(dist)
 	}
-	if c.rolloutState.Done && !c.rolloutState.Published {
+	// fmt.Println("Need to send?", c.rolloutState.Done, !c.rolloutState.Published, c.rolloutState.Started)
+	if c.rolloutState.Done && !c.rolloutState.Published && c.rolloutState.Started {
 		c.ros.SendToBackend()
 		c.rolloutState.Published = true
 		c.goal = simulation_structs.GoalInfoRes{}
 	}
 }
 
-func (c *Core) isDoneByDistance(dist float32) bool{
+func (c *Core) isDoneByDistance(dist float32) bool {
 	res := false
-	if dist < EXTRADIUS || c.timeStep >= c.rolloutState.TimeStepLimit{
+	if dist < EXTRADIUS || c.timeStep >= c.rolloutState.TimeStepLimit {
 		res = true
 	}
 	return res
@@ -185,13 +193,13 @@ func (c *Core) getEuler() (float64, float64, float64) {
 	Y := c.robotPose.Pose.Pose.Orientation.Y
 	Z := c.robotPose.Pose.Pose.Orientation.Z
 	W := c.robotPose.Pose.Pose.Orientation.W
-	k := math.Sqrt( W*W + X*X + Y*Y + Z*Z)
+	k := math.Sqrt(W*W + X*X + Y*Y + Z*Z)
 	X = X / k
 	Y = Y / k
 	Z = Z / k
 	W = W / k
-	roll := math.Atan2(2*(W * X+Y * Z), 1-2*(X * X + Y * Y))
-	pitch := math.Asin(2 * (W * Y -  Z * X))
-	yaw := math.Atan2(2*(X * Y+W * Z), 1-2*(Y * Y + Z * Z))
+	roll := math.Atan2(2*(W*X+Y*Z), 1-2*(X*X+Y*Y))
+	pitch := math.Asin(2 * (W*Y - Z*X))
+	yaw := math.Atan2(2*(X*Y+W*Z), 1-2*(Y*Y+Z*Z))
 	return roll, pitch, yaw
 }

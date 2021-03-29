@@ -3,7 +3,7 @@
 
 import rospy
 from representation import Env
-import render
+import tf
 import time
 from simulation.srv import EnvGen, EnvGenResponse
 from simulation.srv import GoalInfo, GoalInfoResponse
@@ -19,6 +19,7 @@ class EnvGenerator:
         s = rospy.Service('env_gen', EnvGen, self.router)
         s = rospy.Service('stair_info', StairInfo, self.send_stair_info)
         s = rospy.Service('goal_info', GoalInfo, self.send_goal_info)
+        self.br = tf.TransformBroadcaster()
         self.generation_mapping = {
             "ground_obstacles": self.generate_ground_obstacles,
             "stair_floor": self.generate_stair_floor,
@@ -33,7 +34,10 @@ class EnvGenerator:
         }
         for key in self.env_mapping.keys():
             render.delete_model(key)
-        rospy.spin()
+
+        while not rospy.is_shutdown():
+            self.broadcast_goal()
+            rospy.sleep(0.25)
 
     def send_goal_info(self, _):
         return GoalInfoResponse(
@@ -80,6 +84,16 @@ class EnvGenerator:
         rand = bool(int(rand))
         self.env.goal.generate(task, rand)
         render.apply(self.env.goal)
+
+    def broadcast_goal(self):
+        self.br.sendTransform(
+            [self.env.goal.x, self.env.goal.y, self.env.goal.z],
+            [1., 0., 0., 0.],
+            rospy.Time.now(),
+            "goal",
+            "map"
+        )
+
 
     def generate_floor_obstacles(self, props=None):
         if self.env.floor_obstacles.exist:

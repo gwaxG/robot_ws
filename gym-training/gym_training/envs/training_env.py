@@ -14,16 +14,19 @@ from simulation.srv import RobotSpawn, RobotSpawnResponse, RobotSpawnRequest
 from simulation.srv import EnvGen, EnvGenResponse, EnvGenRequest
 from perception.msg import BeamMsg
 from std_msgs.msg import String
+from simulation.msg import DistDirec
+
 
 class TrainingEnv(gym.Env):
     ACTION_TIME = 0.25
     def __init__(self, **kwargs):
+        rospy.set_param("exp_series_name", kwargs['experiment_series'])
         self.experiment = kwargs['experiment']
         self.arm_is_used = kwargs['arm']
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
-        self.time_step_limit = kwargs['time_step_limit']
+        self.time_step_limit = int(kwargs['time_step_limit'])
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
         self.seq = 0
@@ -41,6 +44,8 @@ class TrainingEnv(gym.Env):
         self.robot_state = State()
         rospy.Subscriber("/features", BeamMsg, self.update_features)
         self.features = BeamMsg()
+        rospy.Subscriber("/direction", BeamMsg, self.update_features)
+        self.direction = DistDirec()
         # Service callers
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
         self.robot_spawn = rospy.ServiceProxy('robot_spawn', RobotSpawn)
@@ -64,8 +69,11 @@ class TrainingEnv(gym.Env):
         fmax = []
 
         for k, v in self.active_action_fields.items():
-            if v == "linear" or v == "angular":
-                amin.append(-VEL)
+            if v == "angular" or v == "linear":
+                if v == "angular":
+                    amin.append(-VEL)
+                elif v == "linear":
+                    amin.append(0)
                 amax.append(VEL)
                 omin.append(-VEL)
                 omax.append(VEL)
@@ -81,6 +89,16 @@ class TrainingEnv(gym.Env):
         fmax = [3.0 for i in range(height+width)]
         omin += fmin
         omax += fmax
+
+        ANGLE_MIN = -np.pi
+        ANGLE_MAX = np.pi
+        omin += [ANGLE_MIN]
+        omax += [ANGLE_MAX]
+
+        DIST_MIN = 0.
+        DIST_MAX = 7.
+        omin += [DIST_MIN]
+        omax += [DIST_MAX]
 
         aspace = spaces.Box(np.array(amin), np.array(amax))
         ospace = spaces.Box(np.array(omin), np.array(omax))
@@ -113,6 +131,9 @@ class TrainingEnv(gym.Env):
             raise(NotImplementedError())
         return obstacle
 
+    def update_direction(self, msg):
+        self.direction = msg
+
     def update_features(self, msg):
         self.features = msg
 
@@ -138,10 +159,16 @@ class TrainingEnv(gym.Env):
         :return:
         """
         state = []
+        # robot configuration
         for k, v in self.active_action_fields.items():
             state.append(getattr(self.robot_state, v, 0.))
+
+        # features
         state += self.features.vertical.data
         state += self.features.horizontal.data
+
+        # direction + distance
+        state += [self.direction.angle, self.direction.distance]
 
         return state
 
@@ -207,8 +234,8 @@ class TrainingEnv(gym.Env):
     def reset(self, goal=""):
         self.seq += 1
         self.return_robot_to_initial_state()
-        self.respawn_robot()
         self.regenerate_obstacles()
+        self.respawn_robot()
         _ = self.spawn_goal()
         self.create_new_rollout()
         self.start_rollout.call(TriggerRequest())

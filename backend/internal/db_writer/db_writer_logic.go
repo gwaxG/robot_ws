@@ -35,6 +35,7 @@ func (c *Core) Start() {
 
 	for {
 		select {
+			// New analytics coming from ROS
 			case analytics = <- c.analyticsCh:
 				go c.database.AddNewRolloutAnalytics(analytics)
 		}

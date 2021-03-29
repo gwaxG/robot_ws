@@ -4,6 +4,7 @@ register(
     id='TrainingEnv-v1',
     entry_point='gym_training.envs:TrainingEnv',
     kwargs={
+        "experiment_series": "not_defined",
         'experiment': "not_defined",
         'arm': True,
         'angular': True,

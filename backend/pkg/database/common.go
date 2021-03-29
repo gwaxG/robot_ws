@@ -51,7 +51,6 @@ func (db *DataBase) check (dbName, collName string) {
 	}
 }
 
-
 // Disconnect client from the DB server
 func (db *DataBase) Close() {
 	db.client.Disconnect(context.TODO())

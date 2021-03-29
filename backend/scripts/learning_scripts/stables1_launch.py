@@ -24,6 +24,7 @@ class Learner(Base):
         super(Learner, self).__init__()
         self.prms = self.load_prms(__file__.replace(".py", ".json"))
         kwargs = {
+            'experiment_series': self.prms['experiment_series'],
             'experiment': self.prms['experiment'],
             'arm': self.prms['arm'],
             'angular': self.prms['angular'],
@@ -55,8 +56,8 @@ class Learner(Base):
         return prms
 
     def train_model(self):
-        self.log("Learning started!")
-        self.model.learn(total_timesteps=self.prms['total_timesteps'])
+        self.log(f"Learning started! For {type(int(self.prms['total_timesteps']))} of type {type(self.prms['total_timesteps'])}")
+        self.model.learn(total_timesteps=int(self.prms['total_timesteps']))
         try:
             self.model.save(self.prms['save_path'])
         except Exception as e:

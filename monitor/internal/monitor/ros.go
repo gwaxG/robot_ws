@@ -3,40 +3,40 @@ package monitor
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
+
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_srvs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
 	"github.com/gwaxG/robot_ws/monitor/pkg/simulation_structs"
-	"log"
+	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
 )
 
 type ROS struct {
-	node         	*goroslib.Node
-	addToBackend 	*goroslib.Publisher
-	goalInfo	 	*goroslib.ServiceClient
-	stairInfo	 	*goroslib.ServiceClient
-	newRollout	 	*goroslib.ServiceProvider
-	startNewRollout	*goroslib.ServiceProvider
-	stepReturn		*goroslib.ServiceProvider
-	odomSub			*goroslib.Subscriber
-	robSub			*goroslib.Subscriber
-	rolloutState 	*structs.RolloutState
-	robotStateCh	chan state.State
-	odometryCh		chan nav_msgs.Odometry
-	comm 		 	*map[string]interface{}
+	node            *goroslib.Node
+	addToBackend    *goroslib.Publisher
+	goalInfo        *goroslib.ServiceClient
+	stairInfo       *goroslib.ServiceClient
+	newRollout      *goroslib.ServiceProvider
+	startNewRollout *goroslib.ServiceProvider
+	stepReturn      *goroslib.ServiceProvider
+	odomSub         *goroslib.Subscriber
+	robSub          *goroslib.Subscriber
+	rolloutState    *structs.RolloutState
+	robotStateCh    chan state.State
+	odometryCh      chan nav_msgs.Odometry
+	comm            *map[string]interface{}
 
-	expSeries		string
+	expSeries string
 }
 
-func (r *ROS) Init(state *structs.RolloutState, comm *map[string]interface{}){
+func (r *ROS) Init(state *structs.RolloutState, comm *map[string]interface{}) {
 	r.rolloutState = state
 	r.comm = comm
 
-	fmt.Println("ROS init")
 	var err error
 	r.node, err = goroslib.NewNode(goroslib.NodeConf{
 		Name:          "monitor",
@@ -125,20 +125,23 @@ func (r *ROS) onRobotState(robotState *state.State) {
 // }
 
 // Assign new parameters of rollout and put its values to the there
-func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes{
+func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes {
+	fmt.Println("New rollout")
 	r.updateExpSeries()
 	(*r.comm)["NewRollout"].(func(*structs.NewRolloutReq, string))(req, r.expSeries)
 	return &structs.NewRolloutRes{Received: true}
 }
 
 // Reset the rollout state
-func (r *ROS) onStartNewRollout(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes{
+func (r *ROS) onStartNewRollout(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes {
+	fmt.Println("start new rollout")
 	(*r.comm)["StartNewRollout"].(func())()
 	return &std_srvs.TriggerRes{Success: true, Message: ""}
 }
 
 // Handler of the StepReturn service
-func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes{
+func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes {
+	fmt.Printf("one step %f %d %v\n", r.rolloutState.StepReward, r.rolloutState.TimeSteps, r.rolloutState.Done)
 	msg := &structs.StepReturnRes{
 		Reward: r.rolloutState.StepReward,
 		Done:   r.rolloutState.Done,
@@ -149,6 +152,7 @@ func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes{
 
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
+
 	msg := structs.RolloutAnalytics{
 		ExpSeries:    r.rolloutState.ExpSeries,
 		Experiment:   r.rolloutState.Experiment,
@@ -160,11 +164,13 @@ func (r *ROS) SendToBackend() {
 		Reward:       r.rolloutState.Reward,
 		CogDeviation: r.rolloutState.CogDeviation,
 		CogHeight:    r.rolloutState.CogHeight,
-		Accidents: 	  r.rolloutState.Accidents,
+		Accidents:    r.rolloutState.Accidents,
+		TimeSteps:    r.rolloutState.TimeSteps,
 	}
+	fmt.Println("Send to backend", msg)
 	encoded, _ := json.Marshal(msg)
 	r.addToBackend.Write(&std_msgs.String{
-		Data:    string(encoded),
+		Data: string(encoded),
 	})
 }
 
@@ -178,4 +184,3 @@ func FailOnError(err error) {
 		log.Fatal(err)
 	}
 }
-

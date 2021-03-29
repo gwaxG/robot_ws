@@ -2,19 +2,20 @@ package master
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	"github.com/gwaxG/robot_ws/backend/pkg/common"
-	"github.com/gwaxG/robot_ws/backend/pkg/database"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gwaxG/robot_ws/backend/pkg/common"
+	"github.com/gwaxG/robot_ws/backend/pkg/database"
 )
 
 type Server struct {
-	api  		*gin.Engine
-	db 			database.DataBase
-	launcher 	Launcher
+	api      *gin.Engine
+	db       database.DataBase
+	launcher Launcher
 }
 
 // Core module organizes communication between UI (server), database (rpc) and learning env. (launcher).
@@ -39,7 +40,7 @@ func (s *Server) Close() {
 	s.launcher.Close()
 }
 
-func (s *Server) InitAPI(){
+func (s *Server) InitAPI() {
 	s.api.Use(s.CORSMiddleware())
 	s.api.Use(s.JSONMiddleware())
 	s.api.GET("/dbs", s.listDbs)
@@ -81,7 +82,7 @@ func (s *Server) fetchHistoryConfigs(c *gin.Context) {
 
 // Draw figures based on fields from a database collection
 func (s *Server) visualize(c *gin.Context) {
-	dbName := c.Query("database") // shortcut for c.Request.URL.Query().Get("lastname")
+	dbName := c.Query("database")     // shortcut for c.Request.URL.Query().Get("lastname")
 	collName := c.Query("collection") // shortcut for c.Request.URL.Query().Get("lastname")
 	data, err := s.db.FetchVisualize(dbName, collName, c.Request.Body)
 	formJson(data, err, c)
@@ -155,7 +156,7 @@ func (s *Server) CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-func (s* Server) preflight(c *gin.Context) {
+func (s *Server) preflight(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header(
 		"Access-Control-Allow-Headers",
