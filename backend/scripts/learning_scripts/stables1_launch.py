@@ -21,8 +21,8 @@ class Learner(Base):
         PPO2sb1, PPOsb3
         TD3sb1
         """
-        super(Learner, self).__init__()
         self.prms = self.load_prms(__file__.replace(".py", ".json"))
+        super(Learner, self).__init__(self.prms)
         kwargs = {
             'experiment_series': self.prms['experiment_series'],
             'experiment': self.prms['experiment'],
@@ -41,11 +41,11 @@ class Learner(Base):
         if self.prms['alg'] == 'PPO2sb1':
             if self.prms['policy_type'] == 'PPO2MlpPolicy':
                 self.model = PPO_sb1(PPO2MlpPolicy, self.env, n_steps=128, verbose=1, learning_rate=1e-4,
-                                     tensorboard_log=self.prms['log_path'])
+                                     tensorboard_log=self.log_path)
             if self.prms['policy_type'] == 'CustomMLPsb1':
                 self.model = PPO_sb1(
                     CustomMLPsb1, self.env, n_steps=128, verbose=1, learning_rate=1e-4,
-                    tensorboard_log=self.prms['log_path'],
+                    tensorboard_log=self.log_path,
                     cliprange=float(model_parameters['cliprange']),
                     ent_coef=float(model_parameters['ent_coef'])
                 )
@@ -59,7 +59,7 @@ class Learner(Base):
         self.log(f"Learning started! For {type(int(self.prms['total_timesteps']))} of type {type(self.prms['total_timesteps'])}")
         self.model.learn(total_timesteps=int(self.prms['total_timesteps']))
         try:
-            self.model.save(self.prms['save_path'])
+            self.model.save(self.save_path)
         except Exception as e:
             print("Model was not saved")
 

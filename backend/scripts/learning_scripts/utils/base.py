@@ -16,7 +16,14 @@ class Base:
     3. Node creation.
     """
 
-    def __init__(self):
+    def __init__(self, prms):
+        postfix = prms["experiment_series"] + "_" + prms['experiment']
+        # paths
+        p = os.path.abspath(__file__)
+        for i in range(5):
+            p = os.path.split(p)[0]
+        self.log_path = os.path.join(p, prms["log_path"], postfix)
+        self.save_path = os.path.join(p, prms["log_path"], postfix)
         # parse input
         parser = argparse.ArgumentParser()
         parser.add_argument('-p', type=int, default=11311, help='ROS MASTER URI port')

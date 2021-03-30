@@ -32,6 +32,8 @@ class EnvGenerator:
             "floor_obstacles": self.env.floor_obstacles,
             "goal": self.env.goal,
         }
+        rospy.wait_for_service('/gazebo/delete_model')
+        print('/gazebo/delete_model is available.')
         for key in self.env_mapping.keys():
             render.delete_model(key)
 

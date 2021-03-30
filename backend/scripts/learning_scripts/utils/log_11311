@@ -2,26 +2,147 @@
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
-2021-03-30 00:32:15.226436 Learning started! For <class 'int'> of type <class 'int'>
-Traceback (most recent call last):
-  File "stables1_launch.py", line 68, in <module>
-    Learner().train_model()
-  File "stables1_launch.py", line 60, in train_model
-    self.model.learn(total_timesteps=int(self.prms['total_timesteps']))
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/ppo2/ppo2.py", line 336, in learn
-    rollout = self.runner.run(callback)
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/runners.py", line 48, in run
-    return self._run()
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/ppo2/ppo2.py", line 482, in _run
-    self.obs[:], rewards, self.dones, infos = self.env.step(clipped_actions)
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/vec_env/base_vec_env.py", line 150, in step
-    return self.step_wait()
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/vec_env/dummy_vec_env.py", line 48, in step_wait
-    obs = self.envs[env_idx].reset()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 239, in reset
-    _ = self.spawn_goal()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 210, in spawn_goal
-    props=self.task + "_" + self.rand,
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 524, in call
-    raise ServiceException("service [%s] returned no response"%self.resolved_name)
-rospy.service.ServiceException: service [/env_gen] returned no response
+2021-03-30 13:35:31.869497 Learning started! For <class 'int'> of type <class 'int'>
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1
+regenerating ground_obstacles flat_1

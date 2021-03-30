@@ -126,7 +126,7 @@ func (r *ROS) onRobotState(robotState *state.State) {
 
 // Assign new parameters of rollout and put its values to the there
 func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes {
-	fmt.Println("New rollout")
+	// fmt.Println("New rollout")
 	r.updateExpSeries()
 	(*r.comm)["NewRollout"].(func(*structs.NewRolloutReq, string))(req, r.expSeries)
 	return &structs.NewRolloutRes{Received: true}
@@ -134,14 +134,14 @@ func (r *ROS) onNewRollout(req *structs.NewRolloutReq) *structs.NewRolloutRes {
 
 // Reset the rollout state
 func (r *ROS) onStartNewRollout(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes {
-	fmt.Println("start new rollout")
+	// fmt.Println("start new rollout")
 	(*r.comm)["StartNewRollout"].(func())()
 	return &std_srvs.TriggerRes{Success: true, Message: ""}
 }
 
 // Handler of the StepReturn service
 func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes {
-	fmt.Printf("one step %f %d %v\n", r.rolloutState.StepReward, r.rolloutState.TimeSteps, r.rolloutState.Done)
+	// fmt.Printf("one step %f %d %v\n", r.rolloutState.StepReward, r.rolloutState.TimeSteps, r.rolloutState.Done)
 	msg := &structs.StepReturnRes{
 		Reward: r.rolloutState.StepReward,
 		Done:   r.rolloutState.Done,

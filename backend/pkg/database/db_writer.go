@@ -2,16 +2,17 @@ package database
 
 import (
 	"context"
+	"log"
+
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
 	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
 	"go.mongodb.org/mongo-driver/bson"
-	"log"
 )
 
 // Append new rollout analytics to corresponding database and collection
 func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
 	db.check(analytics.ExpSeries, analytics.Experiment)
-	log.Printf("Inserting new to db %s collection %s\n",  db.database.Name(), db.collection.Name())
+	log.Printf("Inserting new to db %s collection %s\n", db.database.Name(), db.collection.Name())
 	db.mutex.Lock()
 	insertResult, err := db.collection.InsertOne(context.TODO(), analytics)
 	db.mutex.Unlock()
@@ -22,7 +23,7 @@ func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
 // save config to collection HistoryConfigs in the form of document {name: string, config: json}
 func (db *DataBase) SaveConfig(Config map[string]interface{}) {
 	defer func() {
-		if r:=recover(); r!=nil {
+		if r := recover(); r != nil {
 			log.Println(
 				"Recoverd in db_writer.SaveConfig on",
 				Config["experiment_series"].(string),
@@ -66,7 +67,7 @@ func (db *DataBase) SaveConfig(Config map[string]interface{}) {
 	} else {
 		req := map[string]interface{}{
 			"config": Config,
-			"name": Experiment,
+			"name":   Experiment,
 		}
 		// Create
 		_, err := db.collection.InsertOne(context.TODO(), req)
@@ -80,7 +81,7 @@ func (db *DataBase) SaveConfig(Config map[string]interface{}) {
 // delete a config from collection HistoryConfigs
 func (db *DataBase) DeleteConfig(ExperimentSeries, Experiment string) {
 	defer func() {
-		if r:=recover(); r!=nil {
+		if r := recover(); r != nil {
 			log.Println(
 				"Recoverd in db_writer.DeleteConfig on",
 				ExperimentSeries,

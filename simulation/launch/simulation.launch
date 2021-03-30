@@ -22,5 +22,6 @@
 
     <node name="env_gen_services" pkg="simulation" type="env_gen_services.py" output="screen"/>
     <node name="robot_spawn_service" pkg="simulation" type="robot_spawn_service.py" output="screen"/>
-
+    <!-- Heading angle and distance to the goal -->
+    <node name="direction" pkg="simulation" type="direction_to_goal.py" output="screen"/>
 </launch>

@@ -124,7 +124,7 @@ class TrainingEnv(gym.Env):
     def replace_task_obstacle(self, task):
         obstacle = ""
         if self.task == "flat":
-            osbtacle = "ground_obstacles"
+            obstacle = "ground_obstacles"
         elif self.task == "ascent" or self.task == "descent":
             obstacle = "stair_floor"
         else:
@@ -173,6 +173,7 @@ class TrainingEnv(gym.Env):
         return state
 
     def regenerate_obstacles(self):
+        print("regenerating", self.obstacle, self.task + "_" + self.rand)
         self.env_gen.call(
             EnvGenRequest(
                 action="delete",

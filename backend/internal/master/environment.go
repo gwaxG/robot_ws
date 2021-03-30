@@ -16,7 +16,7 @@ type Environment struct {
 	active   bool
 	occupied bool
 	addr     string
-	id		int
+	id       int
 }
 
 // Initialize the environment state and pass the port information.
@@ -37,11 +37,11 @@ func (e *Environment) start(ctx context.Context, wg *sync.WaitGroup) {
 	// cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "test", "test.launch")
 	// cmd := exec.Command("roslaunch", "-p", strconv.Itoa(e.port), "backend", "learning.launch")
 	sport := strconv.Itoa(e.port)
-	cmd := exec.Command("roslaunch", "-p", sport, "backend", "learning.launch", "port:="+sport)
+	cmd := exec.Command("roslaunch", "-p", sport, "backend", "learning.launch", "port:="+sport, "gui:=false")
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	err := cmd.Start()
-	if err!=nil {
+	if err != nil {
 		panic("Critical panic env start")
 	}
 	select {
@@ -54,7 +54,7 @@ func (e *Environment) start(ctx context.Context, wg *sync.WaitGroup) {
 			syscall.Kill(-pgid, 15)
 		}
 		err = cmd.Wait()
-		if err != nil{
+		if err != nil {
 			log.Println("Do cmd wait did not succeed")
 		}
 		wg.Done()
@@ -77,7 +77,7 @@ func (e *Environment) Serve(parent context.Context, onJobArrival, onJobFinish ch
 	log.Printf("Contaienr %d started.\n", e.id)
 	// Wait for 2 minutes without tasks; 1 for tests.
 	timer = time.NewTimer(time.Minute * 2)
-	loop:
+loop:
 	for {
 		select {
 		// Launch roslaunch and indicate the environment as active on new task.
@@ -125,4 +125,3 @@ func (e *Environment) Serve(parent context.Context, onJobArrival, onJobFinish ch
 	}
 	parentWG.Done()
 }
-

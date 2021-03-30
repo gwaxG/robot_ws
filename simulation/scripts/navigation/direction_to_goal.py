@@ -34,7 +34,7 @@ class DirectionToGoal:
         self.pub = rospy.Publisher("/direction", DistDirec)
         rospy.spin()
 
-    def callback_new_rollout(self, msg):
+    def callback_new_rollout(self, _):
         self.need_update = True
 
     def callback(self, msg):
@@ -57,9 +57,7 @@ class DirectionToGoal:
             self.update_goal()
             self.need_update = False
 
-        xr, yr, zr = msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z
-
-        distance = ((self.goal.x - xr) ** 2 + (self.goal.y - yr) ** 2 + (self.goal.z - zr) ** 2) ** 0.5
+        distance = (trans[0] ** 2 + trans[1] ** 2 + trans[2] ** 2) ** 0.5
 
         self.pub.publish(
             DistDirec(
