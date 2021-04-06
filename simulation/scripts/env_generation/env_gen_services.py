@@ -9,6 +9,7 @@ from simulation.srv import EnvGen, EnvGenResponse
 from simulation.srv import GoalInfo, GoalInfoResponse
 from simulation.srv import StairInfo, StairInfoResponse
 import render
+import numpy as np
 
 class EnvGenerator:
     def __init__(self):
@@ -33,12 +34,13 @@ class EnvGenerator:
             "goal": self.env.goal,
         }
         rospy.wait_for_service('/gazebo/delete_model')
-        print('/gazebo/delete_model is available.')
+        print('The service /gazebo/delete_model is available.')
         for key in self.env_mapping.keys():
             render.delete_model(key)
 
         while not rospy.is_shutdown():
             self.broadcast_goal()
+            self.broadcast_stair()
             rospy.sleep(0.25)
 
     def send_goal_info(self, _):
@@ -52,10 +54,10 @@ class EnvGenerator:
 
     def send_stair_info(self, _):
         return StairInfoResponse(
-            length = self.env.stair_floor.step_length,
+            length=self.env.stair_floor.step_length,
             height=self.env.stair_floor.step_height,
             number=self.env.stair_floor.step_n,
-            exist=self.env.stair_floor.exist
+            exist=self.env.stair_floor.exist,
         )
 
     def router(self, req):
@@ -96,6 +98,42 @@ class EnvGenerator:
             "map"
         )
 
+    def broadcast_stair(self):
+        """
+        length=self.env.stair_floor.step_length,
+        height=self.env.stair_floor.step_height,
+        number=self.env.stair_floor.step_n,
+        exist=self.env.stair_floor.exist,
+        :return:
+        """
+        if not self.env.stair_floor.exist:
+            return None
+        # turn the frame
+        theta = np.pi
+        rot = tf.transformations.quaternion_from_euler(0, 0, theta)
+        # calculate the points
+        points = [
+            [0, 1, self.env.stair_floor.step_height],
+            [0, -1, self.env.stair_floor.step_height],
+            [
+                self.env.stair_floor.step_length * (self.env.stair_floor.step_n - 1),
+                1,
+                self.env.stair_floor.step_height * self.env.stair_floor.step_n
+            ],
+            [
+                self.env.stair_floor.step_length * (self.env.stair_floor.step_n - 1),
+                -1,
+                self.env.stair_floor.step_height * self.env.stair_floor.step_n
+            ],
+        ]
+        for i, p in enumerate(points):
+            self.br.sendTransform(
+                p,
+                rot,
+                rospy.Time.now(),
+                "p"+str(i),
+                "map"
+            )
 
     def generate_floor_obstacles(self, props=None):
         if self.env.floor_obstacles.exist:

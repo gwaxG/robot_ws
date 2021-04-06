@@ -17,6 +17,9 @@
         <arg name="headless" value="$(arg headless)"/>
     </include>
 
+    <!-- The ball mass is twice lower since the robot is twice lighter.-->
+    <param name="ball_mass" type="double" value="2.0" />
+
     <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 1  /world /map 100" />
     <node pkg="tf" type="static_transform_publisher" name="link2_broadcaster" args="0 0 0 0 0 0 1 /map /odom 100" />
 

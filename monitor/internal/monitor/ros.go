@@ -90,6 +90,7 @@ func (r *ROS) Init(state *structs.RolloutState, comm *map[string]interface{}) {
 		Callback: r.onOdometry,
 	})
 	FailOnError(err)
+
 	//
 	r.goalInfo, err = goroslib.NewServiceClient(goroslib.ServiceClientConf{
 		Node: r.node,
