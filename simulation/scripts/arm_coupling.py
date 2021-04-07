@@ -10,11 +10,12 @@ from control.msg import State
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 
 '''
-This node connects flippers and arm joints to the base
+This node connects flippers and arm joints to the base.
+Then, it broadcasts the arms center of masses as well as the centroid COM.
 '''
 
 
-class ArmCoupling:
+class ArmIntegration:
     def __init__(self):
         rospy.init_node('arm_coupling')
         self.listener = tf.TransformListener()
@@ -34,7 +35,7 @@ class ArmCoupling:
 
     def update_arm_configuration(self, msg):
         self.arm_rotations['arm_1'][0] = msg.arm_joint1
-        self.arm_rotations['arm_2'][1] = msg.arm_joint2
+        self.arm_rotations['arm_2'][1] = -msg.arm_joint2
 
     def broadcast(self, trans, quaternion, child, parent):
         self.br.sendTransform(
@@ -47,12 +48,19 @@ class ArmCoupling:
 
     def run(self):
         while not rospy.is_shutdown():
+            # Coupling
             quaternion = tf.transformations.quaternion_from_euler(*self.arm_rotations['arm_1'])
             self.broadcast(self.arm_positions['arm_1'], quaternion, 'arm_1', 'base_link')
             quaternion = tf.transformations.quaternion_from_euler(*self.arm_rotations['arm_2'])
             self.broadcast(self.arm_positions['arm_2'], quaternion, 'arm_2', 'arm_1')
+            # Masses
+            rot = tf.transformations.quaternion_from_euler(*[0, 0, 0])
+            self.broadcast([0., 0., 0.15], rot, 'arm_1_mass', 'arm_1')
+            self.broadcast([0., 0., 0.], rot, 'arm_2_mass', 'arm_2')
+            self.broadcast([0., 0., -0.1], rot, 'arm_3_mass', 'arm_3')
+            self.broadcast([0., 0., 0], rot, 'centroid_mass', 'centroid')
             rospy.sleep(0.1)
 
 
 if __name__ == '__main__':
-    ArmCoupling().run()
+    ArmIntegration().run()

@@ -108,31 +108,50 @@ class EnvGenerator:
         """
         if not self.env.stair_floor.exist:
             return None
-        # turn the frame
-        theta = np.pi
-        rot = tf.transformations.quaternion_from_euler(0, 0, theta)
+        # unturned frame
+        rot = tf.transformations.quaternion_from_euler(0, 0, 0)
+        # inclined frame
+        a = np.arctan(self.env.stair_floor.step_height / self.env.stair_floor.step_length)
+        inclined = tf.transformations.quaternion_from_euler(0, -a, 0)
         # calculate the points
         points = [
-            [0, 1, self.env.stair_floor.step_height],
-            [0, -1, self.env.stair_floor.step_height],
+            # central frame
+            [0, 0, self.env.stair_floor.step_height],
+            # central inclined
+            [0, 0, 0],
+            # up central
             [
                 self.env.stair_floor.step_length * (self.env.stair_floor.step_n - 1),
-                1,
-                self.env.stair_floor.step_height * self.env.stair_floor.step_n
+                0,
+                self.env.stair_floor.step_height * (self.env.stair_floor.step_n - 1)
             ],
-            [
-                self.env.stair_floor.step_length * (self.env.stair_floor.step_n - 1),
-                -1,
-                self.env.stair_floor.step_height * self.env.stair_floor.step_n
-            ],
+            # up central, inclined
+            [0, 0, 0],
+            # left
+            [0, 1, 0],
+            # right
+            [0, -1, 0],
+            # up left
+            [0, 1, 0],
+            # up right
+            [0, -1, 0],
+        ]
+        rots = [
+            rot, inclined, rot, inclined, rot, rot, rot, rot
+        ]
+        child = [
+            "p_cent", "p_cent_inc", "p_cent_up", "p_cent_up_inc", "p_left", "p_right", "p_left_up", "p_right_up"
+        ]
+        parent = [
+            "map", "p_cent", "p_cent", "p_cent_up", "p_cent", "p_cent", "p_cent_up", "p_cent_up"
         ]
         for i, p in enumerate(points):
             self.br.sendTransform(
                 p,
-                rot,
+                rots[i],
                 rospy.Time.now(),
-                "p"+str(i),
-                "map"
+                child[i],
+                parent[i]
             )
 
     def generate_floor_obstacles(self, props=None):
