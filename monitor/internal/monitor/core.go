@@ -35,6 +35,8 @@ func (c *Core) Init() {
 	c.comm["StepReturn"] = c.onStepReturn
 	c.comm["RobotState"] = make(chan state.State)
 	c.comm["Odometry"] = make(chan nav_msgs.Odometry)
+	c.comm["SafetyDeviation"] = make(chan float32)
+	c.comm["SafetyAngular"] = make(chan float32)
 
 	c.rolloutState = structs.RolloutState{}
 	c.ros = ROS{}
@@ -59,10 +61,10 @@ func (c *Core) onNewRollout(req *structs.NewRolloutReq, expseries string) {
 	c.rolloutState.Progress = 0.
 	c.rolloutState.Reward = 0.
 	c.rolloutState.StepReward = 0.
-	c.rolloutState.CogDeviation = 0.
-	c.rolloutState.StepCogDeviation = 0.
-	c.rolloutState.CogHeight = 0.
-	c.rolloutState.StepCogHeight = 0.
+	c.rolloutState.StepDeviation = []float32{}
+	c.rolloutState.StepAngular = []float32{}
+	c.rolloutState.AngularM = []float32{}
+	c.rolloutState.Deviation = []float32{}
 	c.rolloutState.Done = false
 	c.rolloutState.Started = false
 	c.rolloutState.Closest = 10000.0
@@ -88,8 +90,10 @@ func (c *Core) onStepReturn() {
 	c.timeStep++
 	c.rolloutState.TimeSteps = int(c.timeStep)
 	c.rolloutState.StepReward = 0
-	c.rolloutState.StepCogDeviation = 0
-	c.rolloutState.StepCogHeight = 0
+	c.rolloutState.Deviation = append(c.rolloutState.Deviation, meanFloat32(&c.rolloutState.StepDeviation))
+	c.rolloutState.AngularM = append(c.rolloutState.AngularM, meanFloat32(&c.rolloutState.StepAngular))
+	c.rolloutState.StepDeviation = []float32{}
+	c.rolloutState.StepAngular = []float32{}
 }
 
 func (c *Core) Start() {
@@ -104,6 +108,10 @@ func (c *Core) Start() {
 				c.CheckTippingOver()
 				c.Estimate()
 			}()
+		case deviation := <-c.comm["SafetyDeviation"].(chan float32):
+			c.rolloutState.StepDeviation = append(c.rolloutState.StepDeviation, deviation)
+		case angular := <-c.comm["SafetyAngular"].(chan float32):
+			c.rolloutState.StepAngular = append(c.rolloutState.StepAngular, angular)
 		}
 	}
 }

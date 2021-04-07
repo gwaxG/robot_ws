@@ -1,3 +1,5 @@
 ---
 float32 reward
+float32 deviation
+float32 angular
 bool    done

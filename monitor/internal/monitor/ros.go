@@ -23,6 +23,8 @@ type ROS struct {
 	newRollout      *goroslib.ServiceProvider
 	startNewRollout *goroslib.ServiceProvider
 	stepReturn      *goroslib.ServiceProvider
+	devSub          *goroslib.Subscriber
+	safeSub         *goroslib.Subscriber
 	odomSub         *goroslib.Subscriber
 	robSub          *goroslib.Subscriber
 	rolloutState    *structs.RolloutState
@@ -82,6 +84,19 @@ func (r *ROS) Init(state *structs.RolloutState, comm *map[string]interface{}) {
 		Topic:    "robot/state",
 		Callback: r.onRobotState,
 	})
+
+	// safety deviation
+	r.devSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
+		Node:     r.node,
+		Topic:    "safety/relative_deviation",
+		Callback: r.onSafetyDeviation,
+	})
+	// safety angular
+	r.safeSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
+		Node:     r.node,
+		Topic:    "safety/angular",
+		Callback: r.onSafetyAngular,
+	})
 	FailOnError(err)
 	// robot odometry
 	r.odomSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
@@ -121,6 +136,14 @@ func (r *ROS) onRobotState(robotState *state.State) {
 	(*r.comm)["RobotState"].(chan state.State) <- *robotState
 }
 
+func (r *ROS) onSafetyDeviation(msg *std_msgs.Float32) {
+	(*r.comm)["SafetyDeviation"].(chan float32) <- msg.Data
+}
+
+func (r *ROS) onSafetyAngular(msg *std_msgs.Float32) {
+	(*r.comm)["SafetyAngular"].(chan float32) <- msg.Data
+}
+
 // func on_NewRollout(_ *structs.NewRolloutReq) *structs.NewRolloutRes{
 // 	return &structs.NewRolloutRes{Received: true}
 // }
@@ -144,29 +167,46 @@ func (r *ROS) onStartNewRollout(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes {
 func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes {
 	// fmt.Printf("one step %f %d %v\n", r.rolloutState.StepReward, r.rolloutState.TimeSteps, r.rolloutState.Done)
 	msg := &structs.StepReturnRes{
-		Reward: r.rolloutState.StepReward,
-		Done:   r.rolloutState.Done,
+		Reward:    r.rolloutState.StepReward,
+		Deviation: meanFloat32(&r.rolloutState.StepDeviation),
+		Angular:   meanFloat32(&r.rolloutState.StepAngular),
+		Done:      r.rolloutState.Done,
 	}
 	(*r.comm)["StepReturn"].(func())()
 	return msg
+}
+
+func meanFloat32(arr *[]float32) float32 {
+	if len(*arr) == 0 {
+		return 0.
+	}
+	var (
+		value float32
+		n     int
+	)
+	for _, elem := range *arr {
+		value += elem
+		n += 1
+	}
+	return value / float32(n)
 }
 
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
 
 	msg := structs.RolloutAnalytics{
-		ExpSeries:    r.rolloutState.ExpSeries,
-		Experiment:   r.rolloutState.Experiment,
-		Seq:          r.rolloutState.Seq,
-		Sensors:      r.rolloutState.Sensors,
-		Arm:          r.rolloutState.Arm,
-		Angular:      r.rolloutState.Angular,
-		Progress:     r.rolloutState.Progress,
-		Reward:       r.rolloutState.Reward,
-		CogDeviation: r.rolloutState.CogDeviation,
-		CogHeight:    r.rolloutState.CogHeight,
-		Accidents:    r.rolloutState.Accidents,
-		TimeSteps:    r.rolloutState.TimeSteps,
+		ExpSeries:  r.rolloutState.ExpSeries,
+		Experiment: r.rolloutState.Experiment,
+		Seq:        r.rolloutState.Seq,
+		Sensors:    r.rolloutState.Sensors,
+		Arm:        r.rolloutState.Arm,
+		Angular:    r.rolloutState.Angular,
+		Progress:   r.rolloutState.Progress,
+		Reward:     r.rolloutState.Reward,
+		AngularM:   meanFloat32(&r.rolloutState.AngularM),
+		Deviation:  meanFloat32(&r.rolloutState.Deviation),
+		Accidents:  r.rolloutState.Accidents,
+		TimeSteps:  r.rolloutState.TimeSteps,
 	}
 	fmt.Println("Send to backend", msg)
 	encoded, _ := json.Marshal(msg)

@@ -38,6 +38,9 @@ class Safety:
         }
         self.mass["sum"] = np.sum(list(self.mass.values()))
         self.zero_rot = tf.transformations.quaternion_from_euler(0, 0, 0)
+        self.pub_dev = rospy.Publisher("/safety/relative_deviation", Float32)
+        self.pub_angular = rospy.Publisher("/safety/angular", Float32)
+        rospy.Subscriber("/imu", Imu, self.update_imu)
         while not rospy.is_shutdown():
             position = self.define_position()
             if position is None:
@@ -46,6 +49,11 @@ class Safety:
             self.broadcast_cog()
             self.broadcast_cog_projections(position)
             rospy.sleep(0.1)
+
+    def update_imu(self, msg):
+        angular_velocity_y = abs(msg.angular_velocity.y)
+        angular_velocity_y = angular_velocity_y if angular_velocity_y > 0.15 else 0.
+        self.pub_angular.publish(Float32(data=angular_velocity_y))
 
     def define_position(self):
         try:
@@ -82,7 +90,6 @@ class Safety:
         elif position == "floor":
             self.broadcast(trans, self.zero_rot, "O", "p_cent_up")
 
-
     def broadcast_cog(self):
         try:
             (arm1, rot) = self.listener.lookupTransform('/centroid', '/arm_1_mass', rospy.Time(0))
@@ -118,6 +125,15 @@ class Safety:
             x = cog[0]
         cx = [x, cog[1], 0]
         self.broadcast(cx, self.zero_rot, "Cx", "O")
+        min_deviation = 0.08
+        max_deviation = 0.3
+        deviation = (cy[2]**2 + cx[0]**2) ** 0.5
+        relative_deviation = (deviation - min_deviation) / (max_deviation - min_deviation)
+        if relative_deviation < 0:
+            relative_deviation = 0.
+        elif relative_deviation > 1.:
+            relative_deviation = 1.
+        self.pub_dev.publish(Float32(data=relative_deviation))
 
     def broadcast(self, trans, quaternion, child, parent):
         quaternion = list(quaternion)
@@ -129,6 +145,6 @@ class Safety:
             parent
         )
 
+
 if __name__ == '__main__':
     Safety()
-
