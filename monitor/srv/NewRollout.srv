@@ -4,5 +4,7 @@ int32   time_step_limit
 string  sensors
 bool    arm
 bool    angular
+bool    use_penalty_angular
+bool    use_penalty_deviation
 ---
 bool    received

@@ -28,6 +28,8 @@ class Learner(Base):
             'experiment': self.prms['experiment'],
             'arm': self.prms['arm'],
             'angular': self.prms['angular'],
+            'penalty_deviation': self.prms['penalty_deviation'],
+            'penalty_angular': self.prms['penalty_angular'],
             'time_step_limit': self.prms['time_step_limit'],
             'sigma': self.prms['sigma'],
             'task': self.prms['task'],

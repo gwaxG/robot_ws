@@ -6,28 +6,31 @@ import (
 
 //-----------------------------
 type RolloutState struct {
-	ExpSeries     string
-	Experiment    string
-	Seq           int32
-	Sensors       string
-	Arm           bool
-	Angular       bool
-	TimeStepLimit int32
-	Progress      float32
-	Reward        float32
-	StepReward    float32
-	Deviation     []float32
-	AngularM      []float32
-	StepDeviation []float32
-	StepAngular   []float32
-	Done          bool
-	Started       bool
-	Closest       float32
-	MaximumDist   float32
-	Published     bool
-	Accidents     string
-	EverStarted   bool
-	TimeSteps     int
+	ExpSeries           string
+	Experiment          string
+	Seq                 int32
+	Sensors             string
+	Arm                 bool
+	Angular             bool
+	TimeStepLimit       int32
+	TippingOverReward   float32
+	Progress            float32
+	Reward              float32
+	StepReward          float32
+	UsePenaltyDeviation bool
+	UsePenaltyAngular   bool
+	Deviation           []float32
+	AngularM            []float32
+	StepDeviation       []float32
+	StepAngular         []float32
+	Done                bool
+	Started             bool
+	Closest             float32
+	MaximumDist         float32
+	Published           bool
+	Accidents           string
+	EverStarted         bool
+	TimeSteps           int
 }
 
 //-----------------------------
@@ -48,12 +51,14 @@ type RolloutAnalytics struct {
 
 //-----------------------------
 type NewRolloutReq struct {
-	Experiment    string
-	Seq           int32
-	TimeStepLimit int32
-	Sensors       string
-	Arm           bool
-	Angular       bool
+	Experiment          string
+	Seq                 int32
+	TimeStepLimit       int32
+	Sensors             string
+	Arm                 bool
+	Angular             bool
+	UsePenaltyAngular   bool
+	UsePenaltyDeviation bool
 }
 
 type NewRolloutRes struct {
@@ -70,10 +75,8 @@ type NewRollout struct {
 type StepReturnReq struct{}
 
 type StepReturnRes struct {
-	Reward    float32
-	Deviation float32
-	Angular   float32
-	Done      bool
+	Reward float32
+	Done   bool
 }
 
 type StepReturn struct {

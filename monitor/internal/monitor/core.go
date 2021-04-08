@@ -2,8 +2,8 @@ package monitor
 
 import "C"
 import (
-	"fmt"
 	"math"
+	"sync"
 
 	"github.com/aler9/goroslib/pkg/msgs/nav_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
@@ -14,18 +14,25 @@ import (
 const EXTRADIUS float32 = 0.3
 const TippingReward float32 = -1.0
 
+var mutexEstimate = sync.Mutex{}
+
 type Core struct {
-	rolloutState structs.RolloutState
-	ros          ROS
-	robotStateCh chan state.State
-	odometryCh   chan nav_msgs.Odometry
-	initCh       chan bool
-	robotState   state.State
-	robotPose    nav_msgs.Odometry
-	goal         simulation_structs.GoalInfoRes
-	timeStep     int32
-	stepReqCh    chan bool
-	comm         map[string]interface{}
+	rolloutState     structs.RolloutState
+	ros              ROS
+	robotStateCh     chan state.State
+	odometryCh       chan nav_msgs.Odometry
+	initCh           chan bool
+	robotState       state.State
+	robotPose        nav_msgs.Odometry
+	goal             simulation_structs.GoalInfoRes
+	timeStep         int32
+	stepReqCh        chan bool
+	comm             map[string]interface{}
+	flushCache       float32
+	cumulatedPenalty []float32
+	cumulation       []float32
+	normalized       bool
+	normalization    float32
 }
 
 func (c *Core) Init() {
@@ -47,10 +54,48 @@ func (c *Core) Init() {
 	c.odometryCh = make(chan nav_msgs.Odometry)
 	c.initCh = make(chan bool)
 	c.stepReqCh = make(chan bool)
-
+	c.cumulatedPenalty = []float32{}
+	c.cumulation = []float32{}
+	c.normalized = false
+	c.normalization = 0.
 	c.ros.Init(&c.rolloutState, &c.comm) // c.robotStateCh, c.odometryCh, c.initCh, c.stepReqCh
 }
+
+func (c *Core) addToCumulation() {
+	cumulation := sumFloat32(&c.cumulatedPenalty)
+	c.cumulatedPenalty = []float32{}
+	if cumulation < 1. {
+		return
+	}
+	L := 10
+	if len(c.cumulation) < L {
+		c.cumulation = append(c.cumulation, cumulation)
+	} else {
+		c.normalized = true
+		c.normalization = meanFloat32(&c.cumulation)
+	}
+}
+
+func (c *Core) getNormalization() float32 {
+	if c.normalized {
+		return c.normalization
+	} else {
+		return 0.
+	}
+}
+
 func (c *Core) onNewRollout(req *structs.NewRolloutReq, expseries string) {
+	// Trigger normalization since the experiment has been changed.
+	if c.rolloutState.Experiment != req.Experiment {
+		if req.UsePenaltyAngular || req.UsePenaltyDeviation {
+			c.normalized = false
+			c.normalization = 0.
+			c.cumulatedPenalty = []float32{}
+			c.cumulation = []float32{}
+		} else {
+			c.normalized = true
+		}
+	}
 	c.rolloutState.ExpSeries = expseries
 	c.rolloutState.Experiment = req.Experiment
 	c.rolloutState.Seq = req.Seq
@@ -58,6 +103,8 @@ func (c *Core) onNewRollout(req *structs.NewRolloutReq, expseries string) {
 	c.rolloutState.Arm = req.Arm
 	c.rolloutState.Angular = req.Angular
 	c.rolloutState.TimeStepLimit = req.TimeStepLimit
+	c.rolloutState.UsePenaltyDeviation = req.UsePenaltyDeviation
+	c.rolloutState.UsePenaltyAngular = req.UsePenaltyAngular
 	c.rolloutState.Progress = 0.
 	c.rolloutState.Reward = 0.
 	c.rolloutState.StepReward = 0.
@@ -66,14 +113,15 @@ func (c *Core) onNewRollout(req *structs.NewRolloutReq, expseries string) {
 	c.rolloutState.AngularM = []float32{}
 	c.rolloutState.Deviation = []float32{}
 	c.rolloutState.Done = false
+	c.rolloutState.TippingOverReward = 0
 	c.rolloutState.Started = false
 	c.rolloutState.Closest = 10000.0
 	c.rolloutState.MaximumDist = 0.
 	c.rolloutState.Published = false
 	c.rolloutState.EverStarted = false
 	c.rolloutState.TimeSteps = 0
-
 }
+
 func (c *Core) onStartNewRollout() {
 	c.timeStep = 1
 	// update goal
@@ -85,15 +133,15 @@ func (c *Core) onStartNewRollout() {
 	c.rolloutState.Started = true
 	c.rolloutState.EverStarted = false
 	c.rolloutState.Done = false
+	c.flushCache = 0
 }
-func (c *Core) onStepReturn() {
+func (c *Core) onStepReturn() float32 {
 	c.timeStep++
 	c.rolloutState.TimeSteps = int(c.timeStep)
-	c.rolloutState.StepReward = 0
-	c.rolloutState.Deviation = append(c.rolloutState.Deviation, meanFloat32(&c.rolloutState.StepDeviation))
-	c.rolloutState.AngularM = append(c.rolloutState.AngularM, meanFloat32(&c.rolloutState.StepAngular))
-	c.rolloutState.StepDeviation = []float32{}
-	c.rolloutState.StepAngular = []float32{}
+	if c.rolloutState.Done {
+		return c.flushCache
+	}
+	return c.flushStepResults()
 }
 
 func (c *Core) Start() {
@@ -136,22 +184,55 @@ func (c *Core) CheckTippingOver() {
 	}
 	if accident {
 		c.rolloutState.Done = true
-		c.rolloutState.StepReward += TippingReward
-		c.rolloutState.Reward += TippingReward
+		c.rolloutState.TippingOverReward += TippingReward
 	}
 }
 
 func (c *Core) CheckBorders() {
-	fmt.Println("not implemented")
+	panic("CheckBorders is not implemented.")
+}
+
+func (c *Core) flushStepResults() float32 {
+	var stepReward float32
+	meanAngular := meanFloat32(&c.rolloutState.StepAngular)
+	if c.rolloutState.UsePenaltyAngular {
+		if !c.normalized {
+			c.cumulatedPenalty = append(c.cumulatedPenalty, meanAngular)
+		}
+		stepReward -= meanAngular * c.getNormalization()
+	}
+	c.rolloutState.AngularM = append(c.rolloutState.AngularM, meanAngular)
+	c.rolloutState.StepAngular = []float32{}
+
+	meanDeviation := meanFloat32(&c.rolloutState.StepDeviation)
+	if c.rolloutState.UsePenaltyDeviation {
+		if !c.normalized {
+			c.cumulatedPenalty = append(c.cumulatedPenalty, meanDeviation)
+		}
+		stepReward -= meanDeviation * c.getNormalization()
+	}
+	c.rolloutState.Deviation = append(c.rolloutState.Deviation, meanDeviation)
+	c.rolloutState.StepDeviation = []float32{}
+
+	stepReward += c.rolloutState.StepReward
+	c.rolloutState.StepReward = 0
+
+	stepReward += c.rolloutState.TippingOverReward
+	c.rolloutState.TippingOverReward = 0
+	c.rolloutState.Reward += stepReward
+
+	return stepReward
 }
 
 func (c *Core) Estimate() {
+	mutexEstimate.Lock()
+	defer mutexEstimate.Unlock()
 	dist := c.GetDistance()
 	if c.rolloutState.Started && !c.rolloutState.Done {
 		if c.rolloutState.Closest-dist > 0.01 {
 			diff := (c.rolloutState.Closest - dist) / (c.rolloutState.MaximumDist - EXTRADIUS)
 			c.rolloutState.Progress += diff
-			c.rolloutState.Reward += diff
+			// c.rolloutState.Reward += diff
 			c.rolloutState.StepReward += diff
 			c.rolloutState.Closest = dist
 		}
@@ -161,6 +242,11 @@ func (c *Core) Estimate() {
 	}
 	// fmt.Println("Need to send?", c.rolloutState.Done, !c.rolloutState.Published, c.rolloutState.Started)
 	if c.rolloutState.Done && !c.rolloutState.Published && c.rolloutState.Started {
+		// flush results
+		c.flushCache = c.flushStepResults()
+		if !c.normalized {
+			c.addToCumulation()
+		}
 		c.ros.SendToBackend()
 		c.rolloutState.Published = true
 		c.goal = simulation_structs.GoalInfoRes{}

@@ -8,6 +8,8 @@ register(
         'experiment': "not_defined",
         'arm': True,
         'angular': True,
+        'penalty_angular': False,
+        'penalty_deviation': False,
         'time_step_limit': 50,
         'sigma': 0.0,
         'task': 'ascent',

@@ -133,7 +133,10 @@ class Safety:
             relative_deviation = 0.
         elif relative_deviation > 1.:
             relative_deviation = 1.
-        self.pub_dev.publish(Float32(data=relative_deviation))
+        if position == "stair":
+            self.pub_dev.publish(Float32(data=relative_deviation))
+        else:
+            self.pub_dev.publish(Float32(data=0.))
 
     def broadcast(self, trans, quaternion, child, parent):
         quaternion = list(quaternion)

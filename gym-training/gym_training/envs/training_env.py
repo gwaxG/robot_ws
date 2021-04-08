@@ -26,6 +26,8 @@ class TrainingEnv(gym.Env):
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
+        self.penalty_angular = kwargs['penalty_angular']
+        self.penalty_deviation = kwargs['penalty_deviation']
         self.time_step_limit = int(kwargs['time_step_limit'])
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
@@ -228,7 +230,9 @@ class TrainingEnv(gym.Env):
                 time_step_limit=self.time_step_limit,
                 sensors=self.sensors_info,
                 angular=self.angular_is_used,
-                arm = self.arm_is_used,
+                arm=self.arm_is_used,
+                use_penalty_angular=self.penalty_angular,
+                use_penalty_deviation=self.penalty_deviation,
             )
         )
 
@@ -237,7 +241,7 @@ class TrainingEnv(gym.Env):
         self.return_robot_to_initial_state()
         self.regenerate_obstacles()
         self.respawn_robot()
-        _ = self.spawn_goal()
+        self.spawn_goal()
         self.create_new_rollout()
         self.start_rollout.call(TriggerRequest())
         return self.get_transformed_state()

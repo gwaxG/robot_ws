@@ -9,15 +9,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// Append new rollout analytics to corresponding database and collection
+// Append new rollout analytics to corresponding database and collection.
 func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
 	db.check(analytics.ExpSeries, analytics.Experiment)
-	log.Printf("Inserting new to db %s collection %s\n", db.database.Name(), db.collection.Name())
+	// log.Printf("Inserting new to db %s collection %s\n", db.database.Name(), db.collection.Name())
 	db.mutex.Lock()
 	insertResult, err := db.collection.InsertOne(context.TODO(), analytics)
 	db.mutex.Unlock()
 	common.FailOnError(err)
-	log.Println("Successfully inserted a single rollout: ", insertResult.InsertedID)
+	//log.Println("Successfully inserted a single rollout: ", insertResult.InsertedID)
+	_ = insertResult
 }
 
 // save config to collection HistoryConfigs in the form of document {name: string, config: json}

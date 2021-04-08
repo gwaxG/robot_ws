@@ -2,7 +2,6 @@ package monitor
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -166,14 +165,24 @@ func (r *ROS) onStartNewRollout(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes {
 // Handler of the StepReturn service
 func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes {
 	// fmt.Printf("one step %f %d %v\n", r.rolloutState.StepReward, r.rolloutState.TimeSteps, r.rolloutState.Done)
+	flushedStepReturn := (*r.comm)["StepReturn"].(func() float32)()
 	msg := &structs.StepReturnRes{
-		Reward:    r.rolloutState.StepReward,
-		Deviation: meanFloat32(&r.rolloutState.StepDeviation),
-		Angular:   meanFloat32(&r.rolloutState.StepAngular),
-		Done:      r.rolloutState.Done,
+		Reward: flushedStepReturn,
+		Done:   r.rolloutState.Done,
 	}
-	(*r.comm)["StepReturn"].(func())()
+
 	return msg
+}
+
+func sumFloat32(arr *[]float32) float32 {
+	if len(*arr) == 0 {
+		return 0.
+	}
+	var value float32
+	for _, elem := range *arr {
+		value += elem
+	}
+	return value
 }
 
 func meanFloat32(arr *[]float32) float32 {
@@ -193,7 +202,6 @@ func meanFloat32(arr *[]float32) float32 {
 
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
-
 	msg := structs.RolloutAnalytics{
 		ExpSeries:  r.rolloutState.ExpSeries,
 		Experiment: r.rolloutState.Experiment,
@@ -208,7 +216,6 @@ func (r *ROS) SendToBackend() {
 		Accidents:  r.rolloutState.Accidents,
 		TimeSteps:  r.rolloutState.TimeSteps,
 	}
-	fmt.Println("Send to backend", msg)
 	encoded, _ := json.Marshal(msg)
 	r.addToBackend.Write(&std_msgs.String{
 		Data: string(encoded),
