@@ -108,7 +108,6 @@ func (s *Server) getPool(c *gin.Context) {
 
 // 	CRUD queue tasks.
 // You can not change being executed tasks.
-// view task queue, add task to queue, delete task from queue, update task in queue
 func (s *Server) createTask(c *gin.Context) {
 	data, err := s.launcher.CreateTask(c.Request.Body)
 	formJson(data, err, c)

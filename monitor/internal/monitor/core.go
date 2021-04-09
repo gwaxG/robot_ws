@@ -2,6 +2,7 @@ package monitor
 
 import "C"
 import (
+	"log"
 	"math"
 	"sync"
 
@@ -30,9 +31,10 @@ type Core struct {
 	comm             map[string]interface{}
 	flushCache       float32
 	cumulatedPenalty []float32
-	cumulation       []float32
+	cumulation       [][]float32
 	normalized       bool
 	normalization    float32
+	debug            float32
 }
 
 func (c *Core) Init() {
@@ -55,31 +57,47 @@ func (c *Core) Init() {
 	c.initCh = make(chan bool)
 	c.stepReqCh = make(chan bool)
 	c.cumulatedPenalty = []float32{}
-	c.cumulation = []float32{}
+	c.cumulation = [][]float32{[]float32{}, []float32{}}
 	c.normalized = false
 	c.normalization = 0.
+
+	c.debug = 0.
+
 	c.ros.Init(&c.rolloutState, &c.comm) // c.robotStateCh, c.odometryCh, c.initCh, c.stepReqCh
 }
 
 func (c *Core) addToCumulation() {
+	// Mean deviation during the staircase traversal.
 	cumulation := sumFloat32(&c.cumulatedPenalty)
+	cumulationMean := meanFloat32(&c.cumulatedPenalty)
+	// Number of time steps during the traversal.
+	cumulationLength := len(c.cumulatedPenalty)
 	c.cumulatedPenalty = []float32{}
-	if cumulation < 1. {
+	// log.Println("adding", cumulation)
+	if cumulation < 1.0 {
 		return
 	}
 	L := 10
-	if len(c.cumulation) < L {
-		c.cumulation = append(c.cumulation, cumulation)
-	} else {
+	if len(c.cumulation[0]) < L {
+		// c.cumulation = append(c.cumulation, cumulation)
+		c.cumulation[0] = append(c.cumulation[0], float32(cumulationMean))
+		c.cumulation[1] = append(c.cumulation[1], float32(cumulationLength))
+	}
+	if len(c.cumulation[0]) == L {
 		c.normalized = true
-		c.normalization = meanFloat32(&c.cumulation)
+		// c.normalization = 1.0 / (meanFloat32(&c.cumulation[0]) * meanFloat32(&c.cumulation[1]))
+
+		c.normalization = 1.0 / (meanFloat32(&c.cumulation[1]))
 	}
 }
 
 func (c *Core) getNormalization() float32 {
 	if c.normalized {
+		// log.Println("Normalized", c.normalization)
+		// log.Println("norm", c.normalization)
 		return c.normalization
 	} else {
+		// log.Println("not normalized", len(c.cumulation))
 		return 0.
 	}
 }
@@ -91,11 +109,12 @@ func (c *Core) onNewRollout(req *structs.NewRolloutReq, expseries string) {
 			c.normalized = false
 			c.normalization = 0.
 			c.cumulatedPenalty = []float32{}
-			c.cumulation = []float32{}
+			c.cumulation = [][]float32{[]float32{}, []float32{}}
 		} else {
 			c.normalized = true
 		}
 	}
+	c.debug = 0.
 	c.rolloutState.ExpSeries = expseries
 	c.rolloutState.Experiment = req.Experiment
 	c.rolloutState.Seq = req.Seq
@@ -209,16 +228,20 @@ func (c *Core) flushStepResults() float32 {
 		if !c.normalized {
 			c.cumulatedPenalty = append(c.cumulatedPenalty, meanDeviation)
 		}
+		c.debug += meanDeviation * c.getNormalization()
 		stepReward -= meanDeviation * c.getNormalization()
 	}
+	// log.Println(" step correction", meanDeviation*c.getNormalization())
 	c.rolloutState.Deviation = append(c.rolloutState.Deviation, meanDeviation)
 	c.rolloutState.StepDeviation = []float32{}
 
+	// log.Println(" step reward", c.rolloutState.StepReward)
 	stepReward += c.rolloutState.StepReward
 	c.rolloutState.StepReward = 0
 
 	stepReward += c.rolloutState.TippingOverReward
 	c.rolloutState.TippingOverReward = 0
+
 	c.rolloutState.Reward += stepReward
 
 	return stepReward
@@ -231,6 +254,11 @@ func (c *Core) Estimate() {
 	if c.rolloutState.Started && !c.rolloutState.Done {
 		if c.rolloutState.Closest-dist > 0.01 {
 			diff := (c.rolloutState.Closest - dist) / (c.rolloutState.MaximumDist - EXTRADIUS)
+			// To fight against great drop of progress, we add a check.
+			if diff < 0. {
+				diff = 0.
+				log.Printf("Inconsistent distances where diff is %f\n", diff)
+			}
 			c.rolloutState.Progress += diff
 			// c.rolloutState.Reward += diff
 			c.rolloutState.StepReward += diff
@@ -247,6 +275,7 @@ func (c *Core) Estimate() {
 		if !c.normalized {
 			c.addToCumulation()
 		}
+		// log.Println("debug ", c.debug, c.normalized, c.normalization, len(c.cumulation[0]))
 		c.ros.SendToBackend()
 		c.rolloutState.Published = true
 		c.goal = simulation_structs.GoalInfoRes{}

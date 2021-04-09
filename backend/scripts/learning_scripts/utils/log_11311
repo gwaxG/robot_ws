@@ -2,7 +2,7 @@
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
-2021-04-08 23:56:52.588757 Learning started! For <class 'int'> of type <class 'int'>
+2021-04-09 22:55:39.197271 Learning started! For <class 'int'> of type <class 'int'>
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
@@ -10,3 +10,57 @@ regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+regenerating stair_floor ascent_0
+Traceback (most recent call last):
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py", line 560, in connect
+    self.socket.connect((dest_addr, dest_port))
+ConnectionRefusedError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 509, in call
+    transport.connect(dest_addr, dest_port, service_uri)
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py", line 589, in connect
+    raise TransportInitError(str(e)) #re-raise i/o error
+rospy.exceptions.TransportInitError: [Errno 111] Connection refused
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "stables1_launch.py", line 70, in <module>
+    Learner().train_model()
+  File "stables1_launch.py", line 62, in train_model
+    self.model.learn(total_timesteps=int(self.prms['total_timesteps']))
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/ppo2/ppo2.py", line 336, in learn
+    rollout = self.runner.run(callback)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/runners.py", line 48, in run
+    return self._run()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/ppo2/ppo2.py", line 482, in _run
+    self.obs[:], rewards, self.dones, infos = self.env.step(clipped_actions)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/vec_env/base_vec_env.py", line 150, in step
+    return self.step_wait()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines/common/vec_env/dummy_vec_env.py", line 44, in step_wait
+    self.envs[env_idx].step(self.actions[env_idx])
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 253, in step
+    step_return = self.step_return.call(StepReturnRequest())
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 512, in call
+    raise ServiceException("unable to connect to service: %s"%e)
+rospy.service.ServiceException: unable to connect to service: [Errno 111] Connection refused

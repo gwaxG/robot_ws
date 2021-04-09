@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/gwaxG/robot_ws/monitor/internal/monitor"
 	"os"
+
+	"github.com/gwaxG/robot_ws/monitor/internal/monitor"
 )
 
 func main() {

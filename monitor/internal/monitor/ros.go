@@ -202,6 +202,9 @@ func meanFloat32(arr *[]float32) float32 {
 
 // Send to backend the rollout results
 func (r *ROS) SendToBackend() {
+	// log.Println("Sending to backend")
+	// log.Println(" R", r.rolloutState.Reward)
+	// log.Println(" D", meanFloat32(&r.rolloutState.Deviation))
 	msg := structs.RolloutAnalytics{
 		ExpSeries:  r.rolloutState.ExpSeries,
 		Experiment: r.rolloutState.Experiment,
