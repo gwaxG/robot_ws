@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-This node calculates safety estimations both in simulation and real world
-such as normalized energy stability margin (NESM) and stability margin (SM).
-The monitor node subscribes to results of this one and forms the negative return.
+This node calculates deviation and pitch angular velocity estimations both in simulation and real world.
+The monitor node has to subscribe to results of this node and form the negative return.
 During rollouts in the real world, this node evaluates safety measures of the robot.
 
 Still, it is IMPORTANT to remember that an exterior node like monitor or stair_detector
-has to trigger the update about the actual traversed staircase.
+has to trigger the update about the actual being traversed staircase.
 """
 
 import rospy

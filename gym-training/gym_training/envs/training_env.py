@@ -26,8 +26,8 @@ class TrainingEnv(gym.Env):
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
-        self.penalty_angular = kwargs['penalty_angular']
-        self.penalty_deviation = kwargs['penalty_deviation']
+        self.penalty_angular = bool(kwargs['penalty_angular'])
+        self.penalty_deviation = bool(kwargs['penalty_deviation'])
         self.time_step_limit = int(kwargs['time_step_limit'])
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"

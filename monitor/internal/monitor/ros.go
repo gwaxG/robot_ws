@@ -170,8 +170,20 @@ func (r *ROS) onStepReturn(_ *structs.StepReturnReq) *structs.StepReturnRes {
 		Reward: flushedStepReturn,
 		Done:   r.rolloutState.Done,
 	}
-
 	return msg
+}
+
+func maxFloat32(arr *[]float32) float32 {
+	if len(*arr) == 0 {
+		return 0.
+	}
+	value := (*arr)[0]
+	for _, elem := range *arr {
+		if value < elem {
+			value = elem
+		}
+	}
+	return value
 }
 
 func sumFloat32(arr *[]float32) float32 {

@@ -80,15 +80,17 @@ func (c *Core) addToCumulation() {
 	L := 10
 	if len(c.cumulation[0]) < L {
 		// c.cumulation = append(c.cumulation, cumulation)
-		c.cumulation[0] = append(c.cumulation[0], float32(cumulationMean))
+		c.cumulation[0] = append(c.cumulation[0], float32(cumulation))
 		c.cumulation[1] = append(c.cumulation[1], float32(cumulationLength))
 	}
 	if len(c.cumulation[0]) == L {
 		c.normalized = true
+		// Definition of normalization factor.
 		// c.normalization = 1.0 / (meanFloat32(&c.cumulation[0]) * meanFloat32(&c.cumulation[1]))
-
-		c.normalization = 1.0 / (meanFloat32(&c.cumulation[1]))
+		// c.normalization = 1.0 / (meanFloat32(&c.cumulation[0]))
+		c.normalization = 1.0 / (maxFloat32(&c.cumulation[0]))
 	}
+	_ = cumulationMean
 }
 
 func (c *Core) getNormalization() float32 {
