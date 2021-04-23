@@ -57,6 +57,7 @@ add_service_files(
    FILES
    NewRollout.srv
    StepReturn.srv
+   ObsActCompl.srv
 )
 
 ## Generate actions in the 'action' folder

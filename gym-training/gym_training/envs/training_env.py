@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+We assume that arm and angular velocity control is used, otherwise it is not implemented.
+"""
+
 import gym
 import rospy
 from termcolor import colored
@@ -9,6 +13,7 @@ from gym import spaces
 from control.msg import State
 from monitor.srv import StepReturn, StepReturnRequest
 from monitor.srv import NewRollout, NewRolloutRequest
+from monitor.srv import ObsActCompl, ObsActComplResponse, ObsActComplRequest
 from std_srvs.srv import Trigger, TriggerRequest
 from simulation.srv import RobotSpawn, RobotSpawnResponse, RobotSpawnRequest
 from simulation.srv import EnvGen, EnvGenResponse, EnvGenRequest
@@ -59,6 +64,16 @@ class TrainingEnv(gym.Env):
         self.odom_info = rospy.ServiceProxy('/odom_info', OdomInfo)
         # Spaces
         self.action_space, self.observation_space = self.get_spaces()
+        # Currently, there are 3 levels:
+        # 0 - obs.:all without horizontal features; act.: linear, front fl., rear fl.
+        # 1 - obs.:all without horizontal features; act.: linear, front fl., rear fl., arm1, arm2
+        # 2 - obs.:all; act.: all (linear, angular, front fl., rear fl., arm1, arm2)
+        self.complexity = 2
+        # Service
+        s = rospy.Service('obs_act_compl', ObsActCompl, self.callback_complexity)
+
+    def callback_complexity(self, req):
+        self.complexity = req.level
 
     def get_spaces(self):
         ANGLE =np.pi / 4
@@ -159,7 +174,19 @@ class TrainingEnv(gym.Env):
         :param action:
         :return:
         """
+        # for i, action_value in enumerate(action):
+        #     setattr(self.action, self.active_action_fields[i], action_value)
+        constraint_fields = {
+            0: ["angular", "arm_joint1", "arm_joint2"],
+            1: ["angular"],
+            2: []
+        }
         for i, action_value in enumerate(action):
+            if self.active_action_fields[i] in constraint_fields[self.complexity]:
+                if "arm" in self.active_action_fields[i]:
+                    action_value = np.pi / 4
+                else:
+                    action_value = 0
             setattr(self.action, self.active_action_fields[i], action_value)
 
     def get_transformed_state(self):
@@ -174,7 +201,12 @@ class TrainingEnv(gym.Env):
 
         # features
         state += self.features.vertical.data
-        state += self.features.horizontal.data
+
+        # set observation input to zero for low complexities
+        if self.complexity == 2:
+            state += self.features.horizontal.data
+        else:
+            state += [0.0 for i in range(len(self.features.horizontal.data))]
 
         # direction + distance
         state += [self.direction.angle, self.direction.distance]
