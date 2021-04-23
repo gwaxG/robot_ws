@@ -12,8 +12,9 @@ from monitor.srv import NewRollout, NewRolloutRequest
 from std_srvs.srv import Trigger, TriggerRequest
 from simulation.srv import RobotSpawn, RobotSpawnResponse, RobotSpawnRequest
 from simulation.srv import EnvGen, EnvGenResponse, EnvGenRequest
+from simulation.srv import OdomInfo, OdomInfoResponse, OdomInfoRequest
 from perception.msg import BeamMsg
-from std_msgs.msg import String
+from sensor_msgs.msg import Imu
 from simulation.msg import DistDirec
 
 
@@ -46,7 +47,7 @@ class TrainingEnv(gym.Env):
         self.robot_state = State()
         rospy.Subscriber("/features", BeamMsg, self.update_features)
         self.features = BeamMsg()
-        rospy.Subscriber("/direction", BeamMsg, self.update_features)
+        rospy.Subscriber("/direction", DistDirec, self.update_features)
         self.direction = DistDirec()
         # Service callers
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
@@ -55,9 +56,9 @@ class TrainingEnv(gym.Env):
         self.env_gen = rospy.ServiceProxy('env_gen', EnvGen)
         self.new_rollout = rospy.ServiceProxy('/rollout/new', NewRollout)
         self.start_rollout = rospy.ServiceProxy('/rollout/start', Trigger)
+        self.odom_info = rospy.ServiceProxy('/odom_info', OdomInfo)
         # Spaces
         self.action_space, self.observation_space = self.get_spaces()
-
 
     def get_spaces(self):
         ANGLE =np.pi / 4
@@ -92,15 +93,21 @@ class TrainingEnv(gym.Env):
         omin += fmin
         omax += fmax
 
+        # Angle2Goal
         ANGLE_MIN = -np.pi
         ANGLE_MAX = np.pi
         omin += [ANGLE_MIN]
         omax += [ANGLE_MAX]
 
+        # Distance2Goal
         DIST_MIN = 0.
         DIST_MAX = 7.
         omin += [DIST_MIN]
         omax += [DIST_MAX]
+
+        # Roll, pitch
+        omin += [ANGLE_MIN, ANGLE_MIN]
+        omax += [ANGLE_MAX, ANGLE_MAX]
 
         aspace = spaces.Box(np.array(amin), np.array(amax))
         ospace = spaces.Box(np.array(omin), np.array(omax))
@@ -109,7 +116,7 @@ class TrainingEnv(gym.Env):
     def build_action_fields(self):
         d = {0: 'linear'}
         index = 1
-        if self.arm_is_used:
+        if self.angular_is_used:
             d[index] = 'angular'
             index += 1
         d[index] = 'front_flippers'
@@ -157,7 +164,7 @@ class TrainingEnv(gym.Env):
 
     def get_transformed_state(self):
         """
-        state => [robot state, vertical, horizontal]
+        state <= [robot state, vertical, horizontal, rpy]
         :return:
         """
         state = []
@@ -172,6 +179,9 @@ class TrainingEnv(gym.Env):
         # direction + distance
         state += [self.direction.angle, self.direction.distance]
 
+        # pitch
+        resp = self.odom_info.call(OdomInfoRequest())
+        state += [resp.roll, resp.pitch]
         return state
 
     def regenerate_obstacles(self):

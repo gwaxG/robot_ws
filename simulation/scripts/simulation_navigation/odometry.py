@@ -5,6 +5,7 @@ import rospy
 import tf
 from gazebo_msgs.msg import ModelStates
 from nav_msgs.msg import Odometry
+from simulation.srv import OdomInfo, OdomInfoResponse, OdomInfoRequest
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance
 from termcolor import colored
@@ -23,7 +24,21 @@ class Odom:
         self.odom_pub = rospy.Publisher("/odometry", Odometry)
         self.seq = 1
         self.sync_time = rospy.get_time()
+        # rpy service definition
+        s = rospy.Service('odom_info', OdomInfo, self.callback_odom)
+        self.roll = 0
+        self.pitch = 0
+        self.yaw = 0
         rospy.spin()
+
+    def callback_odom(self, req):
+        return OdomInfoResponse(
+            result=True,
+            err="",
+            roll=self.roll,
+            pitch=self.pitch,
+            yaw=self.yaw
+        )
 
     def callback(self, msg):
         if rospy.get_time() - self.sync_time < 0.1:
@@ -61,6 +76,15 @@ class Odom:
             rospy.Time.now(),
             "base_link",
             "odom"
+        )
+        self.roll, self.pitch, self.yaw = tf.transformations.euler_from_quaternion(
+            [
+                pose.orientation.w,
+                pose.orientation.x,
+                pose.orientation.y,
+                pose.orientation.z
+            ],
+            axes='sxyz'
         )
 
 

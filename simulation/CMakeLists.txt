@@ -59,7 +59,7 @@ add_service_files(
     RobotSpawn.srv
     StairInfo.srv
     GoalInfo.srv
-#   Service2.srv
+    OdomInfo.srv
 )
 
 ## Generate actions in the 'action' folder
