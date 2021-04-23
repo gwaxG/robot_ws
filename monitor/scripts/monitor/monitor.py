@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-
+The monitor node
 """
 
 import rospy
@@ -21,6 +21,11 @@ import numpy as np
 class Monitor:
     def __init__(self):
         rospy.init_node('monitor')
+        # Subscribers
+        # Publishers
+        # Clients
+        # Services
+        # Node-related data
 
 
 if __name__ == '__main__':

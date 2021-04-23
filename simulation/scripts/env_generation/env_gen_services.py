@@ -173,7 +173,7 @@ class EnvGenerator:
             render.delete_model(self.env.floor_obstacles.name)
         if self.env.stair_floor.exist:
             render.delete_model(self.env.stair_floor.name)
-        self.env.stair_floor.generate()
+        self.env.stair_floor.generate(props)
         self.update_shift()
         render.apply(self.env.stair_floor)
 

@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import random
+import numpy as np
 import math
 import copy
 from abc import ABC, abstractmethod
+
 
 class Env:
 
@@ -29,6 +31,7 @@ class Group(ABC):
     @abstractmethod
     def generate(self):
         pass
+
 
 class Box:
     def __init__(self, name, x=0., y=0., z=0., roll=0., pitch=0., yaw=0., box_x=0.01, box_y=0.01, box_z=0.0):
@@ -192,6 +195,12 @@ class StairFloor(Group):
     width_stair = 2.
     standard_height = 2.0
 
+    dimensions = {
+        "n": {"min": 0, "max": 10},
+        "length": {"min": 0.35, "max": 0.52},
+        "height": {"min": 0.15, "max": 0.25},
+    }
+
     def __init__(self):
         super().__init__("stair_floor")
         self.shift_x = 0.
@@ -202,12 +211,60 @@ class StairFloor(Group):
         self.step_n = 0.
         self.exist = False
 
-    def generate(self):
-        # steps
+    def sample_uniform(self):
         step_n = random.randint(5, 10)
-        length = StairFloor.min_step_length + random.random() * (StairFloor.max_step_length - StairFloor.min_step_length)
-        height = StairFloor.min_step_height + random.random() * (StairFloor.max_step_height - StairFloor.min_step_height)
-        print("Generating staircase of parameters:", length, height)
+        length = StairFloor.min_step_length + random.random() * (
+                StairFloor.max_step_length - StairFloor.min_step_length)
+        height = StairFloor.min_step_height + random.random() * (
+                StairFloor.max_step_height - StairFloor.min_step_height)
+        return step_n, length, height
+
+    def sample_gaussian(self, eps):
+        # difference max - min
+        dn = StairFloor.dimensions["n"]["max"] - StairFloor.dimensions["n"]["min"]
+        # mean - center of the distribution
+        mu_n = dn * eps + StairFloor.dimensions["n"]["min"]
+        # width - standard deviation
+        sigma_n = dn * eps
+
+        dl = StairFloor.dimensions["length"]["max"] - StairFloor.dimensions["length"]["min"]
+        # Mean starts from maximum, because low slopes are easier.
+        mu_l = dl * (1 - eps) + StairFloor.dimensions["length"]["min"]
+        sigma_l = dl * eps
+
+        dh = StairFloor.dimensions["height"]["max"] - StairFloor.dimensions["height"]["min"]
+        mu_h = dh * eps + StairFloor.dimensions["height"]["min"]
+        sigma_h = dh * eps
+        print(sigma_n, sigma_l, sigma_h)
+        # clip a sampled value to make it fitting in its min-max interval
+        step_n = int(np.clip(
+            # np.round is to put a float value to int
+            np.round(np.random.normal(mu_n, sigma_n)),
+            StairFloor.dimensions["n"]["min"],
+            StairFloor.dimensions["n"]["max"]
+        ))
+        length = np.clip(
+            np.random.normal(mu_l, sigma_l),
+            StairFloor.dimensions["length"]["min"],
+            StairFloor.dimensions["length"]["max"]
+        )
+        height = np.clip(
+            np.random.normal(mu_h, sigma_h),
+            StairFloor.dimensions["height"]["min"],
+            StairFloor.dimensions["height"]["max"]
+        )
+
+        return step_n, length, height
+
+    def generate(self, props):
+        if props == "rand":
+            step_n, length, height = self.sample_uniform()
+        elif "vect" in props:
+            eps = float(props.split("_")[1])
+            step_n, length, height = self.sample_gaussian(eps)
+        else:
+            raise ValueError("Uniform or multivariate gaussian distribution has to be indicated in props.")
+        print("Generating staircase nlhs:", step_n, length, height, np.arctan2(height, length)*180/3.14)
         self.step_height = height
         self.step_length = length
         self.step_n = step_n
@@ -336,11 +393,12 @@ class StairFloor(Group):
 if __name__ == "__main__":
     import render
     e = Env()
-    e.ground_obstacles.generate()
-    render.apply(e.ground_obstacles)
-    e.stair_floor.generate()
-    render.apply(e.stair_floor)
-    e.floor_obstacles.shift_x = e.stair_floor.shift_x
-    e.floor_obstacles.shift_z = e.stair_floor.shift_z
-    e.floor_obstacles.generate()
-    render.apply(e.floor_obstacles)
+    # e.ground_obstacles.generate()
+    # render.apply(e.ground_obstacles)
+    import sys
+    e.stair_floor.generate(sys.argv[1])
+    # render.apply(e.stair_floor)
+    # e.floor_obstacles.shift_x = e.stair_floor.shift_x
+    # e.floor_obstacles.shift_z = e.stair_floor.shift_z
+    # e.floor_obstacles.generate()
+    # render.apply(e.floor_obstacles)
