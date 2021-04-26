@@ -253,7 +253,6 @@ class StairFloor(Group):
             StairFloor.dimensions["height"]["min"],
             StairFloor.dimensions["height"]["max"]
         )
-
         return step_n, length, height
 
     def generate(self, props):

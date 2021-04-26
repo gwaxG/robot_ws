@@ -1,0 +1,12 @@
+string  exp_series
+string  experiment
+int32   seq
+string  sensors
+bool    arm
+bool    angular
+float32 progress
+float32 reward
+float32 angular_m
+float32 deviation
+string  accidents
+int32   time_steps

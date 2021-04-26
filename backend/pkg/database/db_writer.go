@@ -5,12 +5,11 @@ import (
 	"log"
 
 	"github.com/gwaxG/robot_ws/backend/pkg/common"
-	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Append new rollout analytics to corresponding database and collection.
-func (db *DataBase) AddNewRolloutAnalytics(analytics structs.RolloutAnalytics) {
+func (db *DataBase) AddNewRolloutAnalytics(analytics common.RolloutAnalytics) {
 	db.check(analytics.ExpSeries, analytics.Experiment)
 	// log.Printf("Inserting new to db %s collection %s\n", db.database.Name(), db.collection.Name())
 	db.mutex.Lock()

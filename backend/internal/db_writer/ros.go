@@ -1,21 +1,19 @@
 package db_writer
 
 import (
-	"encoding/json"
-	"github.com/aler9/goroslib"
-	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
-	"github.com/gwaxG/robot_ws/backend/pkg/common"
-	"github.com/gwaxG/robot_ws/monitor/pkg/structs"
 	"os"
+
+	"github.com/aler9/goroslib"
+	"github.com/gwaxG/robot_ws/backend/pkg/common"
 )
 
 type Ros struct {
-	node 			*goroslib.Node
-	addAnalytics 	*goroslib.Subscriber
-	analyticsCh		chan structs.RolloutAnalytics
+	node         *goroslib.Node
+	addAnalytics *goroslib.Subscriber
+	analyticsCh  chan common.RolloutAnalytics
 }
 
-func (r *Ros) Init(analyticsCh chan structs.RolloutAnalytics) {
+func (r *Ros) Init(analyticsCh chan common.RolloutAnalytics) {
 	r.analyticsCh = analyticsCh
 	var err error
 	r.node, err = goroslib.NewNode(goroslib.NodeConf{
@@ -25,17 +23,15 @@ func (r *Ros) Init(analyticsCh chan structs.RolloutAnalytics) {
 	common.FailOnError(err)
 	r.addAnalytics, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
 		Node:     r.node,
-		Topic:    "/analytics/rollout",
+		Topic:    "/rollout/analytics",
 		Callback: r.onAddingAnalytics,
 	})
 	common.FailOnError(err)
 }
 
-func (r *Ros) onAddingAnalytics(msg *std_msgs.String) {
-	var analytics structs.RolloutAnalytics
-	common.FailOnError(json.Unmarshal([]byte(msg.Data), &analytics))
+func (r *Ros) onAddingAnalytics(analytics *common.RolloutAnalytics) {
 	if analytics.Experiment != "" && analytics.ExpSeries != "" {
-		r.analyticsCh <- analytics
+		r.analyticsCh <- *analytics
 	}
 }
 
