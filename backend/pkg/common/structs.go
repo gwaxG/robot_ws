@@ -17,4 +17,5 @@ type RolloutAnalytics struct {
 	AngularM    float32 `bson:"angularm" json:"angularm"`
 	Accidents   string  `bson:"accidents" json:"accidents"`
 	TimeSteps   int     `bson:"time_steps" json:"time_steps"`
+	Log         string  `bson:"log" json:"log"`
 }

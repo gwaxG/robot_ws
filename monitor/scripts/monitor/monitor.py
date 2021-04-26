@@ -56,7 +56,6 @@ class Monitor:
         self.guide = Guidance()
         self.is_guided = False
         self.stair = None
-        self.penalty_coefficient = 1.
         rospy.spin()
 
     def callback_guidance(self, _):
@@ -85,6 +84,7 @@ class Monitor:
         self.rollout_state.reset()
         self.rollout_state.exp_series = rospy.get_param("exp_series_name")
         self.rollout_state.set_fields(req)
+        self.guide.set_seq(self.rollout_state.seq)
 
     def callback_step_return(self, _):
         reward = self.rollout_state.step_reward
@@ -99,8 +99,9 @@ class Monitor:
             self.rollout_state.step_deviation = []
             reward -= step_penalty
             self.rollout_state.episode_deviation.append(step_penalty)
+        step_penalty = self.guide.reshape_penalty(step_penalty)
         if "tip" in self.rollout_state.accidents:
-            step_penalty += 1
+            step_penalty = 1 - self.rollout_state.episode_penalty
         reward -= step_penalty
         self.rollout_state.episode_reward += reward
         if self.rollout_state.done:
@@ -110,12 +111,13 @@ class Monitor:
         return StepReturnResponse(reward=reward, done=self.rollout_state.done)
 
     def send_to_backend(self):
+        log = self.guide.log_string if self.guide.log_update else ""
         self.pub_rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
                 experiment=self.rollout_state.experiment,
                 seq=self.rollout_state.seq,
-                sensors=self.rollout_state.seq,
+                sensors=self.rollout_state.sensors,
                 arm=self.rollout_state.arm,
                 angular=self.rollout_state.angular,
                 progress=self.rollout_state.progress,
@@ -123,7 +125,8 @@ class Monitor:
                 angular_m=np.mean(self.rollout_state.episode_angular),
                 deviation=np.mean(self.rollout_state.episode_deviation),
                 accidents=self.rollout_state.accidents,
-                time_steps=self.rollout_state.time_step
+                time_steps=self.rollout_state.time_step,
+                log=log
             )
         )
 
@@ -179,7 +182,6 @@ class Monitor:
             accident = True
         if accident:
             self.rollout_state.done = True
-
 
 
 if __name__ == '__main__':
