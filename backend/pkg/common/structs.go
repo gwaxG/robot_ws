@@ -13,9 +13,9 @@ type RolloutAnalytics struct {
 	Angular     bool    `bson:"angular" json:"angular"`
 	Progress    float32 `bson:"progress" json:"progress"`
 	Reward      float32 `bson:"reward" json:"reward"`
-	Deviation   float32 `bson:"deviation" json:"deviation"`
 	AngularM    float32 `bson:"angularm" json:"angularm"`
+	Deviation   float32 `bson:"deviation" json:"deviation"`
 	Accidents   string  `bson:"accidents" json:"accidents"`
-	TimeSteps   int     `bson:"time_steps" json:"time_steps"`
+	TimeSteps   int32   `bson:"time_steps" json:"time_steps"`
 	Log         string  `bson:"log" json:"log"`
 }

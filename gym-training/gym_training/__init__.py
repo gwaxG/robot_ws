@@ -10,6 +10,7 @@ register(
         'angular': True,
         'penalty_angular': False,
         'penalty_deviation': False,
+        "env_type": "rand",
         'time_step_limit': 50,
         'sigma': 0.0,
         'task': 'ascent',

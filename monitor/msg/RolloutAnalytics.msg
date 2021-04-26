@@ -9,5 +9,5 @@ float32 reward
 float32 angular_m
 float32 deviation
 string  accidents
-string  log
 int32   time_steps
+string  log

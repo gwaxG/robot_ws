@@ -29,6 +29,7 @@ class Learner(Base):
             'sigma': prms['sigma'],
             'task': prms['task'],
             'rand': prms['rand'],
+            'env_type': prms['env_type']
         }
         env = DummyVecEnv([lambda: TrainingEnv(**kwargs)])
 
@@ -46,7 +47,7 @@ class Learner(Base):
                 policies[prms["policy"]],
                 env,
                 verbose=1,
-                train_freq=float(model_parameters["sac_train_freq"]),
+                train_freq=int(model_parameters["sac_train_freq"]),
                 tau=float(model_parameters["sac_tau"]),
                 ent_coef=model_parameters["sac_ent_coef"],
                 tensorboard_log=self.log_path

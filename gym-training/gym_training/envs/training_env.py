@@ -13,7 +13,7 @@ from gym import spaces
 from control.msg import State
 from monitor.srv import StepReturn, StepReturnRequest
 from monitor.srv import NewRollout, NewRolloutRequest
-from monitor.srv import ObsActCompl, ObsActComplResponse, ObsActComplRequest
+from monitor.srv import GuidanceInfo, GuidanceInfoResponse, GuidanceInfoRequest
 from std_srvs.srv import Trigger, TriggerRequest
 from simulation.srv import RobotSpawn, RobotSpawnResponse, RobotSpawnRequest
 from simulation.srv import EnvGen, EnvGenResponse, EnvGenRequest
@@ -32,6 +32,7 @@ class TrainingEnv(gym.Env):
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
+        self.env_type = kwargs['env_type']
         self.penalty_angular = bool(kwargs['penalty_angular'])
         self.penalty_deviation = bool(kwargs['penalty_deviation'])
         self.time_step_limit = int(kwargs['time_step_limit'])
@@ -52,7 +53,7 @@ class TrainingEnv(gym.Env):
         self.robot_state = State()
         rospy.Subscriber("/features", BeamMsg, self.update_features)
         self.features = BeamMsg()
-        rospy.Subscriber("/direction", DistDirec, self.update_features)
+        rospy.Subscriber("/direction", DistDirec, self.update_direction)
         self.direction = DistDirec()
         # Service callers
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
@@ -62,6 +63,7 @@ class TrainingEnv(gym.Env):
         self.new_rollout = rospy.ServiceProxy('/rollout/new', NewRollout)
         self.start_rollout = rospy.ServiceProxy('/rollout/start', Trigger)
         self.odom_info = rospy.ServiceProxy('/odom_info', OdomInfo)
+        self.guidance_info = rospy.ServiceProxy('/guidance/info', GuidanceInfo)
         # Spaces
         self.action_space, self.observation_space = self.get_spaces()
         # Currently, there are 3 levels:
@@ -69,8 +71,7 @@ class TrainingEnv(gym.Env):
         # 1 - obs.:all without horizontal features; act.: linear, front fl., rear fl., arm1, arm2
         # 2 - obs.:all; act.: all (linear, angular, front fl., rear fl., arm1, arm2)
         self.complexity = 2
-        # Service
-        s = rospy.Service('obs_act_compl', ObsActCompl, self.callback_complexity)
+        self.epsilon = 0.0
 
     def callback_complexity(self, req):
         self.complexity = req.level
@@ -222,22 +223,25 @@ class TrainingEnv(gym.Env):
             EnvGenRequest(
                 action="delete",
                 model=self.obstacle,
-                props=self.task + "_" + self.rand,
+                props="",
             )
         )
+        props = self.env_type if "rand" in self.env_type else self.env_type + "_" + str(self.epsilon)
         self.env_gen.call(
             EnvGenRequest(
                 action="generate",
                 model=self.obstacle,
-                props=self.task + "_" + self.rand,
+                props=props,
             )
         )
 
     def respawn_robot(self):
         if self.task == "ascent" or self.task == "flat":
             ground = "ground"
-        if self.task == "descent":
+        elif self.task == "descent":
             ground = "floor"
+        else:
+            raise ValueError("Task is not defined in training_env respawn_robot.")
         self.robot_spawn.call(RobotSpawnRequest(
             place=ground,
             task=self.task,
@@ -278,9 +282,15 @@ class TrainingEnv(gym.Env):
             )
         )
 
+    def request_complexity(self):
+        resp = self.guidance_info.call(GuidanceInfoRequest())
+        self.complexity = resp.level
+        self.epsilon = resp.epsilon
+
     def reset(self, goal=""):
         self.seq += 1
         self.return_robot_to_initial_state()
+        self.request_complexity()
         self.regenerate_obstacles()
         self.respawn_robot()
         self.spawn_goal()

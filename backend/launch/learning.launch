@@ -45,7 +45,7 @@
     <!-- Write to database -->
     <node name="database_writer" pkg="backend" type="db_writer_app" output="screen" args="$(arg port)"/>
     <!-- Monitor progress -->
-    <node name="monitor" pkg="monitor" type="monitor_app" output="screen" args="$(arg port)"/>
+    <node name="monitor" pkg="monitor" type="monitor_app.py" output="screen" args="$(arg port)"/>
     <!-- Robot control -->
     <node name="control" pkg="control" type="control_app" output="screen" args="$(arg port)"/>
     <!-- Safety estimation -->
