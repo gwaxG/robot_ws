@@ -11,3 +11,4 @@ float32 deviation
 string  accidents
 int32   time_steps
 string  log
+float32 debug
