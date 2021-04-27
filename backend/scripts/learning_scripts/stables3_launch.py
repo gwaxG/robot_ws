@@ -9,6 +9,7 @@ from gym_training.envs.training_env import TrainingEnv
 from stable_baselines3 import PPO
 from stable_baselines3 import SAC
 from stable_baselines3.sac.policies import SACPolicy
+from monitor.srv import GuidanceInfoRequest
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3 import TD3
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
@@ -71,11 +72,19 @@ class Learner(Base):
 
     def train_model(self):
         self.log(f"Learning started! For {type(int(self.prms['total_timesteps']))} of type {type(self.prms['total_timesteps'])}")
-        self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4)
+        self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4, callback=self.callback)
         try:
             self.model.save(self.save_path)
         except Exception as e:
             print("Model was not saved")
+
+    def callback(self, _locals, _globals):
+        resp = self.guidance_info.call(GuidanceInfoRequest())
+        if resp.done:
+            _locals['self'].save(self.save_path)
+            return False
+        else:
+            return True
 
 if __name__ == '__main__':
     Learner().train_model()

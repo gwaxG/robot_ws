@@ -5,6 +5,7 @@ import rospy
 import tf
 from gazebo_msgs.msg import ModelStates
 from nav_msgs.msg import Odometry
+from monitor.msg import RolloutAnalytics
 from std_msgs.msg import Header
 from simulation.msg import DistDirec
 import numpy as np
@@ -24,7 +25,7 @@ class DirectionToGoal:
     def __init__(self):
         rospy.init_node('direction_to_goal')
         rospy.Subscriber("/odometry", Odometry, self.callback)
-        rospy.Subscriber("/analytics/rollout", Odometry, self.callback_new_rollout)
+        rospy.Subscriber("/rollout/analytics", RolloutAnalytics, self.callback_new_rollout)
         self.goal_exist_call = rospy.ServiceProxy('/gazebo/get_model_properties', GetModelProperties)
         self.listener = tf.TransformListener()
         self.goal_info_call = rospy.ServiceProxy('goal_info', GoalInfo)

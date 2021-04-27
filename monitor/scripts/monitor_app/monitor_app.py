@@ -37,11 +37,12 @@ class Monitor:
         rospy.Subscriber("/safety/angular", Float32, self.callback_safety_angular)
         rospy.Subscriber("/odometry", Odometry, self.callback_odometry)
         # Publishers
-        self.pub_rollout_analytics = rospy.Publisher("/rollout/analytics", RolloutAnalytics)
+        self.rollout_analytics = rospy.Publisher("/rollout/analytics", RolloutAnalytics)
         # Clients
         self.goal_info = rospy.ServiceProxy("goal_info", GoalInfo)
         self.stair_info = rospy.ServiceProxy("stair_info", StairInfo)
         # Services
+        self.rollout_state = utils.RolloutState()
         s = rospy.Service("/rollout/new", NewRollout, self.callback_new_rollout)
         s = rospy.Service("/rollout/step_return", StepReturn, self.callback_step_return)
         s = rospy.Service("/rollout/start", Trigger, self.callback_start_rollout)
@@ -51,7 +52,6 @@ class Monitor:
         self.safety_step_deviation = []
         self.safety_step_angular = []
         self.odometry = None
-        self.rollout_state = utils.RolloutState()
         self.goal = None
         self.guide = Guidance()
         self.is_guided = False
@@ -63,6 +63,7 @@ class Monitor:
         return GuidanceInfoResponse(
             epsilon=self.guide.epsilon,
             level=self.guide.level,
+            done=self.guide.done
         )
 
     def update_goal(self):
@@ -90,6 +91,7 @@ class Monitor:
 
     def callback_step_return(self, _):
         reward = self.rollout_state.step_reward
+        progress = self.rollout_state.step_reward
         self.rollout_state.step_reward = 0.
         step_penalty = 0.
         if self.rollout_state.use_penalty_angular:
@@ -99,25 +101,34 @@ class Monitor:
         if self.rollout_state.use_penalty_deviation:
             step_penalty += np.mean(self.rollout_state.step_deviation)
             self.rollout_state.step_deviation = []
-            reward -= step_penalty
             self.rollout_state.episode_deviation.append(step_penalty)
+        guide_penalty = step_penalty
         step_penalty = self.guide.reshape_penalty(step_penalty)
+
         if "tip" in self.rollout_state.accidents:
-            step_penalty = 1 - self.rollout_state.episode_penalty
+            step_penalty = 1
         reward -= step_penalty
         self.rollout_state.episode_reward += reward
-        if self.rollout_state.done:
-            self.send_to_backend()
-            if self.is_guided:
-                self.guide.update(reward)
         self.rollout_state.time_step += 1
         if self.rollout_state.time_step == self.rollout_state.time_step_limit:
+            print("Done 1")
             self.rollout_state.done = True
+
+        if self.rollout_state.done:
+            self.rollout_state.progress = np.clip(self.rollout_state.progress, 0.0, 1.0)
+            self.send_to_backend()
+            if self.is_guided:
+                self.guide.update(
+                    self.rollout_state.progress,
+                    self.guide.reshape_penalty(guide_penalty),
+                    guide_penalty,
+                    self.rollout_state.time_step
+                )
         return StepReturnResponse(reward=reward, done=self.rollout_state.done)
 
     def send_to_backend(self):
         log = self.guide.log_string if self.guide.log_update else ""
-        self.pub_rollout_analytics.publish(
+        self.rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
                 experiment=self.rollout_state.experiment,
@@ -161,17 +172,23 @@ class Monitor:
             self.rollout_state.step_reward += diff
         if dist < 0.0:
             self.rollout_state.closest_distance = 0.
+            print("Done 2")
+            self.rollout_state.done = True
+        elif dist > 1.2 * self.rollout_state.maximum_distance:
+            print("Done 2-5")
+            self.rollout_state.closest_distance = dist
             self.rollout_state.done = True
         else:
             self.rollout_state.closest_distance = dist
         # tipping over check
-        wxyz = [
-            msg.pose.pose.orientation.w,
-            msg.pose.pose.orientation.x,
-            msg.pose.pose.orientation.y,
-            msg.pose.pose.orientation.z
-        ]
-        roll, pitch, _ = tf.transformations.euler_from_quaternion(wxyz)
+        roll, pitch, yaw = tf.transformations.euler_from_quaternion(
+            [
+                msg.pose.pose.orientation.x,
+                msg.pose.pose.orientation.y,
+                msg.pose.pose.orientation.z,
+                msg.pose.pose.orientation.w
+            ]
+        )
         accident = False
         if roll > np.pi / 2:
             self.rollout_state.accidents = "Front tipping over"

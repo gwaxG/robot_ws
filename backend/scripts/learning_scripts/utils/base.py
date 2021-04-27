@@ -6,6 +6,8 @@ import rospy
 import os
 import argparse
 import datetime
+from monitor.srv import GuidanceInfo
+
 
 
 class Base:
@@ -49,6 +51,7 @@ class Base:
         os.environ["ROS_MASTER_URI"] = "http://localhost:" + str(port)
         rospy.init_node("example")
         self.rospy = rospy
+        self.guidance_info = rospy.ServiceProxy("/guidance/info", GuidanceInfo)
 
     def write(self, buf):
         self.f.write(buf)

@@ -236,11 +236,8 @@ class StairFloor(Group):
         mu_h = dh * eps + StairFloor.dimensions["height"]["min"]
         sigma_h = dh * eps
         # clip a sampled value to make it fitting in its min-max interval
-        step_n = np.clip(
-            int(np.round(np.random.normal(mu_n, sigma_n))),
-            StairFloor.dimensions["n"]["min"],
-            StairFloor.dimensions["n"]["max"]
-        )
+        n_candidate = int(np.round(np.random.normal(mu_n, sigma_n)))
+        step_n = np.clip(n_candidate, StairFloor.dimensions["n"]["min"], StairFloor.dimensions["n"]["max"])
         length = np.clip(
             np.random.normal(mu_l, sigma_l),
             StairFloor.dimensions["length"]["min"],

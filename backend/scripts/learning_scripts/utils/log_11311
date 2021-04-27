@@ -1,38 +1,16 @@
-/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py:50: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
+/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py:51: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
 Using cpu device
 Using cpu device
 Using cpu device
-2021-04-27 00:49:28.380115 Learning started! For <class 'int'> of type <class 'int'>
+2021-04-27 15:19:44.349842 Learning started! For <class 'int'> of type <class 'int'>
 regenerating stair_floor ascent_0
+props vect_1.0
+RESP result: True
+err: ''
 regenerating stair_floor ascent_0
-Traceback (most recent call last):
-  File "stables3_launch.py", line 81, in <module>
-    Learner().train_model()
-  File "stables3_launch.py", line 74, in train_model
-    self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4)
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/sac/sac.py", line 291, in learn
-    reset_num_timesteps=reset_num_timesteps,
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 273, in learn
-    log_interval=log_interval,
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 472, in collect_rollouts
-    new_obs, reward, done, infos = env.step(action)
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/base_vec_env.py", line 163, in step
-    return self.step_wait()
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 49, in step_wait
-    obs = self.envs[env_idx].reset()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 294, in reset
-    self.regenerate_obstacles()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 234, in regenerate_obstacles
-    props=props,
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 522, in call
-    responses = transport.receive_once()
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_base.py", line 735, in receive_once
-    p.read_messages(b, msg_queue, sock) 
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 360, in read_messages
-    self._read_ok_byte(b, sock)
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 343, in _read_ok_byte
-    raise ServiceException("service [%s] responded with an error: %s"%(self.resolved_name, str))
-rospy.service.ServiceException: service [/env_gen] responded with an error: b'error processing request: scale < 0'
+props vect_1.0
+RESP result: True
+err: ''

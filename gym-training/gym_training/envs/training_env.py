@@ -25,6 +25,7 @@ from simulation.msg import DistDirec
 
 class TrainingEnv(gym.Env):
     ACTION_TIME = 0.25
+
     def __init__(self, **kwargs):
         rospy.set_param("exp_series_name", kwargs['experiment_series'])
         self.experiment = kwargs['experiment']
@@ -72,6 +73,7 @@ class TrainingEnv(gym.Env):
         # 2 - obs.:all; act.: all (linear, angular, front fl., rear fl., arm1, arm2)
         self.complexity = 2
         self.epsilon = 0.0
+        self.done = False
 
     def callback_complexity(self, req):
         self.complexity = req.level
@@ -219,7 +221,7 @@ class TrainingEnv(gym.Env):
 
     def regenerate_obstacles(self):
         print("regenerating", self.obstacle, self.task + "_" + self.rand)
-        self.env_gen.call(
+        resp = self.env_gen.call(
             EnvGenRequest(
                 action="delete",
                 model=self.obstacle,
@@ -227,13 +229,15 @@ class TrainingEnv(gym.Env):
             )
         )
         props = self.env_type if "rand" in self.env_type else self.env_type + "_" + str(self.epsilon)
-        self.env_gen.call(
+        print("props", props)
+        resp = self.env_gen.call(
             EnvGenRequest(
                 action="generate",
                 model=self.obstacle,
                 props=props,
             )
         )
+        print("RESP", resp )
 
     def respawn_robot(self):
         if self.task == "ascent" or self.task == "flat":
