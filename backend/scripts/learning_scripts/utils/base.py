@@ -35,7 +35,6 @@ class Base:
         # create log file
         file_name = os.path.join(os.path.split(__file__)[0], "log_"+str(port))
         self.f = open(file_name, "w")
-
         # save original streams
         self.save_stdout = sys.stdout
         self.save_stderr = sys.stderr

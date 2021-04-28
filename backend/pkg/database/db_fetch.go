@@ -4,27 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/gwaxG/robot_ws/backend/pkg/common"
-	"go.mongodb.org/mongo-driver/bson"
 	"io"
 	"io/ioutil"
 	"log"
 	"strings"
+
+	"github.com/gwaxG/robot_ws/backend/pkg/common"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type ResponseDbs struct {
-	Data	[]string `json:"data"`
-	Msg		string   `json:"msg"`
+	Data []string `json:"data"`
+	Msg  string   `json:"msg"`
 }
 
 // Append new rollout analytics to corresponding database and collection
-func (db *DataBase) FetchDbs() (*ResponseDbs, error){
+func (db *DataBase) FetchDbs() (*ResponseDbs, error) {
 	res, err := db.client.ListDatabaseNames(context.TODO(), bson.D{})
 	if err != nil {
 		return nil, errors.New("can not fetch database names")
 	}
 	out := []string{}
-	for i:=0; i<len(res); i++ {
+	for i := 0; i < len(res); i++ {
 		if strings.Contains(res[i], "exp") {
 			out = append(out, res[i])
 		}
@@ -37,17 +38,17 @@ func (db *DataBase) FetchDbs() (*ResponseDbs, error){
 }
 
 type ResponseColls struct {
-	Colls	[]string `json:"colls"`
-	Fields 	[][]string `json:"fields"`
-	Msg		string 	 `json:"msg"`
+	Colls  []string   `json:"colls"`
+	Fields [][]string `json:"fields"`
+	Msg    string     `json:"msg"`
 }
 
 // Retrieve collections from a database with associated fields
-func (db *DataBase) FetchCollections(database string) (*ResponseColls, error){
+func (db *DataBase) FetchCollections(database string) (*ResponseColls, error) {
 	msg := &ResponseColls{
-		Colls: []string{},
+		Colls:  []string{},
 		Fields: [][]string{},
-		Msg:  "",
+		Msg:    "",
 	}
 	// check if database exists
 	res, err := db.client.ListDatabaseNames(context.TODO(), bson.D{})
@@ -55,7 +56,7 @@ func (db *DataBase) FetchCollections(database string) (*ResponseColls, error){
 		return nil, errors.New("can not fetch database names")
 	}
 	exists := false
-	for i:=0; i<len(res); i++ {
+	for i := 0; i < len(res); i++ {
 		if strings.Contains(res[i], database) {
 			exists = true
 		}
@@ -89,24 +90,26 @@ func (db *DataBase) FetchCollections(database string) (*ResponseColls, error){
 }
 
 type RequestVisualize struct {
-	Data	[]string 	`json:"data"`
+	Data []string `json:"data"`
 }
 
 type ResponseVisualize struct {
-	Data	map[string][]float64 	`json:"data"`
-	Msg		string 	 				`json:"msg"`
+	Data map[string][]interface{} `json:"data"`
+	Msg  string                   `json:"msg"`
 }
 
 /*
 localhost:10000/visualize?database=test_exps&collection=test_rollout&fields=reward_progress_cogheight
 */
-func (db *DataBase) FetchVisualize(dbName, collName string, reqRaw io.ReadCloser) (*ResponseVisualize, error){
-	defer func (){
-		if r := recover(); r!=nil{log.Println("Recovered in db_fetch.FetchVisualize")}
+func (db *DataBase) FetchVisualize(dbName, collName string, reqRaw io.ReadCloser) (*ResponseVisualize, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recovered in db_fetch.FetchVisualize")
+		}
 	}()
 	msg := ResponseVisualize{
-		Data: map[string][]float64{},
-		Msg: "",
+		Data: map[string][]interface{}{},
+		Msg:  "",
 	}
 	fields := RequestVisualize{}
 	body, err := ioutil.ReadAll(reqRaw)
@@ -127,7 +130,7 @@ func (db *DataBase) FetchVisualize(dbName, collName string, reqRaw io.ReadCloser
 	for _, doc := range docs {
 		for k, v := range doc {
 			if contains(fields.Data, k) {
-				msg.Data[k] = append(msg.Data[k], v.(float64))
+				msg.Data[k] = append(msg.Data[k], v)
 			}
 
 		}
@@ -145,19 +148,19 @@ func contains(fields []string, field string) bool {
 }
 
 type ResponseHistoryConfig struct {
-	Configs	[]map[string]interface{} `json:"configs"`
-	Msg string `json:"msg"`
+	Configs []map[string]interface{} `json:"configs"`
+	Msg     string                   `json:"msg"`
 }
 
 // fetch docs from a collection HistoryConfigs
-func (db *DataBase) FetchHistoryConfig(dbName string) (*ResponseHistoryConfig, error){
-	defer func (){
-		if r := recover(); r!=nil{
+func (db *DataBase) FetchHistoryConfig(dbName string) (*ResponseHistoryConfig, error) {
+	defer func() {
+		if r := recover(); r != nil {
 		}
 	}()
 	msg := ResponseHistoryConfig{
 		Configs: []map[string]interface{}{},
-		Msg: "",
+		Msg:     "",
 	}
 	db.check(dbName, "HistoryConfigs")
 	cursor, err := db.collection.Find(context.TODO(), bson.M{})
