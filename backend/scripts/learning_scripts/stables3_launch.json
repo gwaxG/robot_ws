@@ -1,6 +1,6 @@
 {
-  "experiment_series": "exp_27_04",
-  "experiment": "test",
+  "experiment_series": "exp_10_05",
+  "experiment": "tests_2",
   "alg": "SAC",
   "policy": "default",
   "penalty_deviation": false,

@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+class DictToStruct:
+    def __init__(self, **entries):
+        """
+
+        :rtype: object
+        """
+        self.__dict__.update(entries)
+
+
 class RolloutState:
     """
     Rollout state description.

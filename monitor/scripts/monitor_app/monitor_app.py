@@ -29,7 +29,6 @@ import numpy as np
 
 class Monitor:
     def __init__(self):
-        # TODO 1 change backend to accept RolloutAnalytics msg and not String
         rospy.init_node('monitor')
         # Subscribers
         rospy.Subscriber("/robot/state", State, self.callback_robot_state)
@@ -48,6 +47,12 @@ class Monitor:
         s = rospy.Service("/rollout/start", Trigger, self.callback_start_rollout)
         s = rospy.Service("/guidance/info", GuidanceInfo, self.callback_guidance)
         # Data
+        self.consistency = utils.DictToStruct(
+            **{
+                "experiment": "",
+                "initialized": False
+            }
+        )
         self.robot_state = None
         self.safety_step_deviation = []
         self.safety_step_angular = []
@@ -82,15 +87,57 @@ class Monitor:
         self.rollout_state.started = True
         return TriggerResponse(success=True, message="")
 
+    def check_consistency(self, req):
+        if not self.consistency.initialized:
+            self.consistency.experiment = req.experiment
+            self.consistency.initialized = True
+            if req.use_penalty_deviation or req.use_penalty_angular:
+                self.guide.set_need_to_penalize(True)
+            return False
+        else:
+            if self.consistency.experiment != req.experiment:
+                return True
+            else:
+                return False
+
     def callback_new_rollout(self, req):
+        """
+        New rollout callback.
+        This method check if new experiment was started. If so, then reinitialize all data attributes.
+        Then, the consistency is rechecked.
+        After the rollout state is initialized.
+        :param req:
+        :return:
+        """
+        need_to_reset = self.check_consistency(req)
+        if need_to_reset:
+            self.consistency = utils.DictToStruct(
+                **{
+                    "experiment": "",
+                    "initialized": False
+                }
+            )
+            self.robot_state = None
+            self.safety_step_deviation = []
+            self.safety_step_angular = []
+            self.odometry = None
+            self.goal = None
+            self.guide = Guidance()
+            self.is_guided = False
+            self.stair = None
+
+        _ = self.check_consistency(req)
+
         self.rollout_state.reset()
         self.rollout_state.exp_series = rospy.get_param("exp_series_name")
         self.rollout_state.set_fields(req)
+
         self.guide.set_seq(self.rollout_state.seq)
         return NewRolloutResponse(received=True)
 
     def callback_step_return(self, _):
         reward = self.rollout_state.step_reward
+        # Progress is interchangeable with reward.
         progress = self.rollout_state.step_reward
         self.rollout_state.step_reward = 0.
         step_penalty = 0.
@@ -98,7 +145,7 @@ class Monitor:
             step_penalty += np.mean(self.rollout_state.step_angular)
             self.rollout_state.step_angular = []
             self.rollout_state.episode_angular.append(step_penalty)
-        if self.rollout_state.use_penalty_deviation:
+        elif self.rollout_state.use_penalty_deviation:
             step_penalty += np.mean(self.rollout_state.step_deviation)
             self.rollout_state.step_deviation = []
             self.rollout_state.episode_deviation.append(step_penalty)
@@ -108,10 +155,10 @@ class Monitor:
         if "tip" in self.rollout_state.accidents:
             step_penalty = 1
         reward -= step_penalty
+
         self.rollout_state.episode_reward += reward
         self.rollout_state.time_step += 1
         if self.rollout_state.time_step == self.rollout_state.time_step_limit:
-            print("Done 1")
             self.rollout_state.done = True
 
         if self.rollout_state.done:
@@ -119,15 +166,16 @@ class Monitor:
             self.send_to_backend()
             if self.is_guided:
                 self.guide.update(
-                    self.rollout_state.progress,
-                    self.guide.reshape_penalty(guide_penalty),
-                    guide_penalty,
-                    self.rollout_state.time_step
+                    self.rollout_state.progress,  # only positive reward due to movement progress
+                    guide_penalty,  # penalty without tipping over
+                    self.rollout_state.time_step  # episode length
                 )
+        print("EPISODE REWARD", self.rollout_state.episode_reward)
         return StepReturnResponse(reward=reward, done=self.rollout_state.done)
 
     def send_to_backend(self):
         log = self.guide.log_string if self.guide.log_update else ""
+        self.guide.reset_sync_log()
         self.rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
@@ -169,7 +217,7 @@ class Monitor:
         if dist < self.rollout_state.closest_distance:
             diff = self.rollout_state.closest_distance - dist if dist >= 0.0 else self.rollout_state.closest_distance
             self.rollout_state.progress += diff / self.rollout_state.maximum_distance
-            self.rollout_state.step_reward += diff
+            self.rollout_state.step_reward += diff / self.rollout_state.maximum_distance
         if dist < 0.0:
             self.rollout_state.closest_distance = 0.
             print("Done 2")

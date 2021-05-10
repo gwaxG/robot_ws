@@ -169,6 +169,7 @@ class TrainingEnv(gym.Env):
 
     def update_action(self, action):
         """
+        Constraint action space accordingly to complexity.
         Possible configurations:
         action => [linear, angular, front_flippers, rear_flippers, arm_joint1, arm_joint2]
         action => [linear, front_flippers, rear_flippers, arm_joint1, arm_joint2]
@@ -186,8 +187,11 @@ class TrainingEnv(gym.Env):
         }
         for i, action_value in enumerate(action):
             if self.active_action_fields[i] in constraint_fields[self.complexity]:
-                if "arm" in self.active_action_fields[i]:
-                    action_value = np.pi / 4
+                if "arm_joint1" in self.active_action_fields[i]:
+                    if "ascent" in self.task:
+                        action_value = np.pi / 4
+                    elif "descent" in self.task:
+                        action_value = -np.pi / 4
                 else:
                     action_value = 0
             setattr(self.action, self.active_action_fields[i], action_value)
@@ -229,7 +233,6 @@ class TrainingEnv(gym.Env):
             )
         )
         props = self.env_type if "rand" in self.env_type else self.env_type + "_" + str(self.epsilon)
-        print("props", props)
         resp = self.env_gen.call(
             EnvGenRequest(
                 action="generate",
@@ -237,7 +240,7 @@ class TrainingEnv(gym.Env):
                 props=props,
             )
         )
-        print("RESP", resp )
+
 
     def respawn_robot(self):
         if self.task == "ascent" or self.task == "flat":

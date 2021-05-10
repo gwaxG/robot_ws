@@ -12,6 +12,7 @@
   "total_timesteps": 10000,
   "save_path": "data/models",
   "time_step_limit": 50,
+  "env_type": "vect",
   "arm": true,
   "angular": true,
   "sigma": 0.0,
