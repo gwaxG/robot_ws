@@ -170,7 +170,7 @@ class Monitor:
                     guide_penalty,  # penalty without tipping over
                     self.rollout_state.time_step  # episode length
                 )
-        print("EPISODE REWARD", self.rollout_state.episode_reward)
+        # print("EPISODE REWARD", self.rollout_state.episode_reward)
         return StepReturnResponse(reward=reward, done=self.rollout_state.done)
 
     def send_to_backend(self):
