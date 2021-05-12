@@ -58,7 +58,7 @@ class Monitor:
         self.safety_step_angular = []
         self.odometry = None
         self.goal = None
-        self.guide = Guidance()
+        self.guide = None  # Guidance()
         self.is_guided = False
         self.stair = None
         rospy.spin()
@@ -88,9 +88,16 @@ class Monitor:
         return TriggerResponse(success=True, message="")
 
     def check_consistency(self, req):
+        """
+        :param req:
+        :return: bool, need to reset
+        """
         if not self.consistency.initialized:
             self.consistency.experiment = req.experiment
             self.consistency.initialized = True
+            # the only place where we initialize Guidance()
+            self.guide = Guidance()
+            self.guide.set_complexity_type(req.complexity_type)
             if req.use_penalty_deviation or req.use_penalty_angular:
                 self.guide.set_need_to_penalize(True)
             return False
@@ -122,7 +129,6 @@ class Monitor:
             self.safety_step_angular = []
             self.odometry = None
             self.goal = None
-            self.guide = Guidance()
             self.is_guided = False
             self.stair = None
 
@@ -190,7 +196,8 @@ class Monitor:
                 deviation=np.mean(self.rollout_state.episode_deviation),
                 accidents=self.rollout_state.accidents,
                 time_steps=self.rollout_state.time_step,
-                log=log
+                log=log,
+                debug=self.guide.epsilon + 1 * self.guide.level
             )
         )
 

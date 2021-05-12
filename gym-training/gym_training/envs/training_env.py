@@ -33,10 +33,13 @@ class TrainingEnv(gym.Env):
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
+        # either vect or rand
         self.env_type = kwargs['env_type']
         self.penalty_angular = bool(kwargs['penalty_angular'])
         self.penalty_deviation = bool(kwargs['penalty_deviation'])
         self.time_step_limit = int(kwargs['time_step_limit'])
+        # either full or inc
+        self.complexity_type = kwargs['complexity']
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
         self.seq = 0
@@ -282,6 +285,7 @@ class TrainingEnv(gym.Env):
                 seq=self.seq,
                 time_step_limit=self.time_step_limit,
                 sensors=self.sensors_info,
+                complexity_type=self.complexity_type,
                 angular=self.angular_is_used,
                 arm=self.arm_is_used,
                 use_penalty_angular=self.penalty_angular,
@@ -291,17 +295,18 @@ class TrainingEnv(gym.Env):
 
     def request_complexity(self):
         resp = self.guidance_info.call(GuidanceInfoRequest())
-        self.complexity = resp.level
+        if self.complexity_type == "inc":
+            self.complexity = resp.level
         self.epsilon = resp.epsilon
 
     def reset(self, goal=""):
         self.seq += 1
         self.return_robot_to_initial_state()
+        self.create_new_rollout()
         self.request_complexity()
         self.regenerate_obstacles()
         self.respawn_robot()
         self.spawn_goal()
-        self.create_new_rollout()
         self.start_rollout.call(TriggerRequest())
         return self.get_transformed_state()
 

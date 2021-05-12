@@ -1,11 +1,11 @@
-/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py:51: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
+/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py:54: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
 Using cpu device
 Using cpu device
 Using cpu device
-2021-05-11 00:44:47.785485 Learning started! For <class 'int'> of type <class 'int'>
+2021-05-12 15:11:28.899247 Learning started! For <class 'int'> of type <class 'int'>
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
@@ -22,134 +22,3 @@ regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-Traceback (most recent call last):
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 465, in _get_service_uri
-    self.uri = master.lookupService(self.resolved_name)
-  File "/opt/ros/noetic/lib/python3/dist-packages/rosgraph/masterapi.py", line 327, in lookupService
-    return self._succeed(self.handle.lookupService(self.caller_id, service))
-  File "/opt/ros/noetic/lib/python3/dist-packages/rosgraph/masterapi.py", line 154, in _succeed
-    raise Error(msg)
-rosgraph.masterapi.MasterError: no provider
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "stables3_launch.py", line 90, in <module>
-    Learner().train_model()
-  File "stables3_launch.py", line 75, in train_model
-    self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4, callback=self.callback)
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/sac/sac.py", line 291, in learn
-    reset_num_timesteps=reset_num_timesteps,
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 273, in learn
-    log_interval=log_interval,
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 472, in collect_rollouts
-    new_obs, reward, done, infos = env.step(action)
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/base_vec_env.py", line 163, in step
-    return self.step_wait()
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 44, in step_wait
-    self.actions[env_idx]
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 312, in step
-    step_return = self.step_return.call(StepReturnRequest())
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 502, in call
-    service_uri = self._get_service_uri(request)
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 470, in _get_service_uri
-    raise ServiceException("service [%s] unavailable"%self.resolved_name)
-rospy.service.ServiceException: service [/rollout/step_return] unavailable

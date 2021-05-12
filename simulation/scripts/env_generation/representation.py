@@ -185,9 +185,9 @@ class GroundObstacles(Group):
 
 class StairFloor(Group):
 
-    min_step_height = 0.15  # 0.17
+    min_step_height = 0.15  # 0.17 15
     min_step_length = 0.35
-    max_step_height = 0.25  # 0.28
+    max_step_height = 0.22  # 0.28 25
     max_step_length = 0.52
     length_ground = 12.0
     floor_thickness = 0.01

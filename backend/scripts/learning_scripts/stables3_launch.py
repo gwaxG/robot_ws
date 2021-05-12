@@ -30,7 +30,8 @@ class Learner(Base):
             'sigma': prms['sigma'],
             'task': prms['task'],
             'rand': prms['rand'],
-            'env_type': prms['env_type']
+            'env_type': prms['env_type'],
+            'complexity': prms['complexity']
         }
         env = DummyVecEnv([lambda: TrainingEnv(**kwargs)])
 

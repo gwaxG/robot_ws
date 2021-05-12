@@ -15,5 +15,6 @@ register(
         'sigma': 0.0,
         'task': 'ascent',
         'rand': False,
+        'complexity': 'full',
     }
 )

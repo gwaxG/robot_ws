@@ -18,5 +18,6 @@
   "sigma": 0.0,
   "task": "ascent",
   "rand": false,
+  "complexity": "inc",
   "log_path": "data/boards"
 }

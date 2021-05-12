@@ -2,6 +2,7 @@ string  experiment
 int32   seq
 int32   time_step_limit
 string  sensors
+string  complexity_type
 bool    arm
 bool    angular
 bool    use_penalty_angular

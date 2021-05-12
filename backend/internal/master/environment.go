@@ -46,9 +46,10 @@ func (e *Environment) start(ctx context.Context, wg *sync.WaitGroup) {
 	}
 	select {
 	case _ = <-ctx.Done():
-		log.Printf("Signal to stop the simulation environment. %d\n", e.id)
+		log.Printf("Signal to stop the simulation environment %d.\n", e.id)
 		// kill the process on cancel
 		pgid, err := syscall.Getpgid(cmd.Process.Pid)
+		log.Printf("DBG simulation environment %d was killed.\n", e.id)
 		if err == nil {
 			// NOte that minus sign is for the groupd pid.
 			syscall.Kill(-pgid, 15)

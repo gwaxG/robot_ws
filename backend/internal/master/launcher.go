@@ -3,6 +3,7 @@ package master
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -29,12 +30,14 @@ type Launcher struct {
 	PoolSize   uint8        `json:"pool_size"`
 	db         *database.DataBase
 	// workers
-	NeedToCheck chan bool
-	Done        chan struct{}
+	NeedToCheck      chan bool
+	Done             chan struct{}
+	RestartContainer chan int
 }
 
 func (l *Launcher) Init(poolSize uint8, db *database.DataBase) {
 	l.db = db
+	l.RestartContainer = make(chan int)
 	l.WaitQueue = []map[string]interface{}{}
 	l.WaitLaunchFiles = []string{}
 	l.ActivePool = map[int]*Job{}
@@ -110,7 +113,7 @@ L:
 	for {
 		select {
 		case _ = <-ctx.Done():
-			log.Printf("Worker %d cancel signal\n", id)
+			log.Printf("DBG Worker %d cancel signal\n", id)
 			break L
 		case job := <-jobs:
 			log.Printf("Worker %d job %d assigned\n", id, job.TaskId)
@@ -189,6 +192,26 @@ func (l *Launcher) Start() {
 			log.Printf("Worker %d is free\n", jobResult.onJob.WorkerId)
 			l.ActivePool[jobResult.onJob.WorkerId] = nil
 			go func() { l.NeedToCheck <- true }()
+
+		case id := <-l.RestartContainer:
+			// stop container simulation with its learning script
+			log.Println("DBG Cancel invocation")
+			(*cancelFunctions[id])()
+			// wait a while until OS free resources
+			time.Sleep(time.Second * 30)
+			// Free ActivePool
+			l.ActivePool[id] = nil
+			// restart container
+			log.Println("DBG New container start")
+			ctx, cancel := context.WithCancel(context.Background())
+			cancelFunctions[id] = &cancel
+			go l.worker(ctx, id, jobs, results)
+			// wait untill the env. launched
+			time.Sleep(time.Second * 10)
+			// Check wait queue
+			log.Println("DBG Check")
+			go func() { l.NeedToCheck <- true }()
+
 		case <-l.Done:
 			for id, cancel := range cancelFunctions {
 				log.Printf("Cancel context %d\n", id)
@@ -356,6 +379,38 @@ type RequestDeleteTask struct {
 type ResponseDeleteTask struct {
 	Found bool   `json:"found"`
 	Msg   string `json:"msg"`
+}
+
+func (l *Launcher) DeleteActiveTask(reqRaw io.ReadCloser) (r ResponseDeleteTask, e error) {
+	defer func() {
+		if r := recover(); r != nil {
+			r = ResponseDeleteTask{
+				Found: false,
+				Msg:   "fatal error",
+			}
+			e = errors.New("something went wrong within Launcher.DeleteActiveTask")
+		}
+	}()
+
+	req := RequestDeleteTask{}
+	resp := ResponseDeleteTask{}
+	body, err := ioutil.ReadAll(reqRaw)
+	common.FailOnError(err)
+	err = json.Unmarshal(body, &req)
+	common.FailOnError(err)
+
+	id := req.TaskId
+
+	log.Println("HERE")
+
+	if id < len(l.ActivePool) {
+		l.RestartContainer <- id
+		resp.Found = true
+	} else {
+		resp.Found = false
+	}
+
+	return resp, nil
 }
 
 func (l *Launcher) DeleteTask(reqRaw io.ReadCloser) (ResponseDeleteTask, error) {

@@ -55,9 +55,12 @@ func (s *Server) InitAPI() {
 	s.api.OPTIONS("/task/create", s.preflight)
 	s.api.POST("/task/update", s.updateTask)
 	s.api.OPTIONS("/task/update", s.preflight)
+
 	s.api.POST("/task/delete", s.deleteTask)
 	s.api.OPTIONS("/task/delete", s.preflight)
 
+	s.api.POST("/task/delete_active", s.deleteActiveTask)
+	s.api.OPTIONS("/task/delete_active", s.preflight)
 }
 
 // List all databases
@@ -120,6 +123,11 @@ func (s *Server) updateTask(c *gin.Context) {
 
 func (s *Server) deleteTask(c *gin.Context) {
 	data, err := s.launcher.DeleteTask(c.Request.Body)
+	formJson(data, err, c)
+}
+
+func (s *Server) deleteActiveTask(c *gin.Context) {
+	data, err := s.launcher.DeleteActiveTask(c.Request.Body)
 	formJson(data, err, c)
 }
 
