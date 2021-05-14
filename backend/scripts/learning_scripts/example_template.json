@@ -1,8 +1,0 @@
-{
-  "experiment_series": "exp_test_off",
-  "experiment": "test_1",
-  "id": 0,
-  "model_parameters": {"cliprange":  "0.2", "ent_coef":  "0.005"},
-  "save_path": "/home/r1d1/dev/catkin_ws/src/robot_ws/backend/data/models",
-  "log_path": "/home/r1d1/dev/catkin_ws/src/robot_ws/backend/data/boards"
-}

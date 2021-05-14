@@ -1,0 +1,1 @@
+{"alg":"SAC","angular":true,"arm":true,"complexity":"full","env_type":"eval","experiment":"test_2","experiment_series":"exp_debug","log_path":"data/boards","penalty_angular":false,"penalty_deviation":false,"policy":"default","rand":false,"save_path":"data/models","sigma":0,"task":"ascent","time_step_limit":"10","total_timesteps":"50"}

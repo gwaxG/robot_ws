@@ -1,0 +1,19 @@
+{
+  "experiment_series": "exp_14_04",
+  "experiment": "test_sac",
+  "alg": "SAC",
+  "policy": "default",
+  "penalty_deviation": false,
+  "penalty_angular": false,
+  "total_timesteps": 10000,
+  "save_path": "data/models",
+  "time_step_limit": 50,
+  "env_type": "eval",
+  "arm": true,
+  "angular": true,
+  "sigma": 0.0,
+  "task": "ascent",
+  "rand": false,
+  "complexity": "full",
+  "log_path": "data/boards"
+}

@@ -72,12 +72,13 @@ class Learner(Base):
         self.prms = prms
 
     def train_model(self):
-        self.log(f"Learning started! For {type(int(self.prms['total_timesteps']))} of type {type(self.prms['total_timesteps'])}")
+        self.log(f"Learning started! Model is located at {self.save_path}")
         self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4, callback=self.callback)
         try:
             self.model.save(self.save_path)
         except Exception as e:
             print("Model was not saved")
+            print(e)
 
     def callback(self, _locals, _globals):
         resp = self.guidance_info.call(GuidanceInfoRequest())

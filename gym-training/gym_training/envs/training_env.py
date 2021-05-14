@@ -33,7 +33,7 @@ class TrainingEnv(gym.Env):
         self.angular_is_used = kwargs['angular']
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
-        # either vect or rand
+        # either vect, rand or eval
         self.env_type = kwargs['env_type']
         self.penalty_angular = bool(kwargs['penalty_angular'])
         self.penalty_deviation = bool(kwargs['penalty_deviation'])

@@ -2,10 +2,6 @@
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
-Using cpu device
-Using cpu device
-Using cpu device
-2021-05-12 15:11:28.899247 Learning started! For <class 'int'> of type <class 'int'>
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
@@ -17,8 +13,19 @@ regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
 regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
+Traceback (most recent call last):
+  File "z_evaluator_launch.py", line 62, in <module>
+    Learner().evaluate_model()
+  File "z_evaluator_launch.py", line 57, in evaluate_model
+    obs, rewards, dones, info = self.env.step(action)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/base_vec_env.py", line 163, in step
+    return self.step_wait()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 49, in step_wait
+    obs = self.envs[env_idx].reset()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 309, in reset
+    self.spawn_goal()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 277, in spawn_goal
+    props=self.task + "_" + self.rand,
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 524, in call
+    raise ServiceException("service [%s] returned no response"%self.resolved_name)
+rospy.service.ServiceException: service [/env_gen] returned no response

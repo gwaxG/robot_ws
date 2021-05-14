@@ -37,10 +37,14 @@ class Guidance:
         self.duration = 0.
         self.penalty = 0.
         # Hyper parameters
+        # define the size of array on what we calculate penalty terms
         self.size_penalty = 20  # 100
-        self.size_epsilon = 20  # 20
-        self.window_epsilon = 5
-        self.epsilon_threshold = 0.85  # 0.9
+        # reward history_size, in fact, it is not a hyper parameter, it is just RAM constraint
+        self.size_reward_history = 20  # 20
+        # Moving average window for competence estimation
+        self.window_epsilon = 10
+        # threshold that defines when to increment complexity or stop learning
+        self.epsilon_threshold = 0.82  # 0.9
         # Sync data
         self.log_update = False
         self.log_string = ""
@@ -77,14 +81,14 @@ class Guidance:
         if self.complexity_type == "inc":
             if self.epsilon > self.epsilon_threshold \
                     and self.level < self.max_level \
-                    and len(self.reward_history) >= self.size_epsilon:
+                    and len(self.reward_history) >= self.size_reward_history:
                 self.level += 1
                 self.reward_history = []
                 self.epsilon = 0
                 self.send_log(f"level changed {self.level}")
             elif self.epsilon > self.epsilon_threshold \
                     and self.level == self.max_level \
-                    and len(self.reward_history) >= self.size_epsilon:
+                    and len(self.reward_history) >= self.size_reward_history:
                 # penalization inclusion
                 if self.need_to_penalize:
                     self.penalize = True
@@ -95,13 +99,13 @@ class Guidance:
                 self.reward_history = []
             elif self.penalize \
                     and self.epsilon > self.epsilon_threshold \
-                    and len(self.reward_history) >= self.size_epsilon:
+                    and len(self.reward_history) >= self.size_reward_history:
                 self.send_log(f"exp done with penalty")
                 self.done = True
         # full complexity
         elif self.complexity_type == "full":
             # simple condition to exit
-            if self.epsilon > self.epsilon_threshold and len(self.reward_history) >= self.size_epsilon:
+            if self.epsilon > self.epsilon_threshold and len(self.reward_history) >= self.size_reward_history:
                 self.done = True
 
         # print(f"Epsilon estimation {self.epsilon}, level {self.level}, pen {self.penalize}, done {self.done}")
@@ -119,7 +123,7 @@ class Guidance:
             penalty = 0.
 
         self.reward_history.append(progress-penalty)
-        if len(self.reward_history) > self.size_epsilon:
+        if len(self.reward_history) > self.size_reward_history:
             self.reward_history.pop(0)
 
         if len(self.reward_history) == 0:

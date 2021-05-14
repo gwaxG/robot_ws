@@ -256,6 +256,10 @@ class StairFloor(Group):
         elif "vect" in props:
             eps = float(props.split("_")[1])
             step_n, length, height = self.sample_gaussian(eps)
+        elif "eval" in props:
+            step_n = int(float(StairFloor.dimensions["n"]["max"]+StairFloor.dimensions["n"]["min"]) / 2.0)
+            length = float(StairFloor.dimensions["length"]["max"] + StairFloor.dimensions["length"]["min"]) / 2
+            height = float(StairFloor.dimensions["height"]["max"] + StairFloor.dimensions["height"]["min"]) / 2
         else:
             raise ValueError("Uniform or multivariate gaussian distribution has to be indicated in props.")
         print("Generating staircase nlhs:", step_n, length, height, np.arctan2(height, length)*180/3.14)
