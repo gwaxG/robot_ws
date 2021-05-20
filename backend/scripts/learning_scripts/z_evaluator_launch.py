@@ -44,7 +44,7 @@ class Learner(Base):
         n_actions = self.env.action_space.shape[-1]
         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
         models = {
-            "SAC": SAC.load(self.save_path, env=self.env),
+            "SAC": SAC.load(self.load_path, env=self.env),
         }
         self.model = models[prms["alg"]]
         self.prms = prms
