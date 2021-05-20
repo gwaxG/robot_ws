@@ -44,30 +44,37 @@ class Learner(Base):
         model_parameters = prms['model_parameters']
         n_actions = env.action_space.shape[-1]
         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
-        models = {
-            "SAC": SAC(
-                policies[prms["policy"]],
-                env,
-                verbose=1,
-                train_freq=int(model_parameters["sac_train_freq"]),
-                tau=float(model_parameters["sac_tau"]),
-                ent_coef=model_parameters["sac_ent_coef"],
-                tensorboard_log=self.log_path
-            ),
-            "PPO": PPO(
-                policies[prms["policy"]],
-                env,
-                verbose=1,
-                tensorboard_log=self.log_path
-            ),
-            "TD3": TD3(
-                policies[prms["policy"]],
-                env,
-                action_noise=action_noise,
-                verbose=1,
-                tensorboard_log=self.log_path
-            ),
-        }
+        if self.loading:
+            models = {
+                "SAC": SAC.load(self.load_path, env=env),
+                "PPO": PPO.load(self.load_path, env=env),
+                "TD3": TD3.load(self.load_path, env=env)
+            }
+        else:
+            models = {
+                "SAC": SAC(
+                    policies[prms["policy"]],
+                    env,
+                    verbose=1,
+                    train_freq=int(model_parameters["sac_train_freq"]),
+                    tau=float(model_parameters["sac_tau"]),
+                    ent_coef=model_parameters["sac_ent_coef"],
+                    tensorboard_log=self.log_path
+                ),
+                "PPO": PPO(
+                    policies[prms["policy"]],
+                    env,
+                    verbose=1,
+                    tensorboard_log=self.log_path
+                ),
+                "TD3": TD3(
+                    policies[prms["policy"]],
+                    env,
+                    action_noise=action_noise,
+                    verbose=1,
+                    tensorboard_log=self.log_path
+                ),
+            }
         self.model = models[prms["alg"]]
         self.prms = prms
 

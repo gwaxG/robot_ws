@@ -126,9 +126,12 @@ L:
 			log.Printf("Env %d job %d .Do FINISHED", id, job.TaskId)
 			if err != nil {
 				success = false
-				log.Printf("Worker %d job %d finished with an error\n", id, job.TaskId)
+				log.Printf("Job %d finished with an error\n", job.TaskId)
+				log.Println(err)
+			} else {
+				log.Printf("Job %d finished without errors\n", job.TaskId)
 			}
-			log.Printf("Worker %d job %d finished without errors\n", id, job.TaskId)
+
 			results <- JobResult{
 				Success:     success,
 				Description: err,

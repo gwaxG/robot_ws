@@ -66,7 +66,7 @@ class Monitor:
     def callback_guidance(self, _):
         self.is_guided = True
         return GuidanceInfoResponse(
-            epsilon=self.guide.epsilon,
+            epsilon=self.guide.get_epsilon(),
             level=self.guide.level,
             done=self.guide.done
         )
@@ -92,6 +92,7 @@ class Monitor:
         :param req:
         :return: bool, need to reset
         """
+
         if not self.consistency.initialized:
             self.consistency.experiment = req.experiment
             self.consistency.initialized = True
@@ -141,6 +142,8 @@ class Monitor:
         self.guide.set_seq(self.rollout_state.seq)
         return NewRolloutResponse(received=True)
 
+
+
     def callback_step_return(self, _):
         reward = self.rollout_state.step_reward
         # Progress is interchangeable with reward.
@@ -148,18 +151,22 @@ class Monitor:
         self.rollout_state.step_reward = 0.
         step_penalty = 0.
         if self.rollout_state.use_penalty_angular:
-            step_penalty += np.mean(self.rollout_state.step_angular)
+            step_penalty += np.mean(self.rollout_state.step_angular) if len(self.rollout_state.step_angular) > 0 else 0.
             self.rollout_state.step_angular = []
             self.rollout_state.episode_angular.append(step_penalty)
         elif self.rollout_state.use_penalty_deviation:
-            step_penalty += np.mean(self.rollout_state.step_deviation)
+            step_penalty += np.mean(self.rollout_state.step_deviation) if len(self.rollout_state.step_deviation) > 0 else 0.
             self.rollout_state.step_deviation = []
             self.rollout_state.episode_deviation.append(step_penalty)
+
+        self.guide.add_penalty(step_penalty)
+
         guide_penalty = step_penalty
-        step_penalty = self.guide.reshape_penalty(step_penalty)
 
         if "tip" in self.rollout_state.accidents:
             step_penalty = 1
+        else:
+            step_penalty = self.guide.reshape_penalty(step_penalty)
         reward -= step_penalty
 
         self.rollout_state.episode_reward += reward
@@ -173,7 +180,6 @@ class Monitor:
             if self.is_guided:
                 self.guide.update(
                     self.rollout_state.progress,  # only positive reward due to movement progress
-                    guide_penalty,  # penalty without tipping over
                     self.rollout_state.time_step  # episode length
                 )
         # print("EPISODE REWARD", self.rollout_state.episode_reward)
@@ -182,6 +188,8 @@ class Monitor:
     def send_to_backend(self):
         log = self.guide.log_string if self.guide.log_update else ""
         self.guide.reset_sync_log()
+        angular_mean = np.mean(self.rollout_state.episode_angular) if len(self.rollout_state.episode_angular) > 0 else 0.
+        deviation_mean = np.mean(self.rollout_state.episode_deviation) if len(self.rollout_state.episode_deviation) > 0 else 0.
         self.rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
@@ -192,12 +200,12 @@ class Monitor:
                 angular=self.rollout_state.angular,
                 progress=self.rollout_state.progress,
                 reward=self.rollout_state.episode_reward,
-                angular_m=np.mean(self.rollout_state.episode_angular),
-                deviation=np.mean(self.rollout_state.episode_deviation),
+                angular_m=angular_mean,
+                deviation=deviation_mean,
                 accidents=self.rollout_state.accidents,
                 time_steps=self.rollout_state.time_step,
                 log=log,
-                debug=self.guide.epsilon + 1 * self.guide.level
+                debug=self.guide.get_epsilon() + 1 * self.guide.level
             )
         )
 

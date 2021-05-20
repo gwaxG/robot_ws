@@ -42,6 +42,10 @@ class TrainingEnv(gym.Env):
         self.complexity_type = kwargs['complexity']
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
+        if kwargs['complexity'] == "inc":
+            self.randomness = "0"
+        elif kwargs['complexity'] == "full":
+            self.randomness = self.rand
         self.seq = 0
         # TODO it should be variable in future
         self.sensors_info = "depth_"+str(rospy.get_param("feature_height"))+"_"+str(rospy.get_param("feature_width"))
@@ -78,9 +82,6 @@ class TrainingEnv(gym.Env):
         self.epsilon = 0.0
         self.done = False
 
-    def callback_complexity(self, req):
-        self.complexity = req.level
-
     def get_spaces(self):
         ANGLE =np.pi / 4
         dMA = np.pi / 10.0
@@ -114,15 +115,15 @@ class TrainingEnv(gym.Env):
         omin += fmin
         omax += fmax
 
-        # Angle2Goal
+        # Angle2Goal: theta and phi
         ANGLE_MIN = -np.pi
         ANGLE_MAX = np.pi
-        omin += [ANGLE_MIN]
-        omax += [ANGLE_MAX]
+        omin += [ANGLE_MIN, 0.]
+        omax += [ANGLE_MAX, ANGLE_MAX]
 
         # Distance2Goal
         DIST_MIN = 0.
-        DIST_MAX = 7.
+        DIST_MAX = 10.
         omin += [DIST_MIN]
         omax += [DIST_MAX]
 
@@ -219,7 +220,7 @@ class TrainingEnv(gym.Env):
             state += [0.0 for i in range(len(self.features.horizontal.data))]
 
         # direction + distance
-        state += [self.direction.angle, self.direction.distance]
+        state += [self.direction.theta, self.direction.phi, self.direction.distance]
 
         # pitch
         resp = self.odom_info.call(OdomInfoRequest())
@@ -227,7 +228,7 @@ class TrainingEnv(gym.Env):
         return state
 
     def regenerate_obstacles(self):
-        print("regenerating", self.obstacle, self.task + "_" + self.rand)
+        print("regenerating", self.obstacle, self.task + "_" + self.randomness)
         resp = self.env_gen.call(
             EnvGenRequest(
                 action="delete",
@@ -255,7 +256,7 @@ class TrainingEnv(gym.Env):
         self.robot_spawn.call(RobotSpawnRequest(
             place=ground,
             task=self.task,
-            rand=self.rand,
+            rand=self.randomness,
         ))
 
     def return_robot_to_initial_state(self):
@@ -266,7 +267,7 @@ class TrainingEnv(gym.Env):
             EnvGenRequest(
                 action="delete",
                 model="goal",
-                props=self.task + "_" + self.rand,
+                props=self.task + "_0",  # + self.randomness
             )
         )
         rospy.sleep(0.1)
@@ -274,7 +275,7 @@ class TrainingEnv(gym.Env):
             EnvGenRequest(
                 action="generate",
                 model="goal",
-                props=self.task + "_" + self.rand,
+                props=self.task + "_0",  # + self.randomness
             )
         )
 
@@ -297,6 +298,7 @@ class TrainingEnv(gym.Env):
         resp = self.guidance_info.call(GuidanceInfoRequest())
         if self.complexity_type == "inc":
             self.complexity = resp.level
+            self.randomness = self.rand if self.complexity >= 1 else "0"
         self.epsilon = resp.epsilon
 
     def reset(self, goal=""):

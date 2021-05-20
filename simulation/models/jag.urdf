@@ -139,12 +139,14 @@
       <mass value="1.0"/>
       <inertia ixx="0.009789583333333334" ixy="0" ixz="0" iyy="0.009789583333333334" iyz="0" izz="0.0003125"/>
     </inertial>
+    <!--
     <collision name="arm_1_collision">
       <origin rpy="0 0 0" xyz="0  -0.025  0.17"/>
       <geometry>
         <cylinder length="0.34" radius="0.025"/>
       </geometry>
     </collision>
+    -->
     <visual name="arm_1_visual">
       <origin rpy="0 -1.57 0" xyz="0  0  0.0"/>
       <geometry>
@@ -180,12 +182,14 @@
       <mass value="0.5"/>
       <inertia ixx="0.001015625" ixy="0" ixz="0" iyy="0.001015625" iyz="0" izz="0.00015625"/>
     </inertial>
+    <!--
     <collision name="arm_2_collision">
       <origin rpy="0 0 0" xyz="0  0.025  0"/>
       <geometry>
         <cylinder length="0.15" radius="0.025"/>
       </geometry>
     </collision>
+    -->
     <visual name="arm_2_visual">
       <origin rpy="0 -1.57 0" xyz="0  -0.025  0.0"/>
       <geometry>
@@ -221,12 +225,14 @@
       <mass value="0.5"/>
       <inertia ixx="0.001015625" ixy="0" ixz="0" iyy="0.001015625" iyz="0" izz="0.00015625"/>
     </inertial>
+    <!--
     <collision name="arm_3_collision">
       <origin rpy="0 0 0" xyz="0  0  0"/>
       <geometry>
         <cylinder length="0.15" radius="0.025"/>
       </geometry>
     </collision>
+    -->
     <visual name="arm_3_visual">
       <origin rpy="0 -1.57 0" xyz="0  0  0.0"/>
       <geometry>

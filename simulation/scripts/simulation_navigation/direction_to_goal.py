@@ -47,23 +47,16 @@ class DirectionToGoal:
             return None
 
         xg, yg, zg = trans
-
-        heading = np.arcsin(yg / (yg ** 2 + xg ** 2) ** 0.5)
-        if xg < 0 and yg > 0:
-            heading = 3.14 - heading
-        elif xg < 0 and yg < 0:
-            heading = -3.14 - heading
-
-        if self.need_update:
-            self.update_goal()
-            self.need_update = False
-
+        # Cartesian to spherical coordinate frame
         distance = (trans[0] ** 2 + trans[1] ** 2 + trans[2] ** 2) ** 0.5
+        theta = np.arccos(zg/np.sqrt(xg**2 + yg**2 + zg**2))
+        phi = np.arcsin(yg/np.sqrt(xg**2+yg**2))
 
         self.pub.publish(
             DistDirec(
                 distance=distance,
-                angle=heading
+                theta=theta,
+                phi=phi
             )
         )
         # print(f"Distance {distance}; angle {heading}")

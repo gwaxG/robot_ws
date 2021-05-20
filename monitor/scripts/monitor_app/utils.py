@@ -38,7 +38,6 @@ class RolloutState:
         self.closest_distance = 1000.0
         self.maximum_distance = 0.0
         self.published = False
-        self.episode_penalty = 0.
         self.log = ""
         self.accidents = ""
         self.tipped = False
