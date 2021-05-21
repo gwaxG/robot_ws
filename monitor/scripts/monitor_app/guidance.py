@@ -48,11 +48,11 @@ class Guidance:
         # reward history_size, in fact, it is not a hyper parameter, it is just RAM constraint
         # self.size_reward_history = 100000  # 20
         # Moving average window for competence estimation
-        self.window_epsilon = 10
+        self.window_epsilon = 20  # 10
         #
         self.start_size = 20
         # threshold that defines when to increment complexity or stop learning
-        self.epsilon_threshold = 0.82  # 0.82
+        self.epsilon_threshold = 0.8  # 0.82
         # Sync data
         self.log_update = False
         self.log_string = ""

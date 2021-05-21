@@ -220,21 +220,23 @@ class StairFloor(Group):
         return step_n, length, height
 
     def sample_gaussian(self, eps):
+        # divider
+        div = 1.0
         # difference max - min
         dn = StairFloor.dimensions["n"]["max"] - StairFloor.dimensions["n"]["min"]
         # mean - center of the distribution
         mu_n = dn * eps + StairFloor.dimensions["n"]["min"]
         # width - standard deviation
-        sigma_n = dn * eps
+        sigma_n = dn / div * eps
 
         dl = StairFloor.dimensions["length"]["max"] - StairFloor.dimensions["length"]["min"]
         # Mean starts from maximum, because low slopes are easier.
         mu_l = dl * (1 - eps) + StairFloor.dimensions["length"]["min"]
-        sigma_l = dl * eps
+        sigma_l = dl / div * eps
 
         dh = StairFloor.dimensions["height"]["max"] - StairFloor.dimensions["height"]["min"]
         mu_h = dh * eps + StairFloor.dimensions["height"]["min"]
-        sigma_h = dh * eps
+        sigma_h = dh / div * eps
         # clip a sampled value to make it fitting in its min-max interval
         n_candidate = int(np.round(np.random.normal(mu_n, sigma_n)))
         step_n = np.clip(n_candidate, StairFloor.dimensions["n"]["min"], StairFloor.dimensions["n"]["max"])
