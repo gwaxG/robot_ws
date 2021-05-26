@@ -2,14 +2,15 @@ package main
 
 import (
 	"flag"
-	"github.com/gwaxG/robot_ws/control/pkg/controller"
 	"os"
+
+	"github.com/gwaxG/robot_ws/control/pkg/controller"
 )
 
 func main() {
 	/*
-	TODO
-	test real platform
+		TODO
+		test real platform
 	*/
 	var port string
 	if len(os.Args) == 1 {
@@ -19,11 +20,11 @@ func main() {
 	}
 	os.Setenv("ROS_MASTER_URI", "http://localhost:"+port)
 
-	iKeyb := flag.Bool("ik", true, "Keyboard input")
-	iRos := flag.Bool("ir", true, "ROS input")
-	test := flag.Bool("t", false, "Test IP:HOST platform configuration")
-	oPlat := flag.Bool("op", false, "Platform command output")
-	oSim := flag.Bool("os", true, "Simulation command output")
+	iKeyb := flag.Bool("ik", true, "Keyboard input")                     // true
+	iRos := flag.Bool("ir", true, "ROS input")                           // true
+	test := flag.Bool("t", false, "Test IP:HOST platform configuration") // false
+	oPlat := flag.Bool("op", true, "Platform command output")            // false
+	oSim := flag.Bool("os", false, "Simulation command output")          // true
 	flag.Parse()
 
 	c := controller.Controller{}

@@ -1,22 +1,23 @@
 package output
 
 import (
+	"time"
+
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"time"
 )
 
 type RosCmd struct {
-	pubArm1      	*goroslib.Publisher
-	pubArm2      	*goroslib.Publisher
-	pubBase      	*goroslib.Publisher
-	pubFlipper   	*goroslib.Publisher
-	msgFloat 		*std_msgs.Float64
-	seqBase 		uint32
-	seqFlipper 		uint32
+	pubArm1         *goroslib.Publisher
+	pubArm2         *goroslib.Publisher
+	pubBase         *goroslib.Publisher
+	pubFlipper      *goroslib.Publisher
+	msgFloat        *std_msgs.Float64
+	seqBase         uint32
+	seqFlipper      uint32
 	stateActionChan chan []state.State
 }
 
@@ -72,11 +73,11 @@ func (p *RosCmd) ServeArm(actions *state.State) {
 func (p *RosCmd) ServeBase(actions *state.State) {
 	msgStampedTwist := &geometry_msgs.TwistStamped{
 		Header: std_msgs.Header{
-			Seq: p.seqBase,
+			Seq:   p.seqBase,
 			Stamp: connections.RosConnection().TimeNow(),
 		},
 		Twist: geometry_msgs.Twist{
-			Linear:  geometry_msgs.Vector3{
+			Linear: geometry_msgs.Vector3{
 				X: actions.Linear,
 			},
 			Angular: geometry_msgs.Vector3{
@@ -92,11 +93,11 @@ func (p *RosCmd) ServeFlippers(actions *state.State) {
 	// if actions.FrontFlippers != 0.0 || actions.RearFlippers != 0.0 {}
 	msgStampedTwist := &geometry_msgs.TwistStamped{
 		Header: std_msgs.Header{
-			Seq: p.seqFlipper,
+			Seq:   p.seqFlipper,
 			Stamp: connections.RosConnection().TimeNow(),
 		},
 		Twist: geometry_msgs.Twist{
-			Linear:  geometry_msgs.Vector3{
+			Linear: geometry_msgs.Vector3{
 				X: actions.FrontFlippers,
 				Y: actions.FrontFlippers,
 			},
@@ -115,7 +116,7 @@ func (p *RosCmd) Serve() {
 	var StateAction state.State
 
 	for {
-		StateChange = <- p.stateActionChan
+		StateChange = <-p.stateActionChan
 		StateAction = StateChange[0]
 		p.ServeBase(&StateAction)
 		p.ServeFlippers(&StateAction)
@@ -129,4 +130,3 @@ func (p *RosCmd) Close() {
 	_ = p.pubArm2.Close()
 	_ = p.pubFlipper.Close()
 }
-
