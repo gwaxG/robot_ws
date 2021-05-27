@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/input"
 	"github.com/gwaxG/robot_ws/control/pkg/output"
@@ -9,6 +8,8 @@ import (
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"log"
 	"net"
+	"os"
+	"strings"
 )
 
 type Controller struct {
@@ -33,6 +34,21 @@ type Controller struct {
 // This method automatically defines configuration of the control node
 // based on availability of connections and keyboardSim flag provided at start time.
 func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outputSimulation bool) {
+	defer func(){
+		if r := recover(); r != nil {
+			if cont := strings.Contains(r.(string), "robot connection problem"); cont {
+				log.Println("Robot connection problem.\nCheck Wifi connection to the robot.\nExit.")
+				os.Exit(1)
+			} else if cont := strings.Contains(r.(string), "arm connection problem"); cont {
+				log.Println("Arm connection problem.\nCheck Wifi connection to the robot.\nExit.")
+				os.Exit(1)
+			} else {
+				log.Println("Unpredicted error happened.\nExit.")
+				log.Print(r)
+				os.Exit(1)
+			}
+		}
+	}()
 	log.Println("Initializing controller...")
 
 	// input sink to route actions to execute
@@ -115,6 +131,7 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 
 		c.publishState <- StateAction
 		c.toOutput <- []state.State{StateAction, Change}
+		c.save()
 	}
 }
 
@@ -130,7 +147,6 @@ func (c *Controller) Start () {
 		case _ = <-c.done:
 			end = true
 		case actions := <- c.fromInput:
-			fmt.Println()
 			select{
 			case <- c.keyboardUsage:
 				set = false

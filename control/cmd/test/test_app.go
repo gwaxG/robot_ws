@@ -14,6 +14,7 @@ func keyListener(pressCh chan []byte) {
 	b := []byte{}
 	for {
 		os.Stdin.Read(b)
+
 		pressCh <- b
 	}
 }

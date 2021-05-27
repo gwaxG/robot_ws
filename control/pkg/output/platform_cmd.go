@@ -43,9 +43,10 @@ func (p *PlatformCmd) Serve() {
 	}()
 	for {
 		StateChange = <- p.stateActionCh
+		
 		Change = StateChange[1]
 		SetState = StateChange[0]
-		// p.serveBase(&SetState, &Change)
+		p.serveBase(&SetState, &Change)
 		p.serveFlipper(&SetState, &Change)
 		p.serveArm(&SetState, &Change)
 	}
