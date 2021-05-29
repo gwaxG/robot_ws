@@ -20,6 +20,7 @@ type PlatformSensors struct {
 
 func (i *PlatformSensors) Init(stopReleaseCh chan string) {
 	i.stopRelease = stopReleaseCh
+	i.sensor = &state.Sensor{}
 	i.sensorPub, _ = goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  connections.RosConnection(),
 		Topic: "robot/sensors",
@@ -34,10 +35,11 @@ func (i *PlatformSensors) Serve() {
 		for {
 			ba, _, err := reader.ReadLine()
 			if err != nil {
+				// log.Println("Can not read from the robot")
+				
+			} else {
 				str = strings.Trim(string(ba), "[]")
 				i.handleSensorData(str)
-			} else {
-				log.Println("Can not read from the robot")
 			}
 		}
 	}()
@@ -54,6 +56,12 @@ func (i *PlatformSensors) Serve() {
 }
 
 func (i *PlatformSensors) handleSensorData(line string) {
+	defer func (){
+		if r := recover(); r != nil {
+			log.Println("Recovering in PlatformSensors.handleSensorData.\nCut sensor data.")
+			line = ""
+		}
+	}()
 	if strings.HasPrefix(line, "#") {
 		strArray := strings.Split(line, ",")
 		i.sensor.Yaw, _ = strconv.ParseFloat(strArray[2], 64)
@@ -65,9 +73,11 @@ func (i *PlatformSensors) handleSensorData(line string) {
 		i.sensor.AccelZ, _ = strconv.ParseFloat(strArray[10], 64)
 	} else if strings.HasPrefix(line, "MM") {
 		// V(motorBoard data) AI(motor temp) A(current) C(position data)
-		index := int32(line[2])
-		line = line[0:4]
-		if index == 2 && strings.HasPrefix(line, "V") {
+		
+		index, _ := strconv.Atoi(string(line[2]))
+		line = line[4:]
+
+		if index == 0 && strings.HasPrefix(line, "V") { // index == 2 && 
 			voltageInt, _ := strconv.ParseInt(strings.Split(line[2:], ":")[1], 10, 64)
 			i.sensor.Voltage = float64(voltageInt) / 10
 		}
@@ -87,12 +97,26 @@ func (i *PlatformSensors) handleSensorData(line string) {
 				i.sensor.RearFlipperCounts = pos2
 			}
 		}
-		if index == 2 && strings.HasPrefix(line, "A"){
+		if strings.HasPrefix(line, "A"){
 			currents := strings.Split(line[2:], ":")
-			currentFront, _ := strconv.ParseInt(currents[0], 10, 64)
-			currentRear, _ := strconv.ParseInt(currents[0], 10, 64)
-			i.sensor.FrontFlipperCurrent = float64(currentFront) / 10
-			i.sensor.FrontFlipperCurrent = float64(currentRear) / 10
+			current1, _ := strconv.ParseInt(currents[0], 10, 64)
+			current2, _ := strconv.ParseInt(currents[0], 10, 64)
+			/*switch index {
+			case 0:
+				i.sensor.FrontLeftMotorCurrent = float64(current1) / 10
+				i.sensor.FrontRightMotorCurrent = float64(current2) / 10
+				
+			case 1:
+				i.sensor.RearLeftMotorCurrent = float64(current1) / 10
+				i.sensor.RearRightMotorCurrent = float64(current2) / 10
+			case 2:
+				i.sensor.FrontFlipperCurrent = float64(current1) / 10
+				i.sensor.FrontFlipperCurrent = float64(current2) / 10
+			}*/
+
+			i.sensor.FrontFlipperCurrent = float64(current1) / 10
+			i.sensor.FrontFlipperCurrent = float64(current2) / 10
+			
 		}
 	}
 }

@@ -3,6 +3,7 @@ package input
 import (
 	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"os"
+	"fmt"
 	"os/exec"
 	"unicode/utf8"
 )
@@ -36,8 +37,10 @@ func (k *Keyboard) Serve () {
 	var releaseStop string
 	b := make([]byte, 1)
 	st := &state.State{}
+
 	for {
 		os.Stdin.Read(b)
+		fmt.Print("\r")
 		reset, done, setVelocity, releaseStop = k.handleKeyPress(b, st)
 		if reset {
 			k.reset <- true
@@ -61,16 +64,16 @@ func  (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool,
 	var releaseStop string
 	switch key {
 	case 'z':
-		st.Linear = 0.1
+		st.Linear += 0.1
 		setVelocity = true
 	case 'q':
-		st.Angular = -0.1
+		st.Angular += -0.1
 		setVelocity = true
 	case 's':
-		st.Linear = -0.1
+		st.Linear += -0.1
 		setVelocity = true
 	case 'd':
-		st.Angular = 0.1
+		st.Angular += 0.1
 		setVelocity = true
 	case 'r':
 		st.FrontFlippers = 0.1
@@ -92,6 +95,7 @@ func  (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool,
 		reset = true
 	case 'p':
 		done = true
+		fmt.Print("Bye!\n")
 	case 'b':
 		releaseStop = "stop"
 	case 'n':

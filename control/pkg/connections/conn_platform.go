@@ -4,7 +4,7 @@ package connections
 import (
 	"net"
 	"time"
-
+	"log"
 	"github.com/gwaxG/robot_ws/control/pkg/utils"
 )
 
@@ -34,6 +34,11 @@ func Init(addrBase, addrArm string) {
 }
 
 func WriteToBase(cmd string) {
+	defer func(){
+		if r := recover(); r != nil {
+			log.Println("Exit on writing to the base board.")
+		}
+	}()
 	lock.Lock()
 	defer lock.Unlock()
 	_, err := _RobotConn.baseConn.Write([]byte(cmd))
@@ -41,6 +46,11 @@ func WriteToBase(cmd string) {
 }
 
 func WriteToArm(cmd string) {
+	defer func(){
+		if r := recover(); r != nil {
+			log.Println("Exit on writing to the arm board.")
+		}
+	}()
 	lock.Lock()
 	defer lock.Unlock()
 	_, err := _RobotConn.armConn.Write([]byte(cmd))

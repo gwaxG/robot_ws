@@ -3,15 +3,18 @@ package main
 import (
 	"flag"
 	"os"
-
+	"strings"
 	"github.com/gwaxG/robot_ws/control/pkg/controller"
 )
 
 func main() {
-	/*
-		TODO
-		test real platform
-	*/
+	defer func(){
+		if r := recover(); r != nil {
+			if cont := strings.Contains(r.(string), "send on closed channel"); cont {
+				// Ignore, because the error happened on exit due to the goroslib library.
+			}
+		}
+	}()
 	var port string
 	if len(os.Args) == 1 {
 		port = "11311"

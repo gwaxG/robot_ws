@@ -5,4 +5,4 @@ float64 rear_flippers
 float64 arm_joint1
 float64 arm_joint2
 float64 arm_joint3
-float64 arm_joint4
+float64 arm_joint4  

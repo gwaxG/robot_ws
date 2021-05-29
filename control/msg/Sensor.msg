@@ -1,0 +1,16 @@
+float64 front_flipper_current
+float64 rear_flipper_current
+float64 voltage
+float64 accel_x
+float64 accel_y
+float64 accel_z
+float64 gyro_x
+float64 gyro_y
+float64 gyro_z
+float64 yaw
+int64 left_motor_counts_front
+int64 left_motor_counts_rear
+int64 right_motor_counts_front
+int64 right_motor_counts_rear
+int64 front_flipper_counts
+int64 rear_flipper_counts
