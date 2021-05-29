@@ -196,9 +196,9 @@ class StairFloor(Group):
     standard_height = 2.0
 
     dimensions = {
-        "n": {"min": 0, "max": 10},
+        "n": {"min": 0, "max": 7},  # 0, 7
         "length": {"min": 0.35, "max": 0.52},
-        "height": {"min": 0.15, "max": 0.25},
+        "height": {"min": 0.12, "max": 0.22},  # 0.15-0.25
     }
 
     def __init__(self):
@@ -221,7 +221,7 @@ class StairFloor(Group):
 
     def sample_gaussian(self, eps):
         # divider
-        div = 1.0
+        div = 4.0
         # difference max - min
         dn = StairFloor.dimensions["n"]["max"] - StairFloor.dimensions["n"]["min"]
         # mean - center of the distribution

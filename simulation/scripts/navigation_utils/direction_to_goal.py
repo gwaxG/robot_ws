@@ -38,6 +38,7 @@ class DirectionToGoal:
     def callback_new_rollout(self, _):
         self.need_update = True
 
+
     def callback(self, msg):
         try:
             (trans, rot) = self.listener.lookupTransform("centroid", "goal", rospy.Time())
@@ -45,18 +46,25 @@ class DirectionToGoal:
             print("In simulation.navigation.direction_to_goal can not check goal-centroid transformation.\n"
                   "Probably, env_gen_services are not running.")
             return None
-
+        try:
+            (trans_g, rot_g) = self.listener.lookupTransform("goal", "centroid", rospy.Time())
+        except Exception as e:
+            print("In simulation.navigation.direction_to_goal can not check goal-centroid transformation.\n"
+                  "Probably, env_gen_services are not running.")
+            return None
+        print("trans_g", trans_g)
         xg, yg, zg = trans
         # Cartesian to spherical coordinate frame
         distance = (trans[0] ** 2 + trans[1] ** 2 + trans[2] ** 2) ** 0.5
         theta = np.arccos(zg/np.sqrt(xg**2 + yg**2 + zg**2))
         phi = np.arcsin(yg/np.sqrt(xg**2+yg**2))
-
+        dist_center_plane = 0.
         self.pub.publish(
             DistDirec(
                 distance=distance,
                 theta=theta,
-                phi=phi
+                phi=phi,
+                dist_center_plane=dist_center_plane
             )
         )
         # print(f"Distance {distance}; angle {heading}")

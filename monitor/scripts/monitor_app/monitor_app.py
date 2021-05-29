@@ -164,7 +164,7 @@ class Monitor:
         guide_penalty = step_penalty
 
         if "tip" in self.rollout_state.accidents:
-            step_penalty = 1
+            step_penalty = 0  # 0
         else:
             step_penalty = self.guide.reshape_penalty(step_penalty)
         reward -= step_penalty

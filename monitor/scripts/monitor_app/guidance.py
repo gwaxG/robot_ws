@@ -52,7 +52,7 @@ class Guidance:
         #
         self.start_size = 20
         # threshold that defines when to increment complexity or stop learning
-        self.epsilon_threshold = 0.8  # 0.82
+        self.epsilon_threshold = 0.82  # 0.82
         # Sync data
         self.log_update = False
         self.log_string = ""
@@ -89,7 +89,8 @@ class Guidance:
         # TODO to delete
         if self.seq % 10 == 0 and False:
             if self.penalize:
-                self.send_log(f"current epsilon {self.epsilon}, penalize {self.penalize}, mu {self.normalization.mu} sigma {self.normalization.sigma}")
+                self.send_log(
+                    f"current epsilon {self.epsilon}, penalize {self.penalize}, mu {self.normalization.mu} sigma {self.normalization.sigma}")
             else:
                 self.send_log(f"current epsilon {self.epsilon}, complexity {self.level}")
         # incremental complexity
@@ -103,11 +104,11 @@ class Guidance:
                 self.send_log(f"level changed to {self.level}")
             elif self.epsilon > self.epsilon_threshold \
                     and self.level == self.max_level \
-                    and len(self.reward_history) >= self.start_size:
+                    and len(self.reward_history) >= self.start_size \
+                    and not self.penalize:
                 # penalization inclusion
-                if self.need_to_penalize and not self.penalize:
+                if self.need_to_penalize:
                     self.penalize = True
-                    # TODO
                     self.send_log(f"penalty added")
                 else:
                     self.done = True
@@ -130,7 +131,8 @@ class Guidance:
                     self.reward_history = []
                 else:
                     self.done = True
-        print(f"Epsilon estimation {self.epsilon}, length {len(self.reward_history)}, pen {self.penalize}, done {self.done}")
+        print(
+            f"Epsilon estimation {self.epsilon}, length {len(self.reward_history)}, pen {self.penalize}, done {self.done}")
 
     def set_need_to_penalize(self, value):
         self.need_to_penalize = value
@@ -189,6 +191,7 @@ class Guidance:
         # penalty = np.clip(penalty, low, up)
         # penalty = alpha * (penalty - (self.normalization.mu - 2 * self.normalization.sigma)) / 4 / self.normalization.sigma
         # print(f"Penalty before {penalty}", end="")
-        penalty = (penalty - self.normalization.min) / (self.normalization.max - self.normalization.min) / self.normalization.mean_duration
+        penalty = (penalty - self.normalization.min) / (
+                    self.normalization.max - self.normalization.min) / self.normalization.mean_duration
         # print(f"after {penalty}")
         return penalty

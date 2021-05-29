@@ -61,7 +61,8 @@ class TrainingEnv(gym.Env):
         self.robot_state = State()
         rospy.Subscriber("/features", BeamMsg, self.update_features)
         self.features = BeamMsg()
-        rospy.Subscriber("/direction", DistDirec, self.update_direction)
+        # REMOVED
+        # rospy.Subscriber("/direction", DistDirec, self.update_direction)
         self.direction = DistDirec()
         # Service callers
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
@@ -115,19 +116,20 @@ class TrainingEnv(gym.Env):
         omin += fmin
         omax += fmax
 
-        # Angle2Goal: theta and phi
+        # Angle2Goal: theta and phi {[-3.14, 3.14], [0.0, 3.14]}
         ANGLE_MIN = -np.pi
         ANGLE_MAX = np.pi
-        omin += [ANGLE_MIN, 0.]
-        omax += [ANGLE_MAX, ANGLE_MAX]
+        omin += [ANGLE_MIN]
+        omax += [ANGLE_MAX]
 
+        # REMOVED
         # Distance2Goal
-        DIST_MIN = 0.
-        DIST_MAX = 10.
-        omin += [DIST_MIN]
-        omax += [DIST_MAX]
+        # DIST_MIN = 0.
+        # DIST_MAX = 10.
+        # omin += [DIST_MIN]
+        # omax += [DIST_MAX]
 
-        # Roll, pitch
+        # Roll and pitch
         omin += [ANGLE_MIN, ANGLE_MIN]
         omax += [ANGLE_MAX, ANGLE_MAX]
 
@@ -186,7 +188,7 @@ class TrainingEnv(gym.Env):
         #     setattr(self.action, self.active_action_fields[i], action_value)
         constraint_fields = {
             0: ["angular", "arm_joint1", "arm_joint2"],
-            1: ["angular"],
+            1: ["arm_joint1", "arm_joint2"],  # "angular"
             2: []
         }
         for i, action_value in enumerate(action):
@@ -214,13 +216,14 @@ class TrainingEnv(gym.Env):
         state += self.features.vertical.data
 
         # set observation input to zero for low complexities
-        if self.complexity == 2:
+        if self.complexity == 1:
             state += self.features.horizontal.data
         else:
             state += [0.0 for i in range(len(self.features.horizontal.data))]
 
         # direction + distance
-        state += [self.direction.theta, self.direction.phi, self.direction.distance]
+        # state += [self.direction.theta, self.direction.phi, self.direction.distance]
+        state += [self.direction.theta]
 
         # pitch
         resp = self.odom_info.call(OdomInfoRequest())
@@ -267,7 +270,7 @@ class TrainingEnv(gym.Env):
             EnvGenRequest(
                 action="delete",
                 model="goal",
-                props=self.task + "_0",  # + self.randomness
+                props=self.task + "_" + self.randomness
             )
         )
         rospy.sleep(0.1)
@@ -275,7 +278,7 @@ class TrainingEnv(gym.Env):
             EnvGenRequest(
                 action="generate",
                 model="goal",
-                props=self.task + "_0",  # + self.randomness
+                props=self.task + "_" + self.randomness
             )
         )
 

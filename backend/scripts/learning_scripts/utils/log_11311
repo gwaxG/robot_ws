@@ -2,23 +2,30 @@
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+Using cpu device
+Using cpu device
+Using cpu device
+2021-05-29 13:31:52.377245 Learning started! Model is located at /home/r1d1/dev/catkin_ws/src/robot_ws/data/models/server/exp_tests_test_25_05
 regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
-regenerating stair_floor ascent_0
+Traceback (most recent call last):
+  File "stables3_launch.py", line 105, in <module>
+    Learner().train_model()
+  File "stables3_launch.py", line 82, in train_model
+    self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4, callback=self.callback)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/sac/sac.py", line 291, in learn
+    reset_num_timesteps=reset_num_timesteps,
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 260, in learn
+    total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps, tb_log_name
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 243, in _setup_learn
+    total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, log_path, reset_num_timesteps, tb_log_name
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/base_class.py", line 379, in _setup_learn
+    self._last_obs = self.env.reset()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 61, in reset
+    obs = self.envs[env_idx].reset()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 314, in reset
+    self.spawn_goal()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 276, in spawn_goal
+    rospy.sleep(0.1)
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/timer.py", line 165, in sleep
+    raise rospy.exceptions.ROSInterruptException("ROS shutdown request")
+rospy.exceptions.ROSInterruptException: ROS shutdown request

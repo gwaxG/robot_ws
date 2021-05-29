@@ -113,7 +113,7 @@ L:
 	for {
 		select {
 		case _ = <-ctx.Done():
-			log.Printf("DBG Worker %d cancel signal\n", id)
+			log.Printf("Worker %d cancel signal\n", id)
 			break L
 		case job := <-jobs:
 			log.Printf("Worker %d job %d assigned\n", id, job.TaskId)

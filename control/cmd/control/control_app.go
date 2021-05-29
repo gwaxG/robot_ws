@@ -23,8 +23,8 @@ func main() {
 	iKeyb := flag.Bool("ik", true, "Keyboard input")                     // true
 	iRos := flag.Bool("ir", true, "ROS input")                           // true
 	test := flag.Bool("t", false, "Test IP:HOST platform configuration") // false
-	oPlat := flag.Bool("op", true, "Platform command output")            // false
-	oSim := flag.Bool("os", false, "Simulation command output")          // true
+	oPlat := flag.Bool("op", false, "Platform command output")            // false
+	oSim := flag.Bool("os", true, "Simulation command output")          // true
 	flag.Parse()
 
 	c := controller.Controller{}

@@ -34,7 +34,6 @@ class Learner(Base):
             'complexity': prms['complexity']
         }
         env = DummyVecEnv([lambda: TrainingEnv(**kwargs)])
-
         policies = {
             "default": "MlpPolicy",
             "sac_default": "MlpPolicy",
@@ -88,11 +87,18 @@ class Learner(Base):
             print(e)
 
     def callback(self, _locals, _globals):
+        """
+        :param _locals: local variables from the model
+        :param _globals: global variables from the model
+        :return: boolean value for whether or not the training should continue
+        """
         resp = self.guidance_info.call(GuidanceInfoRequest())
         if resp.done:
             _locals['self'].save(self.save_path)
+            # Stop training.
             return False
         else:
+            # Continue training.
             return True
 
 if __name__ == '__main__':
