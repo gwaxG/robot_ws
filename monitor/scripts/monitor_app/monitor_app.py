@@ -16,6 +16,7 @@ from monitor.srv import NewRollout, NewRolloutRequest, NewRolloutResponse
 from monitor.srv import StepReturn, StepReturnRequest, StepReturnResponse
 from monitor.msg import RolloutAnalytics
 from monitor.srv import GuidanceInfo, GuidanceInfoResponse
+from simulation.msg import DistDirec
 from control.msg import State
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
@@ -61,6 +62,9 @@ class Monitor:
         self.guide = None  # Guidance()
         self.is_guided = False
         self.stair = None
+        self.debug = []
+        # coefficients
+        # Distance to the center plane coefficient
         rospy.spin()
 
     def callback_guidance(self, _):
@@ -117,6 +121,7 @@ class Monitor:
         :param req:
         :return:
         """
+        self.debug = []
         need_to_reset = self.check_consistency(req)
         if need_to_reset:
             self.consistency = utils.DictToStruct(
@@ -139,43 +144,26 @@ class Monitor:
         self.rollout_state.exp_series = rospy.get_param("exp_series_name")
         self.rollout_state.set_fields(req)
 
+        # dbg custom iteration over different experiment entities
+        # dist, dev, distdev
+        # to delete above
         self.guide.set_seq(self.rollout_state.seq)
         return NewRolloutResponse(received=True)
 
-
-
     def callback_step_return(self, _):
         reward = self.rollout_state.step_reward
-        # Progress is interchangeable with reward.
         progress = self.rollout_state.step_reward
+
         self.rollout_state.step_reward = 0.
-        step_penalty = 0.
-        if self.rollout_state.use_penalty_angular:
-            step_penalty += np.mean(self.rollout_state.step_angular) if len(self.rollout_state.step_angular) > 0 else 0.
-            self.rollout_state.step_angular = []
-            self.rollout_state.episode_angular.append(step_penalty)
-        elif self.rollout_state.use_penalty_deviation:
-            step_penalty += np.mean(self.rollout_state.step_deviation) if len(self.rollout_state.step_deviation) > 0 else 0.
-            self.rollout_state.step_deviation = []
-            self.rollout_state.episode_deviation.append(step_penalty)
-
-        self.guide.add_penalty(step_penalty)
-
-        guide_penalty = step_penalty
-
-        if "tip" in self.rollout_state.accidents:
-            step_penalty = 0  # 0
-        else:
-            step_penalty = self.guide.reshape_penalty(step_penalty)
-        reward -= step_penalty
-
-        self.rollout_state.episode_reward += reward
+        reshaped_reward = self.guide.reshape_reward(reward)
+        # reshape in case of penalties
+        self.rollout_state.episode_reward += reshaped_reward
         self.rollout_state.time_step += 1
         if self.rollout_state.time_step == self.rollout_state.time_step_limit:
             self.rollout_state.done = True
 
         if self.rollout_state.done:
-            self.rollout_state.progress = np.clip(self.rollout_state.progress, 0.0, 1.0)
+            self.rollout_state.progress = np.clip(progress, 0.0, 1.0)
             self.send_to_backend()
             if self.is_guided:
                 self.guide.update(
@@ -205,7 +193,7 @@ class Monitor:
                 accidents=self.rollout_state.accidents,
                 time_steps=self.rollout_state.time_step,
                 log=log,
-                debug=self.guide.get_epsilon() + 1 * self.guide.level
+                debug=self.guide.get_epsilon() + self.guide.level
             )
         )
 
@@ -218,10 +206,10 @@ class Monitor:
         self.robot_state = msg
 
     def callback_safety_deviation(self, msg):
-        self.rollout_state.step_deviation.append(msg.data)
+        self.guide.safety_deviation()
 
     def callback_safety_angular(self, msg):
-        self.rollout_state.step_angular.append(msg.data)
+        self.guide.safety_angular()
 
     def callback_odometry(self, msg):
         self.odometry = msg
@@ -230,9 +218,14 @@ class Monitor:
         # distance check
         dist = utils.get_distance(self.odometry.pose.pose.position, self.goal)
         if dist < self.rollout_state.closest_distance:
-            diff = self.rollout_state.closest_distance - dist if dist >= 0.0 else self.rollout_state.closest_distance
-            self.rollout_state.progress += diff / self.rollout_state.maximum_distance
-            self.rollout_state.step_reward += diff / self.rollout_state.maximum_distance
+            diff = self.rollout_state.closest_distance - dist
+
+            # ad hoc clipping
+            if self.rollout_state.progress < 1.0:
+                self.rollout_state.progress += diff / self.rollout_state.maximum_distance
+                self.rollout_state.step_reward += diff / self.rollout_state.maximum_distance
+            else:
+                self.guide.log_string(f"Exceeded progress limit with value {diff} at the time step {self.rollout_state.time_step}, seq {self.rollout_state.seq}")
         if dist < 0.0:
             self.rollout_state.closest_distance = 0.
             print("Done 2")

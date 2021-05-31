@@ -23,7 +23,7 @@ class Guidance:
         # 0 - 2
         self.levels = utils.DictToStruct(**{"min": 0, "max": 2})
         self.level = None  # we initialize compl. level in the set_complexity_type method
-        self.max_level = 2
+        self.max_level = 1
         self.need_to_penalize = need_to_penalize
         self.reward_history = []
         self.penalty_history = []
@@ -75,6 +75,12 @@ class Guidance:
     def send_log(self, msg):
         self.log_string = msg
         self.log_update = True
+
+    def safety_deviation(self, value):
+        pass
+
+    def safety_angular(self, value):
+        pass
 
     def add_penalty(self, pen):
         if not self.penalize and self.need_to_penalize:
@@ -184,12 +190,8 @@ class Guidance:
         if not self.penalize:
             return 0.
 
-        # hyper parameter of penalty scalling
-        alpha = 0.5
-        # low = self.normalization.mu - 2 * self.normalization.sigma if self.normalization.mu - 2 * self.normalization.sigma >= 0. else 0.
-        # up = self.normalization.mu + 2 * self.normalization.sigma
-        # penalty = np.clip(penalty, low, up)
-        # penalty = alpha * (penalty - (self.normalization.mu - 2 * self.normalization.sigma)) / 4 / self.normalization.sigma
+
+
         # print(f"Penalty before {penalty}", end="")
         penalty = (penalty - self.normalization.min) / (
                     self.normalization.max - self.normalization.min) / self.normalization.mean_duration

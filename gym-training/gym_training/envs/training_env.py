@@ -79,7 +79,7 @@ class TrainingEnv(gym.Env):
         # 0 - obs.:all without horizontal features; act.: linear, front fl., rear fl.
         # 1 - obs.:all without horizontal features; act.: linear, front fl., rear fl., arm1, arm2
         # 2 - obs.:all; act.: all (linear, angular, front fl., rear fl., arm1, arm2)
-        self.complexity = 2
+        self.complexity = 1
         self.epsilon = 0.0
         self.done = False
 
@@ -111,23 +111,30 @@ class TrainingEnv(gym.Env):
 
         height = rospy.get_param("feature_height")
         width = rospy.get_param("feature_width")
-        fmin = [0.0 for i in range(height+width)]
-        fmax = [3.0 for i in range(height+width)]
+        if "angular" in self.active_action_fields.keys():
+            length = height+width
+        else:
+            length = height
+        fmin = [0.0 for i in range(length)]
+        fmax = [3.0 for i in range(length)]
         omin += fmin
         omax += fmax
-
-        # Angle2Goal: theta and phi {[-3.14, 3.14], [0.0, 3.14]}
         ANGLE_MIN = -np.pi
         ANGLE_MAX = np.pi
-        omin += [ANGLE_MIN]
-        omax += [ANGLE_MAX]
 
-        # REMOVED
-        # Distance2Goal
-        # DIST_MIN = 0.
-        # DIST_MAX = 10.
-        # omin += [DIST_MIN]
-        # omax += [DIST_MAX]
+        # Angle2Goal: theta and phi {[-3.14, 3.14], [0.0, 3.14]}
+        if "angular" in self.active_action_fields.keys():
+            omin += [ANGLE_MIN]
+            omax += [ANGLE_MAX]
+            # Distance to the center plane
+            omin += [-1.]
+            omax += [1.]
+            # REMOVED
+            # Distance2Goal
+            # DIST_MIN = 0.
+            # DIST_MAX = 10.
+            # omin += [DIST_MIN]
+            # omax += [DIST_MAX]
 
         # Roll and pitch
         omin += [ANGLE_MIN, ANGLE_MIN]
@@ -188,8 +195,8 @@ class TrainingEnv(gym.Env):
         #     setattr(self.action, self.active_action_fields[i], action_value)
         constraint_fields = {
             0: ["angular", "arm_joint1", "arm_joint2"],
-            1: ["arm_joint1", "arm_joint2"],  # "angular"
-            2: []
+            1: ["angular"],
+            # 2: []
         }
         for i, action_value in enumerate(action):
             if self.active_action_fields[i] in constraint_fields[self.complexity]:
@@ -214,24 +221,22 @@ class TrainingEnv(gym.Env):
 
         # features
         state += self.features.vertical.data
-
         # set observation input to zero for low complexities
-        if self.complexity == 1:
-            state += self.features.horizontal.data
-        else:
-            state += [0.0 for i in range(len(self.features.horizontal.data))]
+        # if self.complexity == 2:
+        #     state += self.features.horizontal.data
+        # else:
+        #     state += [0.0 for i in range(len(self.features.horizontal.data))]
 
         # direction + distance
         # state += [self.direction.theta, self.direction.phi, self.direction.distance]
-        state += [self.direction.theta]
+        # state += [self.direction.theta, self.direction.dist_center_plane]
 
-        # pitch
+        # robot roll + pitch
         resp = self.odom_info.call(OdomInfoRequest())
         state += [resp.roll, resp.pitch]
         return state
 
     def regenerate_obstacles(self):
-        print("regenerating", self.obstacle, self.task + "_" + self.randomness)
         resp = self.env_gen.call(
             EnvGenRequest(
                 action="delete",

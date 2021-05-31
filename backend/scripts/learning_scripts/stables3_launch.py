@@ -6,12 +6,10 @@ import json
 import numpy as np
 from utils.base import Base
 from gym_training.envs.training_env import TrainingEnv
-from stable_baselines3 import PPO
-from stable_baselines3 import SAC
+from stable_baselines3 import PPO, SAC, TD3
 from stable_baselines3.sac.policies import SACPolicy
 from monitor.srv import GuidanceInfoRequest
 from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3 import TD3
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
 class Learner(Base):

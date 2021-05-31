@@ -4,7 +4,7 @@
     <model name="ground_obstacles">
         <static>true</static>
         <link name="wall_0_0">
-            <pose>-3.0 -1.8805955828795395 1.00.0 0.0 1.5707963267948966</pose>
+            <pose>-3.0 -2.202772046738432 1.00.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -21,7 +21,7 @@
             </visual>
         </link>
         <link name="wall_0_1">
-            <pose>-3.0 1.9353722659518924 1.00.0 0.0 0.0</pose>
+            <pose>-3.0 1.0061630509311994 1.00.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -38,7 +38,7 @@
             </visual>
         </link>
         <link name="wall_1_0">
-            <pose>-5.0 -2.4635630661402095 1.00.0 0.0 1.5707963267948966</pose>
+            <pose>-5.0 -1.1601449815275868 1.00.0 0.0 1.5707963267948966</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -55,7 +55,7 @@
             </visual>
         </link>
         <link name="wall_1_1">
-            <pose>-5.0 2.830828206623833 1.00.0 0.0 1.5707963267948966</pose>
+            <pose>-5.0 1.498803364040618 1.00.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -72,7 +72,7 @@
             </visual>
         </link>
         <link name="wall_2_0">
-            <pose>-7.0 -2.3153552744416195 1.00.0 0.0 0.0</pose>
+            <pose>-7.0 -2.1378792468335615 1.00.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -89,7 +89,7 @@
             </visual>
         </link>
         <link name="wall_2_1">
-            <pose>-7.0 2.6747380507661758 1.00.0 0.0 0.0</pose>
+            <pose>-7.0 2.791607651351218 1.00.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -106,7 +106,7 @@
             </visual>
         </link>
         <link name="wall_3_0">
-            <pose>-9.0 -1.5218214464298427 1.00.0 0.0 0.0</pose>
+            <pose>-9.0 -2.0353802741199942 1.00.0 0.0 0.0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
@@ -123,7 +123,7 @@
             </visual>
         </link>
         <link name="wall_3_1">
-            <pose>-9.0 1.204555934885146 1.00.0 0.0 1.5707963267948966</pose>
+            <pose>-9.0 1.3852996385529155 1.00.0 0.0 1.5707963267948966</pose>
             <collision name="collision">
                 <geometry>
                     <box>

@@ -15,7 +15,7 @@
   "time_step_limit": 100,
   "env_type": "vect",
   "arm": true,
-  "angular": true,
+  "angular": false,
   "sigma": 0.0,
   "task": "ascent",
   "rand": false,

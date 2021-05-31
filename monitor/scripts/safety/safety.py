@@ -50,9 +50,11 @@ class Safety:
             rospy.sleep(0.1)
 
     def update_imu(self, msg):
-        angular_velocity_y = abs(msg.angular_velocity.y)
-        angular_velocity_y = angular_velocity_y if angular_velocity_y > 0.15 else 0.
-        self.pub_angular.publish(Float32(data=angular_velocity_y))
+        noise_cut = 0.15
+        maximum_angular_velocity = 3.0
+        angular_velocity_y = np.clip(np.abs(msg.angular_velocity.y), noise_cut, maximum_angular_velocity)
+        relative = angular_velocity_y / maximum_angular_velocity
+        self.pub_angular.publish(Float32(data=relative))
 
     def define_position(self):
         try:

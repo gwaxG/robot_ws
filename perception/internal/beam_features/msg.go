@@ -62,10 +62,10 @@ func (r *RosProxy) Publish(Height []float32, Width []float32, frame string) {
 			FrameId: frame,
 		},
 		Horizontal: std_msgs.Float32MultiArray{
-			Data: Height,
+			Data: Width,
 		},
 		Vertical:   std_msgs.Float32MultiArray{
-			Data: Width,
+			Data: Height,
 		},
 	})
 	r.seq++
