@@ -26,30 +26,15 @@ class Guidance:
         self.max_level = 1
         self.need_to_penalize = need_to_penalize
         self.reward_history = []
-        self.penalty_history = []
         self.done = False
         self.penalize = False  # False
         self.complexity_type = None
         # penalty part
-        self.estimated = False
-        self.time_steps = []
-        self.normalization = utils.DictToStruct(
-            **{
-                "mu": None,
-                "sigma": None,
-                "min": None,
-                "max": None,
-                "mean_duration": None
-            }
-        )
-
+        self.reshaping_coefficient = 0.
+        self.used_penalty = []
         # Hyper parameters
-        # define the size of array on what we calculate penalty terms
-        # reward history_size, in fact, it is not a hyper parameter, it is just RAM constraint
-        # self.size_reward_history = 100000  # 20
         # Moving average window for competence estimation
         self.window_epsilon = 20  # 10
-        #
         self.start_size = 20
         # threshold that defines when to increment complexity or stop learning
         self.epsilon_threshold = 0.82  # 0.82
@@ -76,29 +61,21 @@ class Guidance:
         self.log_string = msg
         self.log_update = True
 
-    def safety_deviation(self, value):
-        pass
+    def safety_angular(self, relative_value):
+        self.reshaping_coefficient = (1. - relative_value)
 
-    def safety_angular(self, value):
-        pass
-
-    def add_penalty(self, pen):
-        if not self.penalize and self.need_to_penalize:
-            self.penalty_history.append(pen)
+    def safety_deviation(self, relative_value):
+        self.reshaping_coefficient = (1. - relative_value)
 
     def update(self, progress, time_steps):
-        # print("Update called", progress, penalty)
+        self.used_penalty = []
         self.add_to_history(progress, time_steps)
         self.epsilon = self.estimate_epsilon()
         print("aftermath", self.epsilon)
 
         # TODO to delete
         if self.seq % 10 == 0 and False:
-            if self.penalize:
-                self.send_log(
-                    f"current epsilon {self.epsilon}, penalize {self.penalize}, mu {self.normalization.mu} sigma {self.normalization.sigma}")
-            else:
-                self.send_log(f"current epsilon {self.epsilon}, complexity {self.level}")
+            self.send_log(f"current epsilon {self.epsilon}, complexity {self.level}")
         # incremental complexity
         if self.complexity_type == "inc":
             if self.epsilon > self.epsilon_threshold \
@@ -131,9 +108,6 @@ class Guidance:
             if self.epsilon > self.epsilon_threshold and len(self.reward_history) >= self.start_size:
                 if self.need_to_penalize and not self.penalize:
                     self.penalize = True
-                    print("adding penalties")
-                    self.estimate_coefficients()
-                    print("coes", self.normalization.min, self.normalization.max)
                     self.reward_history = []
                 else:
                     self.done = True
@@ -147,18 +121,7 @@ class Guidance:
         return self.need_to_penalize
 
     def add_to_history(self, progress, time_steps):
-        if not self.penalize:
-            self.time_steps.append(time_steps)
-        # print("Appending to history", progress, reshaped_penalty)
-        if not self.penalize:
-            penalty = 0.
-        else:
-            tstep = self.time_steps[-1]
-            penalty = np.mean(self.penalty_history[-tstep:])
-            penalty = self.reshape_penalty(penalty)
-        self.reward_history.append(progress - penalty)
-        # if len(self.reward_history) > self.size_reward_history:
-        #     self.reward_history.pop(0)
+        self.reward_history.append(progress)
 
     def estimate_epsilon(self):
         if len(self.reward_history) == 0:
@@ -171,29 +134,9 @@ class Guidance:
     def get_epsilon(self):
         return self.epsilon
 
-    def estimate_coefficients(self):
+    def reshape_reward(self, reward):
         if not self.penalize:
-            return None
-        # first way
-        self.normalization.mu = np.mean(self.penalty_history)
-        self.normalization.sigma = np.std(self.penalty_history)
-        self.normalization.min = np.min(self.penalty_history)
-        self.normalization.max = np.max(self.penalty_history)
-        self.normalization.mean_duration = np.mean(self.time_steps)
-        self.send_log(f"penalization min {self.normalization.min} max {self.normalization.max} "
-                      f"mu {self.normalization.mu} sigma {self.normalization.sigma} "
-                      f"duration {self.normalization.mean_duration}")
-
-        self.estimated = True
-
-    def reshape_penalty(self, penalty):
-        if not self.penalize:
-            return 0.
-
-
-
-        # print(f"Penalty before {penalty}", end="")
-        penalty = (penalty - self.normalization.min) / (
-                    self.normalization.max - self.normalization.min) / self.normalization.mean_duration
-        # print(f"after {penalty}")
-        return penalty
+            return reward
+        print("reshaping", reward, self.reshaping_coefficient)
+        self.used_penalty.append(self.reshaping_coefficient)
+        return self.reshaping_coefficient * reward

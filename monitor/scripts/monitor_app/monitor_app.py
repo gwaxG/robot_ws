@@ -55,8 +55,6 @@ class Monitor:
             }
         )
         self.robot_state = None
-        self.safety_step_deviation = []
-        self.safety_step_angular = []
         self.odometry = None
         self.goal = None
         self.guide = None  # Guidance()
@@ -131,8 +129,6 @@ class Monitor:
                 }
             )
             self.robot_state = None
-            self.safety_step_deviation = []
-            self.safety_step_angular = []
             self.odometry = None
             self.goal = None
             self.is_guided = False
@@ -144,15 +140,11 @@ class Monitor:
         self.rollout_state.exp_series = rospy.get_param("exp_series_name")
         self.rollout_state.set_fields(req)
 
-        # dbg custom iteration over different experiment entities
-        # dist, dev, distdev
-        # to delete above
         self.guide.set_seq(self.rollout_state.seq)
         return NewRolloutResponse(received=True)
 
     def callback_step_return(self, _):
         reward = self.rollout_state.step_reward
-        progress = self.rollout_state.step_reward
 
         self.rollout_state.step_reward = 0.
         reshaped_reward = self.guide.reshape_reward(reward)
@@ -163,7 +155,6 @@ class Monitor:
             self.rollout_state.done = True
 
         if self.rollout_state.done:
-            self.rollout_state.progress = np.clip(progress, 0.0, 1.0)
             self.send_to_backend()
             if self.is_guided:
                 self.guide.update(
@@ -198,18 +189,17 @@ class Monitor:
         )
 
     def callback_robot_state(self, msg):
-        """
-        Update robot state.
-        :param msg: State msg
-        :return:
-        """
         self.robot_state = msg
 
     def callback_safety_deviation(self, msg):
-        self.guide.safety_deviation()
+        self.rollout_state.episode_deviation.append(msg.data)
+        if self.rollout_state.use_penalty_deviation:
+            self.guide.safety_deviation(msg.data)
 
     def callback_safety_angular(self, msg):
-        self.guide.safety_angular()
+        self.rollout_state.episode_angular.append(msg.data)
+        if self.rollout_state.use_penalty_angular:
+            self.guide.safety_angular(msg.data)
 
     def callback_odometry(self, msg):
         self.odometry = msg
@@ -225,7 +215,7 @@ class Monitor:
                 self.rollout_state.progress += diff / self.rollout_state.maximum_distance
                 self.rollout_state.step_reward += diff / self.rollout_state.maximum_distance
             else:
-                self.guide.log_string(f"Exceeded progress limit with value {diff} at the time step {self.rollout_state.time_step}, seq {self.rollout_state.seq}")
+                self.guide.log_string = f"Exceeded progress limit with value {diff} at the time step {self.rollout_state.time_step}, seq {self.rollout_state.seq}"
         if dist < 0.0:
             self.rollout_state.closest_distance = 0.
             print("Done 2")

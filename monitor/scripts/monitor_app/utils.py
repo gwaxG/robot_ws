@@ -4,7 +4,6 @@
 class DictToStruct:
     def __init__(self, **entries):
         """
-
         :rtype: object
         """
         self.__dict__.update(entries)
