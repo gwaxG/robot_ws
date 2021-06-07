@@ -67,6 +67,9 @@ class Monitor:
 
     def callback_guidance(self, _):
         self.is_guided = True
+        # the last episode data sending
+        if self.guide.done:
+            self.send_to_backend()
         return GuidanceInfoResponse(
             epsilon=self.guide.get_epsilon(),
             level=self.guide.level,
@@ -102,6 +105,7 @@ class Monitor:
             self.guide = Guidance()
             self.guide.set_complexity_type(req.complexity_type)
             if req.use_penalty_deviation or req.use_penalty_angular:
+                self.guide.send_log("Need to penalize!")
                 self.guide.set_need_to_penalize(True)
             return False
         else:
@@ -206,16 +210,14 @@ class Monitor:
         if self.rollout_state.done or not self.rollout_state.started:
             return
         # distance check
+
         dist = utils.get_distance(self.odometry.pose.pose.position, self.goal)
         if dist < self.rollout_state.closest_distance:
             diff = self.rollout_state.closest_distance - dist
-
             # ad hoc clipping
             if self.rollout_state.progress < 1.0:
                 self.rollout_state.progress += diff / self.rollout_state.maximum_distance
                 self.rollout_state.step_reward += diff / self.rollout_state.maximum_distance
-            else:
-                self.guide.log_string = f"Exceeded progress limit with value {diff} at the time step {self.rollout_state.time_step}, seq {self.rollout_state.seq}"
         if dist < 0.0:
             self.rollout_state.closest_distance = 0.
             print("Done 2")

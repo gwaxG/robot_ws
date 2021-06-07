@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+    <param name="feature_type" value="FeatureSliceVertical"/>
+    <param name="image_height" type="int" value="480" />
+    <param name="image_width" type="int" value="640" />
+
+    <param name="depth_image_topic" type="str" value="/camera/depth/image_raw" />
+    <!--60 72 10-->
+    <param name="feature_height" type="int" value="60" />
+    <param name="feature_width" type="int" value="12" />
+    <param name="band_width" type="int" value="10" />
+
+    <!-- USB camera launch -->
+    <include file="$(find astra_camera)/launch/astra.launch"/>
+    <!-- End of usb camera part -->
+
+    <!-->
+    <node name="beamer" pkg="perception" type="beamer_app"
+      output="screen">
+    </node>
+    <-->
+</launch>

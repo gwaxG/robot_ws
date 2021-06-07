@@ -5,7 +5,6 @@
     <param name="image_height" type="int" value="480" />
     <param name="image_width" type="int" value="640" />
 
-
     <param name="depth_image_topic" type="str" value="/camera/depth/image_raw" />
     <!--60 72 10-->
     <param name="feature_height" type="int" value="60" />
@@ -23,7 +22,5 @@
     <node name="beamer" pkg="perception" type="beamer_app"
       output="screen" args="$(arg port)"> 
     </node>
-
-
 
 </launch>

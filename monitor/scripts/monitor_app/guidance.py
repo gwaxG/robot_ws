@@ -37,7 +37,7 @@ class Guidance:
         self.window_epsilon = 20  # 10
         self.start_size = 20
         # threshold that defines when to increment complexity or stop learning
-        self.epsilon_threshold = 0.82  # 0.82
+        self.epsilon_threshold = 0.85  # 0.82
         # Sync data
         self.log_update = False
         self.log_string = ""
@@ -71,51 +71,62 @@ class Guidance:
         self.used_penalty = []
         self.add_to_history(progress, time_steps)
         self.epsilon = self.estimate_epsilon()
-        print("aftermath", self.epsilon)
-
-        # TODO to delete
-        if self.seq % 10 == 0 and False:
-            self.send_log(f"current epsilon {self.epsilon}, complexity {self.level}")
+        msg = f""
+        done = False
         # incremental complexity
         if self.complexity_type == "inc":
+            msg += f"current epsilon {np.round(self.epsilon, 2)}/{self.epsilon_threshold}, complexity {self.level}\n"
             if self.epsilon > self.epsilon_threshold \
                     and self.level < self.max_level \
-                    and len(self.reward_history) >= self.start_size:
+                    and len(self.reward_history) >= self.start_size\
+                    and not self.penalize:
                 self.level += 1
                 self.reward_history = []
                 self.epsilon = 0
-                self.send_log(f"level changed to {self.level}")
+                msg += f"level change to {self.level}\n"
             elif self.epsilon > self.epsilon_threshold \
-                    and self.level == self.max_level \
+                    and self.level >= self.max_level \
                     and len(self.reward_history) >= self.start_size \
                     and not self.penalize:
                 # penalization inclusion
+                msg += f"level change to reached threshold at maximum level, checking for penalization\n"
                 if self.need_to_penalize:
-                    self.penalize = True
-                    self.send_log(f"penalty added")
-                else:
+                    # dbg
                     self.done = True
-                    self.send_log(f"exp done without penalty")
+                    self.penalize = True
+                    msg += f"penalty added\n"
+                else:
+                    done = True
+                    msg += f"exp done without penalty\n"
                 self.reward_history = []
             elif self.penalize \
                     and self.epsilon > self.epsilon_threshold \
                     and len(self.reward_history) >= self.start_size:
-                self.send_log(f"exp done with penalty")
-                self.done = True
+                msg += f"exp done with penalty\n"
+                done = True
         # full complexity
         elif self.complexity_type == "full":
             # simple condition to exit
+            msg += f"check for end\n"
             if self.epsilon > self.epsilon_threshold and len(self.reward_history) >= self.start_size:
-                if self.need_to_penalize and not self.penalize:
+                msg += f"Threshold touched\n"
+                if self.need_to_penalize:
+                    msg += f"Penalties added\n"
                     self.penalize = True
                     self.reward_history = []
                 else:
-                    self.done = True
-        print(
-            f"Epsilon estimation {self.epsilon}, length {len(self.reward_history)}, pen {self.penalize}, done {self.done}")
+                    msg += f"Done without penalty\n"
+                    done = True
+                if self.penalize and self.need_to_penalize:
+                    msg += f"Done with penalty\n"
+                    done = True
+        self.send_log(msg)
+        self.done = done
 
     def set_need_to_penalize(self, value):
         self.need_to_penalize = value
+        # dbg
+        self.penalize = value
 
     def get_need_to_penalize(self):
         return self.need_to_penalize
