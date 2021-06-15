@@ -22,8 +22,7 @@ The `action` could be `generate` or `delete`, `model` and `props` depends on the
     * `props`=`rand` or `vect_f` where `f` is a float number which is parsed
 * Ground obstacles
     * `model`=`ground_obstacles`
-    * `props`=`rand` or `f1_f2_f3_f4` where `f`s are a float number which represent w1, l1, w2 and l2 ground obstaces parameters.
-
+    * `props`=`rand` or `f1_f2_f3_f4` where `f`s are float numbers which represent w1, l1, w2 and l2 ground obstace parameters.
 Response fields represent success of operation and error message.
 
 The service `stair_info` operates with StairInfo.srv:
@@ -40,7 +39,7 @@ where fields `length`, `height` and `number`(number of steps) relates to the sta
 ## Robot (re)spawning
 
 `spawn.launch` initially spawns the Jaguar robot in fornt of the staircase one meter away.
-This sub-package provides the service `/robot_spawn` to actively respawn the robot at other locations.
+This sub-package provides the service `robot_spawn` to actively respawn the robot at other locations.
 RobotSpawn.srv:
 
 ```
