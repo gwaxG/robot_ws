@@ -24,7 +24,8 @@ The `action` could be `generate` or `delete`, `model` and `props` depends on the
     * `model`=`ground_obstacles`
     * `props`=`rand` or `f1_f2_f3_f4` where `f`s are float numbers which represent w1, l1, w2 and l2 ground obstace parameters.
 Response fields represent success of operation and error message.
-
+- - -
+## Information retrieval
 The service `stair_info` operates with StairInfo.srv:
 ```
 ---
