@@ -161,25 +161,71 @@ class GroundObstacles(Group):
         self.wall_y_size = wall_y_size
         self.exist = False
 
-    def generate(self):
-        walls = []
-        for dist_i in range(4):
-            dist = -3.0 - dist_i * 2
-            for wall_i in range(2):
-                walls.append(
-                    Box(
-                        name="wall_"+str(dist_i) + "_" + str(wall_i),
-                        x=dist,
-                        y=(-1+2*wall_i)*(1+2*random.random()),
-                        z=self.wall_z_size/2,
-                        roll=0.,
-                        pitch=0.,
-                        yaw=random.randint(0, 1) * math.pi / 2,
-                        box_x=self.wall_x_size,
-                        box_y=self.wall_y_size,
-                        box_z=self.wall_z_size
-                    )
-                )
+    def generate(self, props):
+        # width and length of the ground operation field
+        w = 10.
+        l = 8.
+        # constraint parameter which ensures path existence
+        c = 1. + np.random.uniform(0., 1.)
+        if props != "rand":
+            sizes = [float(el) for el in props.split()]
+        else:
+            sizes = [0. for _ in range(4)]
+        prms = {
+            "w1": sizes[0],
+            "w2": sizes[1],
+            "l1": sizes[2],
+            "l2": sizes[3],
+        }
+        if props == "rand":
+            w1 = np.random.uniform(w/2 - c/2, w - c)
+            if w1 >= 3. / 4 * w - 3. * c / 4:
+                w2 = np.random.uniform(0.5 * w, w - c)
+                l1 = np.random.uniform(c, l - 2 * c)
+                l2 = np.random.uniform(c, l - l1 - c)
+            else:
+                l1 = l
+                l2 = l
+                w2 = w - w1 - c
+            prms["w1"] = w1
+            prms["w2"] = w2
+            prms["l1"] = l1
+            prms["l2"] = l2
+        ####
+        s = 1 if np.random.randint(0, 2) == 0 else -1
+        if prms["l1"] == prms["l2"]:
+            x1 = x2 = -prms["l1"] / 2 - 2.
+        else:
+            x1 = -2 - l + prms["l1"] / 2
+            x2 = -2 - prms["l2"] / 2
+        y1 = -s * (w / 2 - prms["w1"] / 2)
+        y2 = s * (w / 2 - prms["w2"] / 2)
+        walls = [
+            Box(
+                name="wall2",
+                x=x2,
+                y=y2,
+                z=self.wall_z_size / 2,
+                roll=0.,
+                pitch=0.,
+                yaw=0,
+                box_x=prms["l2"],
+                box_y=prms["w2"],
+                box_z=self.wall_z_size
+            ),
+            Box(
+                name="wall1",
+                x=x1,
+                y=y1,
+                z=self.wall_z_size / 2,
+                roll=0.,
+                pitch=0.,
+                yaw=0,
+                box_x=prms["l1"],
+                box_y=prms["w1"],
+                box_z=self.wall_z_size
+            ),
+        ]
         self.walls = walls
         self.exist = True
 
@@ -196,9 +242,9 @@ class StairFloor(Group):
     standard_height = 2.0
 
     dimensions = {
-        "n": {"min": 0, "max": 7},  # 0, 7
-        "length": {"min": 0.35, "max": 0.52},
-        "height": {"min": 0.12, "max": 0.22},  # 0.15-0.25
+        "n": {"min": 1, "max": 7},  # 0, 7
+        "length": {"min": 0.35, "max": 0.52},  # "min": 0.35, "max": 0.52
+        "height": {"min": 0.12, "max": 0.22},  # 0.12-0.22
     }
 
     def __init__(self):
@@ -259,7 +305,7 @@ class StairFloor(Group):
             eps = float(props.split("_")[1])
             step_n, length, height = self.sample_gaussian(eps)
         elif "eval" in props:
-            step_n = int(float(StairFloor.dimensions["n"]["max"]+StairFloor.dimensions["n"]["min"]) / 2.0)
+            step_n = int(float(StairFloor.dimensions["n"]["max"]))
             length = float(StairFloor.dimensions["length"]["max"] + StairFloor.dimensions["length"]["min"]) / 2
             height = float(StairFloor.dimensions["height"]["max"] + StairFloor.dimensions["height"]["min"]) / 2
         else:

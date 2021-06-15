@@ -78,7 +78,7 @@ class EnvGenerator:
     def generate_ground_obstacles(self, props=None):
         if self.env.ground_obstacles.exist:
             render.delete_model(self.env.ground_obstacles.name)
-        self.env.ground_obstacles.generate()
+        self.env.ground_obstacles.generate(props)
         render.apply(self.env.ground_obstacles)
 
     def generate_goal(self, props):

@@ -149,9 +149,10 @@ class Monitor:
 
     def callback_step_return(self, _):
         reward = self.rollout_state.step_reward
-
         self.rollout_state.step_reward = 0.
+
         reshaped_reward = self.guide.reshape_reward(reward)
+
         # reshape in case of penalties
         self.rollout_state.episode_reward += reshaped_reward
         self.rollout_state.time_step += 1
@@ -162,7 +163,7 @@ class Monitor:
             self.send_to_backend()
             if self.is_guided:
                 self.guide.update(
-                    self.rollout_state.progress,  # only positive reward due to movement progress
+                    self.rollout_state.episode_reward,  # only positive reward due to movement progress
                     self.rollout_state.time_step  # episode length
                 )
         # print("EPISODE REWARD", self.rollout_state.episode_reward)
@@ -173,6 +174,7 @@ class Monitor:
         self.guide.reset_sync_log()
         angular_mean = np.mean(self.rollout_state.episode_angular) if len(self.rollout_state.episode_angular) > 0 else 0.
         deviation_mean = np.mean(self.rollout_state.episode_deviation) if len(self.rollout_state.episode_deviation) > 0 else 0.
+        coef_mean = np.mean(self.guide.used_penalty) if len(self.guide.used_penalty) > 0 else -0.1
         self.rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
@@ -184,7 +186,7 @@ class Monitor:
                 progress=self.rollout_state.progress,
                 reward=self.rollout_state.episode_reward,
                 angular_m=angular_mean,
-                deviation=deviation_mean,
+                deviation=coef_mean,
                 accidents=self.rollout_state.accidents,
                 time_steps=self.rollout_state.time_step,
                 log=log,

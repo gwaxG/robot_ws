@@ -1,12 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import numpy as np
+
+
 class DictToStruct:
     def __init__(self, **entries):
         """
         :rtype: object
         """
         self.__dict__.update(entries)
+
+
+class PassageQueue:
+    def __init__(self, size=5):
+        self.storage = []
+        self.size = size
+
+    def reset(self):
+        self.__init__(self.size)
+
+    def get_mean_value(self):
+        return np.mean(self.storage)
+
+    def push(self, value):
+        self.storage.append(value)
+        if len(self.storage) >= self.size:
+            self.storage.pop(0)
 
 
 class RolloutState:

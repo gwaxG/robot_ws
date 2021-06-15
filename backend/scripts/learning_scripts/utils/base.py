@@ -51,7 +51,7 @@ class Base:
 
         # ROS-related part
         os.environ["ROS_MASTER_URI"] = "http://localhost:" + str(port)
-        rospy.init_node("example")
+        rospy.init_node("learner")
         self.rospy = rospy
         self.guidance_info = rospy.ServiceProxy("/guidance/info", GuidanceInfo)
 

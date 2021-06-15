@@ -14,10 +14,13 @@ class Guidance:
     def __init__(self, need_to_penalize=False):
         """
         Tasks:
-            increase complexity, increase size, increase complexity, increase size, increase complexity, increase size,
-            increase complexity, add penalty
+        increase complexity, increase size, increase complexity, increase size, increase complexity, increase size,
+        increase complexity, add penalty
         """
         # Guidance part
+        # Frequency of IMU is 20 Hz, the time steps lasts 0.25 second.
+        # Thus, last 5 angular velocity safety updates keep information about last time step.
+        self.queue = utils.PassageQueue(size=5)
         # 0.0 - 1.0
         self.epsilon = 0.
         # 0 - 2
@@ -37,7 +40,8 @@ class Guidance:
         self.window_epsilon = 20  # 10
         self.start_size = 20
         # threshold that defines when to increment complexity or stop learning
-        self.epsilon_threshold = 0.85  # 0.82
+        # 0.99 is good when there is no penalties, otherwise 0.9 is better
+        self.epsilon_threshold = 0.9
         # Sync data
         self.log_update = False
         self.log_string = ""
@@ -62,14 +66,16 @@ class Guidance:
         self.log_update = True
 
     def safety_angular(self, relative_value):
-        self.reshaping_coefficient = (1. - relative_value)
+        self.queue.push(relative_value)
+        self.reshaping_coefficient = (1. - self.queue.get_mean_value())
 
     def safety_deviation(self, relative_value):
-        self.reshaping_coefficient = (1. - relative_value)
+        self.queue.push(relative_value)
+        self.reshaping_coefficient = self.queue.get_mean_value()
 
-    def update(self, progress, time_steps):
+    def update(self, episode_reward, time_steps):
         self.used_penalty = []
-        self.add_to_history(progress, time_steps)
+        self.reward_history.append(episode_reward)
         self.epsilon = self.estimate_epsilon()
         msg = f""
         done = False
@@ -91,8 +97,6 @@ class Guidance:
                 # penalization inclusion
                 msg += f"level change to reached threshold at maximum level, checking for penalization\n"
                 if self.need_to_penalize:
-                    # dbg
-                    self.done = True
                     self.penalize = True
                     msg += f"penalty added\n"
                 else:
@@ -111,6 +115,7 @@ class Guidance:
             if self.epsilon > self.epsilon_threshold and len(self.reward_history) >= self.start_size:
                 msg += f"Threshold touched\n"
                 if self.need_to_penalize:
+                    done = True
                     msg += f"Penalties added\n"
                     self.penalize = True
                     self.reward_history = []
@@ -125,14 +130,9 @@ class Guidance:
 
     def set_need_to_penalize(self, value):
         self.need_to_penalize = value
-        # dbg
-        self.penalize = value
 
     def get_need_to_penalize(self):
         return self.need_to_penalize
-
-    def add_to_history(self, progress, time_steps):
-        self.reward_history.append(progress)
 
     def estimate_epsilon(self):
         if len(self.reward_history) == 0:
@@ -146,8 +146,11 @@ class Guidance:
         return self.epsilon
 
     def reshape_reward(self, reward):
-        if not self.penalize:
-            return reward
-        print("reshaping", reward, self.reshaping_coefficient)
+        # Reward is positive and reflects the travelled distance.
+        # kappa~2 means that if safety is more than 0.5 then the robot receives the negative reward which goes down to -1.
+        kappa = 2
         self.used_penalty.append(self.reshaping_coefficient)
-        return self.reshaping_coefficient * reward
+        if not self.need_to_penalize:
+            return reward
+        else:
+            return reward * (1 - kappa * self.reshaping_coefficient)
