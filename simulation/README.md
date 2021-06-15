@@ -24,7 +24,17 @@ The `action` could be `generate` or `delete`, `model` and `props` depends on the
     * `model`=`ground_obstacles`
     * `props`=`rand` or `f1_f2_f3_f4` where `f`s are float numbers which represent w1, l1, w2 and l2 ground obstace parameters.
 Response fields represent success of operation and error message.
-![alt text](https://github.com/gwaxG/robot_ws/simulation/supports/scheme_ascent.png)
+<p align="center">
+  <img src="supports/scheme_zigzag.png" width="500" />
+  <img src="supports/scheme_couloire.png" width="507" /> 
+   <p align="center">Zigzag (left) and hallway (right) environment structures</p>
+</p>
+<p align="center">
+   <img src="supports/scheme_ascent.png" width="300" />
+   <p align="center">Staircase and floor environment taxonomy in ascent traversal</p>
+</p>
+
+
 - - -
 ## Information retrieval
 The service `stair_info` operates with StairInfo.srv:
