@@ -16,11 +16,15 @@ string props
 bool result
 string err
 ```
-where the action could be `generate` or `delete`, supported models are `ground_obstacles`, `stair_floor` and `floor_obstacles`. 
-The "stair_floor" model relates to the staircase with the floor.
-The field `result` indicates if generation was succesful, if `false`, the field `err` explains why.  
-The goal can be spawned through `action=generate/delete`, `model=goal` and `props=task_rand` where task could be ascent, descent or flat and rand is 0 or 1. 
+The `action` could be `generate` or `delete`, `model` and `props` depends on the environment part:
+* Staircase and floor
+    * `model`=`stair_floor`
+    * `props`=`rand` or `vect_f` where `f` is a float number which is parsed
+* Ground obstacles
+    * `model`=`ground_obstacles`
+    * `props`=`rand` or `f1_f2_f3_f4` where `f`s are a float number which represent w1, l1, w2 and l2 ground obstaces parameters.
 
+Response fields represent success of operation and error message.
 
 The service `stair_info` operates with StairInfo.srv:
 ```
@@ -36,7 +40,7 @@ where fields `length`, `height` and `number`(number of steps) relates to the sta
 ## Robot (re)spawning
 
 `spawn.launch` initially spawns the Jaguar robot in fornt of the staircase one meter away.
-This sub-package provides the service `robot_spawn` to actively respawn the robot at other locations.
+This sub-package provides the service `/robot_spawn` to actively respawn the robot at other locations.
 RobotSpawn.srv:
 
 ```
@@ -47,8 +51,7 @@ string random
 bool result
 string err
 ```
-
-where the place is `ground` or `floor`, the task is `flat`, `ascent` or `descent`, random is `0` or `1`.
+where the `place` is `ground` or `floor`, the `task` field is `flat`, `ascent` or `descent`, `random` is `0` or `1`.
 
 
 
