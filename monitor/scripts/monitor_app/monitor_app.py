@@ -72,7 +72,6 @@ class Monitor:
             self.send_to_backend()
         return GuidanceInfoResponse(
             epsilon=self.guide.get_epsilon(),
-            level=self.guide.level,
             done=self.guide.done
         )
 
@@ -97,16 +96,22 @@ class Monitor:
         :param req:
         :return: bool, need to reset
         """
-
         if not self.consistency.initialized:
             self.consistency.experiment = req.experiment
             self.consistency.initialized = True
             # the only place where we initialize Guidance()
-            self.guide = Guidance()
-            self.guide.set_complexity_type(req.complexity_type)
-            if req.use_penalty_deviation or req.use_penalty_angular:
-                self.guide.send_log("Need to penalize!")
+            if req.use_penalty_deviation:
+                penalty_type = "deviation"
+            elif req.use_penalty_angular:
+                penalty_type = "angular"
+            else:
+                penalty_type = "free"
+            self.guide = Guidance(penalty_type)
+            if bool(req.use_penalty_deviation) or bool(req.use_penalty_angular):
+                #  self.guide.send_log(f"Need to penalize! {bool(req.use_penalty_deviation)} {bool(req.use_penalty_angular)}")
                 self.guide.set_need_to_penalize(True)
+            else:
+                pass  # self.guide.send_log(f"No tipping!!!")
             return False
         else:
             if self.consistency.experiment != req.experiment:
@@ -151,10 +156,8 @@ class Monitor:
         reward = self.rollout_state.step_reward
         self.rollout_state.step_reward = 0.
 
-        reshaped_reward = self.guide.reshape_reward(reward)
-
         # reshape in case of penalties
-        self.rollout_state.episode_reward += reshaped_reward
+        self.rollout_state.episode_reward += self.guide.reshape_reward(reward)
         self.rollout_state.time_step += 1
         if self.rollout_state.time_step == self.rollout_state.time_step_limit:
             self.rollout_state.done = True
@@ -174,7 +177,13 @@ class Monitor:
         self.guide.reset_sync_log()
         angular_mean = np.mean(self.rollout_state.episode_angular) if len(self.rollout_state.episode_angular) > 0 else 0.
         deviation_mean = np.mean(self.rollout_state.episode_deviation) if len(self.rollout_state.episode_deviation) > 0 else 0.
-        coef_mean = np.mean(self.guide.used_penalty) if len(self.guide.used_penalty) > 0 else -0.1
+        # coef_mean = np.mean(self.guide.used_penalty) if len(self.guide.used_penalty) > 0 else -0.1
+        if np.isnan(self.rollout_state.episode_reward) or not isinstance(self.rollout_state.episode_reward, float):
+            self.rollout_state.episode_reward = 0.
+            debug_value = 0.
+            log += "\nnan is detected"
+        else:
+            debug_value = self.guide.get_epsilon()
         self.rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
@@ -186,11 +195,11 @@ class Monitor:
                 progress=self.rollout_state.progress,
                 reward=self.rollout_state.episode_reward,
                 angular_m=angular_mean,
-                deviation=coef_mean,
+                deviation=deviation_mean,
                 accidents=self.rollout_state.accidents,
                 time_steps=self.rollout_state.time_step,
                 log=log,
-                debug=self.guide.get_epsilon() + self.guide.level
+                debug=debug_value
             )
         )
 

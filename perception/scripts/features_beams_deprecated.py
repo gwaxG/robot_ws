@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Header
 from skimage.feature import hog
 from skimage import data, exposure
 import torch.nn as nn
@@ -47,12 +47,12 @@ class FeaturesSolid:
         resolution_x = 1  # degree
         resolution_y = 1  # degree
         # Number of beams for each dimension
-        self.N_x = int(72.0 / resolution_x)
+        self.N_x = int(12.0 / resolution_x)
         self.N_y = int(60.0 / resolution_x)
         # Size of beams
         self.step_x = self.W / self.N_x
         self.step_y = int(self.H / self.N_y)
-        cam_rot_ang = 0.2
+        cam_rot_ang = 0.0
         FOV05 = 30.0
         self.H_horizontal_scan = int(self.H/2 - cam_rot_ang / 3.14 * 180.0 / FOV05 * self.H*0.5)
         self.bridge = CvBridge()
@@ -105,7 +105,7 @@ class FeaturesSolid:
         # features = np.concatenate((grouped_x, grouped_y), axis=0)
         # Only vertical features
         # test
-        features = grouped_y
+        features = grouped_x + grouped_y
         return features
 
     def grouping_slices(self, mean, step, N):
@@ -216,7 +216,7 @@ class FeaturesSolid:
         """
         font = cv2.FONT_HERSHEY_SIMPLEX
         fontScale = 0.3
-        fontColor = (0, 0, 0)
+        fontColor = (255, 255, 255)
         lineType = 1
         xfs = features[0:self.N_x]
         yfs = features[self.N_x:self.N_x+self.N_y]
@@ -224,9 +224,11 @@ class FeaturesSolid:
         xy = [self.H_horizontal_scan for i in range(self.N_x)]
         yx = [int(self.W/2) for i in range(self.N_y)]
         yy = [int(self.step_y/2 + i * self.step_y) for i in range(self.N_y)]
+        max_value = max([max(xfs), max(yfs)])
         for i, f in enumerate(xfs):
-            depth = cv2.circle(depth, (xx[i], xy[i]), radius=2, color=(0, 0, 0), thickness=2)
-            if i % 3 == 0:
+            clr = int((1.0 - f / max_value) * 255)
+            depth = cv2.circle(depth, (xx[i], xy[i]), radius=2, color=(clr, clr, clr), thickness=2)
+            if i % 3 == 0 and False:
                 bottomLeftCornerOfText = (xx[i], xy[i]+10)
                 depth = cv2.putText(
                     depth,
@@ -238,8 +240,9 @@ class FeaturesSolid:
                     lineType)
         for i, f in enumerate(yfs):
             center = (yx[i], yy[i])
-            depth = cv2.circle(depth, (yx[i]+10, yy[i]), radius=2, color=(0, 0, 0), thickness=2)
-            if i % 3 == 0:
+            clr = int((1.0 - f / max_value) * 255)
+            depth = cv2.circle(depth, (yx[i]+10, yy[i]), radius=2, color=(clr, clr, clr), thickness=2)
+            if i % 3 == 0 and False:
                 bottomLeftCornerOfText = (yx[i] + 15, yy[i])
                 depth = cv2.putText(
                     depth,
@@ -308,8 +311,8 @@ class FeaturesSolid:
         npercent = 0.01  # 10 %
         mu = 0.0
         sigma = 0.01
-        noise = np.random.normal(mu, sigma, (self.W, self.H))
-        nans = np.array([0 if np.random.random() > npercent else np.nan for i in range(self.H*self.W)]).reshape((self.W, self.H))
+        noise = np.random.normal(mu, sigma, (self.H, self.W))
+        nans = np.array([0 if np.random.random() > npercent else np.nan for i in range(self.H * self.W)]).reshape((self.H, self.W))
         # apply noise and nans
         depth += noise + nans
         return depth
@@ -322,6 +325,7 @@ class FeaturesSolid:
         """
         msg = self.bridge.cv2_to_imgmsg(img, encoding="passthrough")
         msg.encoding = '32FC1'
+        msg.header.frame_id = "camera_depth_frame"
         self.pub_image_test.publish(msg)
 
     def publish_image(self, img):

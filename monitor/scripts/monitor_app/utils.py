@@ -52,7 +52,7 @@ class RolloutState:
         self.episode_deviation = []
         self.episode_angular = []
         self.done = False
-        self.tipping_over_reward = 0
+        self.tipping_over_reward = 0.
         self.started = False
         self.closest_distance = 1000.0
         self.maximum_distance = 0.0

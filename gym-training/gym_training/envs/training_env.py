@@ -29,8 +29,8 @@ class TrainingEnv(gym.Env):
     def __init__(self, **kwargs):
         rospy.set_param("exp_series_name", kwargs['experiment_series'])
         self.experiment = kwargs['experiment']
-        self.arm_is_used = kwargs['arm']
-        self.angular_is_used = kwargs['angular']
+        self.arm_is_used = bool(kwargs['arm'])
+        self.angular_is_used = bool(kwargs['angular'])
         self.sigma = kwargs['sigma']
         self.task = kwargs['task']
         # either vect, rand or eval
@@ -39,13 +39,9 @@ class TrainingEnv(gym.Env):
         self.penalty_deviation = bool(kwargs['penalty_deviation'])
         self.time_step_limit = int(kwargs['time_step_limit'])
         # either full or inc
-        self.complexity_type = kwargs['complexity']
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
-        if kwargs['complexity'] == "inc":
-            self.randomness = "0"
-        elif kwargs['complexity'] == "full":
-            self.randomness = self.rand
+        self.randomness = self.rand
         self.seq = 0
         # TODO it should be variable in future
         self.sensors_info = "depth_"+str(rospy.get_param("feature_height"))+"_"+str(rospy.get_param("feature_width"))
@@ -61,8 +57,8 @@ class TrainingEnv(gym.Env):
         self.robot_state = State()
         rospy.Subscriber("/features", BeamMsg, self.update_features)
         self.features = BeamMsg()
-        # REMOVED
-        # rospy.Subscriber("/direction", DistDirec, self.update_direction)
+
+        rospy.Subscriber("/direction", DistDirec, self.update_direction)
         self.direction = DistDirec()
         # Service callers
         self.step_return = rospy.ServiceProxy("/rollout/step_return", StepReturn)
@@ -79,7 +75,6 @@ class TrainingEnv(gym.Env):
         # 0 - obs.:all without horizontal features; act.: linear, front fl., rear fl.
         # 1 - obs.:all without horizontal features; act.: linear, front fl., rear fl., arm1, arm2
         # 2 - obs.:all; act.: all (linear, angular, front fl., rear fl., arm1, arm2)
-        self.complexity = 1
         self.epsilon = 0.0
         self.done = False
 
@@ -108,40 +103,51 @@ class TrainingEnv(gym.Env):
                 amax.append(dMA)
                 omin.append(-ANGLE)
                 omax.append(ANGLE)
-
+        print("get_spaces_1", len(omin))
         height = rospy.get_param("feature_height")
         width = rospy.get_param("feature_width")
-        if "angular" in self.active_action_fields.keys():
-            length = height+width
+        if self.task == "flat":
+            length = 0
         else:
             length = height
+        if self.angular_is_used:
+            length += width
+        if self.task == "flat" and not self.angular_is_used:
+            raise(Exception(f"Angular velocity is not used in a flat task!"))
+        # if "angular" in self.active_action_fields.keys():
+        #     length = height+width
+        # else:
+        #     length = height
+
         fmin = [0.0 for i in range(length)]
         fmax = [3.0 for i in range(length)]
         omin += fmin
         omax += fmax
         ANGLE_MIN = -np.pi
         ANGLE_MAX = np.pi
-
+        print("get_spaces_2", len(omin))
         # Angle2Goal: theta and phi {[-3.14, 3.14], [0.0, 3.14]}
-        if "angular" in self.active_action_fields.keys():
+        if "angular" in self.active_action_fields.values():
             omin += [ANGLE_MIN]
             omax += [ANGLE_MAX]
             # Distance to the center plane
-            omin += [-1.]
-            omax += [1.]
-            # REMOVED
-            # Distance2Goal
-            # DIST_MIN = 0.
-            # DIST_MAX = 10.
-            # omin += [DIST_MIN]
-            # omax += [DIST_MAX]
-
+            if self.task == "flat":
+                DIST_MIN = 0.
+                DIST_MAX = 10.
+                # Distance2Goal
+                omin += [DIST_MIN]
+                omax += [DIST_MAX]
+            else:
+                omin += [-1.]
+                omax += [1.]
+        print("get_spaces_3", len(omin), self.active_action_fields.values())
         # Roll and pitch
         omin += [ANGLE_MIN, ANGLE_MIN]
         omax += [ANGLE_MAX, ANGLE_MAX]
-
+        print("get_spaces_4", len(omin))
         aspace = spaces.Box(np.array(amin), np.array(amax))
         ospace = spaces.Box(np.array(omin), np.array(omax))
+        print("OSPACE is ", ospace.shape)
         return aspace, ospace
 
     def build_action_fields(self):
@@ -150,10 +156,11 @@ class TrainingEnv(gym.Env):
         if self.angular_is_used:
             d[index] = 'angular'
             index += 1
-        d[index] = 'front_flippers'
-        index += 1
-        d[index] = 'rear_flippers'
-        index += 1
+        if self.task != "flat":
+            d[index] = 'front_flippers'
+            index += 1
+            d[index] = 'rear_flippers'
+            index += 1
         if self.arm_is_used:
             d[index] = 'arm_joint1'
             index += 1
@@ -193,20 +200,7 @@ class TrainingEnv(gym.Env):
         """
         # for i, action_value in enumerate(action):
         #     setattr(self.action, self.active_action_fields[i], action_value)
-        constraint_fields = {
-            0: ["angular", "arm_joint1", "arm_joint2"],
-            1: ["angular"],
-            # 2: []
-        }
         for i, action_value in enumerate(action):
-            if self.active_action_fields[i] in constraint_fields[self.complexity]:
-                if "arm_joint1" in self.active_action_fields[i]:
-                    if "ascent" in self.task:
-                        action_value = np.pi / 4
-                    elif "descent" in self.task:
-                        action_value = -np.pi / 4
-                else:
-                    action_value = 0
             setattr(self.action, self.active_action_fields[i], action_value)
 
     def get_transformed_state(self):
@@ -218,9 +212,14 @@ class TrainingEnv(gym.Env):
         # robot configuration
         for k, v in self.active_action_fields.items():
             state.append(getattr(self.robot_state, v, 0.))
-
+        print("get_transformed_state_1", len(state))
         # features
-        state += self.features.vertical.data
+        if self.angular_is_used:
+            state += self.features.horizontal.data
+
+        if self.task != "flat":
+            state += self.features.vertical.data
+        print("get_transformed_state_2", len(state))
         # set observation input to zero for low complexities
         # if self.complexity == 2:
         #     state += self.features.horizontal.data
@@ -229,11 +228,17 @@ class TrainingEnv(gym.Env):
 
         # direction + distance
         # state += [self.direction.theta, self.direction.phi, self.direction.distance]
-        # state += [self.direction.theta, self.direction.dist_center_plane]
-
+        if self.angular_is_used:
+            state += [self.direction.theta]
+            if self.task == "flat":
+                state += [self.direction.distance]
+            else:
+                state += [self.direction.dist_center_plane]
+        print("get_transformed_state_3", len(state))
         # robot roll + pitch
         resp = self.odom_info.call(OdomInfoRequest())
         state += [resp.roll, resp.pitch]
+        print("get_transformed_state_4", len(state))
         return state
 
     def regenerate_obstacles(self):
@@ -244,7 +249,10 @@ class TrainingEnv(gym.Env):
                 props="",
             )
         )
-        props = self.env_type if "rand" in self.env_type else self.env_type + "_" + str(self.epsilon)
+        if self.task != "flat":
+            props = self.env_type if "rand" in self.env_type else self.env_type + "_" + str(self.epsilon)
+        else:
+            props = "rand"
         resp = self.env_gen.call(
             EnvGenRequest(
                 action="generate",
@@ -252,7 +260,6 @@ class TrainingEnv(gym.Env):
                 props=props,
             )
         )
-
 
     def respawn_robot(self):
         if self.task == "ascent" or self.task == "flat":
@@ -294,7 +301,6 @@ class TrainingEnv(gym.Env):
                 seq=self.seq,
                 time_step_limit=self.time_step_limit,
                 sensors=self.sensors_info,
-                complexity_type=self.complexity_type,
                 angular=self.angular_is_used,
                 arm=self.arm_is_used,
                 use_penalty_angular=self.penalty_angular,
@@ -304,9 +310,6 @@ class TrainingEnv(gym.Env):
 
     def request_complexity(self):
         resp = self.guidance_info.call(GuidanceInfoRequest())
-        if self.complexity_type == "inc":
-            self.complexity = resp.level
-            self.randomness = self.rand if self.complexity >= 1 else "0"
         self.epsilon = resp.epsilon
 
     def reset(self, goal=""):

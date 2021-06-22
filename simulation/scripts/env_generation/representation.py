@@ -225,6 +225,18 @@ class GroundObstacles(Group):
                 box_y=prms["w1"],
                 box_z=self.wall_z_size
             ),
+            Box(
+                name="wall3",
+                x=0.005,
+                y=0,
+                z=self.wall_z_size / 2,
+                roll=0,
+                pitch=0,
+                yaw=0,
+                box_x=0.0,
+                box_y=2.0,
+                box_z=self.wall_z_size
+            ),
         ]
         self.walls = walls
         self.exist = True

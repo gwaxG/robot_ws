@@ -4,35 +4,52 @@
     <model name="ground_obstacles">
         <static>true</static>
         <link name="wall2">
-            <pose>-2.789261397363883 1.0351462799889974 1.00.0 0.0 0</pose>
+            <pose>-2.9401096271657257 0.9436134875224855 1.00.0 0.0 0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>1.578522794727766 7.929707440022005 2.0</size>
+                        <size>1.8802192543314515 8.112773024955029 2.0</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>1.578522794727766 7.929707440022005 2.0</size>
+                        <size>1.8802192543314515 8.112773024955029 2.0</size>
                     </box>
                 </geometry>
             </visual>
         </link>
         <link name="wall1">
-            <pose>-7.516444329097686 -1.6120406691350384 1.00.0 0.0 0</pose>
+            <pose>-9.155455329494849 -0.8644740759056884 1.00.0 0.0 0</pose>
             <collision name="collision">
                 <geometry>
                     <box>
-                        <size>4.967111341804629 6.775918661729923 2.0</size>
+                        <size>1.689089341010301 8.271051848188623 2.0</size>
                     </box>
                 </geometry>
             </collision>
             <visual name="visual">
                 <geometry>
                     <box>
-                        <size>4.967111341804629 6.775918661729923 2.0</size>
+                        <size>1.689089341010301 8.271051848188623 2.0</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
+        <link name="wall3">
+            <pose>0.005 0 1.00 0 0</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>0.0 2.0 2.0</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>0.0 2.0 2.0</size>
                     </box>
                 </geometry>
             </visual>
