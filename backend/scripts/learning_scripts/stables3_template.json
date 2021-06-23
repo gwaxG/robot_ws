@@ -1,23 +1,23 @@
 {
-  "experiment_series": "exp_22_06",
-  "experiment": "flat",
+  "experiment_series": "exp_of_1",
+  "experiment": "asc1",
   "alg": "SAC",
   "policy": "default",
-  "penalty_deviation": false,
+  "penalty_deviation": true,
   "penalty_angular": false,
   "model_parameters": {
     "ppo_cliprange":  "0.2", "ppo_ent_coef":  "0.005",
     "sac_train_freq": 1, "sac_tau": 0.05, "sac_ent_coef": "auto_0.5"
   },
-  "total_timesteps": 40000,
+  "total_timesteps": 100000,
   "save_path": "data/models/server",
   "load_path": "data/models/server/nothing",
   "time_step_limit": 100,
   "env_type": "vect",
-  "arm": false,
-  "angular": true,
+  "arm": true,
+  "angular": false,
   "sigma": 0.0,
-  "task": "flat",
-  "rand": true,
+  "task": "ascent",
+  "rand": false,
   "log_path": "data/boards/server"
 }

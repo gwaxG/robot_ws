@@ -72,7 +72,7 @@ class Guidance:
             self.used_penalty.append([])
         elif not self.normalized and self.need_to_penalize:
             self.normalization = 1.0 / np.mean([np.sum(arr) for arr in self.used_penalty])
-            msg += f"Normalized {self.normalization}"
+            msg += f"Normalized with K={self.normalization}!"
             self.normalized = True
         self.reward_history.append(episode_reward)
         self.epsilon = self.estimate_epsilon()

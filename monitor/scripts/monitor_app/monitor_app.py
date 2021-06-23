@@ -108,7 +108,7 @@ class Monitor:
                 penalty_type = "free"
             self.guide = Guidance(penalty_type)
             if bool(req.use_penalty_deviation) or bool(req.use_penalty_angular):
-                #  self.guide.send_log(f"Need to penalize! {bool(req.use_penalty_deviation)} {bool(req.use_penalty_angular)}")
+                self.guide.send_log(f"Need to penalize! dev: {bool(req.use_penalty_deviation)}; ang {bool(req.use_penalty_angular)}.")
                 self.guide.set_need_to_penalize(True)
             else:
                 pass  # self.guide.send_log(f"No tipping!!!")
