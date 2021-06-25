@@ -462,7 +462,7 @@ func contains(s []string, e string) bool {
 	return false
 }
 
-// custom delete from map[string]interface{} by index function
+// Custom delete from map[string]interface{} by index function.
 func deleteMapStrInt(a []map[string]interface{}, i int) (m []map[string]interface{}, f bool) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -476,11 +476,10 @@ func deleteMapStrInt(a []map[string]interface{}, i int) (m []map[string]interfac
 	return aNew, true
 }
 
-// custom delete from string array by index function
+// Custom delete from string array by index function.
 func deleteStrings(a []string, i int) ([]string, bool) {
 	defer func() {
-		if r := recover(); r != nil {
-		}
+		if r := recover(); r != nil {}
 	}()
 	var aNew []string
 	aNew = a[:i]

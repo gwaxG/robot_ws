@@ -125,7 +125,6 @@ class TrainingEnv(gym.Env):
         omax += fmax
         ANGLE_MIN = -np.pi
         ANGLE_MAX = np.pi
-        print("get_spaces_2", len(omin))
         # Angle2Goal: theta and phi {[-3.14, 3.14], [0.0, 3.14]}
         if "angular" in self.active_action_fields.values():
             omin += [ANGLE_MIN]
@@ -140,14 +139,14 @@ class TrainingEnv(gym.Env):
             else:
                 omin += [-1.]
                 omax += [1.]
-        print("get_spaces_3", len(omin), self.active_action_fields.values())
         # Roll and pitch
-        omin += [ANGLE_MIN, ANGLE_MIN]
-        omax += [ANGLE_MAX, ANGLE_MAX]
-        print("get_spaces_4", len(omin))
+        if "angular" in self.active_action_fields.values():
+            omin += [ANGLE_MIN]
+            omax += [ANGLE_MAX]
+        omin += [ANGLE_MIN]
+        omax += [ANGLE_MAX]
         aspace = spaces.Box(np.array(amin), np.array(amax))
         ospace = spaces.Box(np.array(omin), np.array(omax))
-        print("OSPACE is ", ospace.shape)
         return aspace, ospace
 
     def build_action_fields(self):
@@ -212,14 +211,12 @@ class TrainingEnv(gym.Env):
         # robot configuration
         for k, v in self.active_action_fields.items():
             state.append(getattr(self.robot_state, v, 0.))
-        print("get_transformed_state_1", len(state))
         # features
         if self.angular_is_used:
             state += self.features.horizontal.data
 
         if self.task != "flat":
             state += self.features.vertical.data
-        print("get_transformed_state_2", len(state))
         # set observation input to zero for low complexities
         # if self.complexity == 2:
         #     state += self.features.horizontal.data
@@ -234,11 +231,11 @@ class TrainingEnv(gym.Env):
                 state += [self.direction.distance]
             else:
                 state += [self.direction.dist_center_plane]
-        print("get_transformed_state_3", len(state))
         # robot roll + pitch
         resp = self.odom_info.call(OdomInfoRequest())
-        state += [resp.roll, resp.pitch]
-        print("get_transformed_state_4", len(state))
+        if "angular" in self.active_action_fields.values():
+            state += [resp.roll]
+        state += [resp.pitch]
         return state
 
     def regenerate_obstacles(self):

@@ -21,7 +21,10 @@ class PassageQueue:
         self.__init__(self.size)
 
     def get_mean_value(self):
-        return np.mean(self.storage)
+        if len(self.storage) == 0:
+            return 0.
+        else:
+            return np.mean(self.storage)
 
     def push(self, value):
         self.storage.append(value)
@@ -46,7 +49,6 @@ class RolloutState:
         self.progress = 0.
         self.episode_reward = 0.
         self.step_reward = 0.
-        self.progress = 0.
         self.step_deviation = []
         self.step_angular = []
         self.episode_deviation = []

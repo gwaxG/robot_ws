@@ -129,13 +129,11 @@ class Safety:
         min_deviation = 0.08
         max_deviation = 0.3
         deviation = (cy[2]**2 + cx[0]**2) ** 0.5
-        relative_deviation = (deviation - min_deviation) / (max_deviation - min_deviation)
-        if relative_deviation < 0:
-            relative_deviation = 0.
-        elif relative_deviation > 1.:
-            relative_deviation = 1.
+        # print("deviation", deviation)
+        # relative_deviation = (deviation - min_deviation) / (max_deviation - min_deviation)
+        # relative_deviation = np.clip(relative_deviation, 0., 1.0)
         if position == "stair":
-            self.pub_dev.publish(Float32(data=relative_deviation))
+            self.pub_dev.publish(Float32(data=deviation))
         else:
             self.pub_dev.publish(Float32(data=0.))
 

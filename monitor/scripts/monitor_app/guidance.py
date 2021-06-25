@@ -23,8 +23,10 @@ class Guidance:
         self.queue = utils.PassageQueue(size=5)
         # 0.0 - 1.0
         self.epsilon = 0.
+        self.progress = 0.
         self.need_to_penalize = False
         self.reward_history = []
+        self.progress_history = []
         self.done = False
         self.complexity_type = None
         # penalty part
@@ -60,13 +62,17 @@ class Guidance:
         self.log_string = msg
         self.log_update = True
 
-    def safety_angular(self, relative_value):
+    def safety_push(self, relative_value):
         self.queue.push(relative_value)
 
-    def safety_deviation(self, relative_value):
-        self.queue.push(relative_value)
-
-    def update(self, episode_reward, time_steps):
+    def update(self, episode_reward, progress):
+        """
+        Exit by reward estimation.
+        Increment complexity by progress estimation.
+        :param episode_reward:
+        :param progress:
+        :return:
+        """
         msg = ""
         if len(self.used_penalty) < self.start_size and self.need_to_penalize:
             self.used_penalty.append([])
@@ -75,7 +81,9 @@ class Guidance:
             msg += f"Normalized with K={self.normalization}!"
             self.normalized = True
         self.reward_history.append(episode_reward)
+        self.progress_history.append(progress)
         self.epsilon = self.estimate_epsilon()
+        self.progress = self.estimate_progress()
         done = False
         # incremental complexity
         # simple condition to exit
@@ -102,8 +110,19 @@ class Guidance:
         epsilon = np.clip(epsilon, 0.0, 1.0)
         return epsilon
 
+    def estimate_progress(self):
+        if len(self.progress_history) == 0:
+            progress = 0.0
+        else:
+            progress = np.mean(self.progress_history[-self.window_epsilon:])
+        progress = np.clip(progress, 0.0, 1.0)
+        return progress
+
     def get_epsilon(self):
         return self.epsilon
+
+    def get_progress(self):
+        return self.progress
 
     def reshape_reward(self, reward):
         # Reward is positive and reflects the travelled distance.

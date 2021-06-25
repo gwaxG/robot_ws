@@ -1,71 +1,12 @@
 /home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py:54: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
-get_spaces_1 2
-get_spaces_2 14
-get_spaces_3 16 dict_values(['linear', 'angular'])
-get_spaces_4 18
+get_spaces_1 5
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
-OSPACE is  (18,)
 Using cpu device
 Using cpu device
 Using cpu device
-2021-06-22 16:49:13.324366 Learning started! Model is located at /home/r1d1/dev/catkin_ws/src/robot_ws/data/models/local/exp_22_06_flat2
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-get_transformed_state_1 2
-get_transformed_state_2 14
-get_transformed_state_3 16
-get_transformed_state_4 18
-Traceback (most recent call last):
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 465, in _get_service_uri
-    self.uri = master.lookupService(self.resolved_name)
-  File "/opt/ros/noetic/lib/python3/dist-packages/rosgraph/masterapi.py", line 327, in lookupService
-    return self._succeed(self.handle.lookupService(self.caller_id, service))
-  File "/opt/ros/noetic/lib/python3/dist-packages/rosgraph/masterapi.py", line 154, in _succeed
-    raise Error(msg)
-rosgraph.masterapi.MasterError: no provider
-
-During handling of the above exception, another exception occurred:
-
+2021-06-25 13:08:56.467167 Learning started! Model is located at /home/r1d1/dev/catkin_ws/src/robot_ws/data/models/local/exp_22_06_asc
 Traceback (most recent call last):
   File "stables3_launch.py", line 102, in <module>
     Learner().train_model()
@@ -79,12 +20,12 @@ Traceback (most recent call last):
     new_obs, reward, done, infos = env.step(action)
   File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/base_vec_env.py", line 163, in step
     return self.step_wait()
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 44, in step_wait
-    self.actions[env_idx]
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 330, in step
-    step_return = self.step_return.call(StepReturnRequest())
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 502, in call
-    service_uri = self._get_service_uri(request)
-  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 470, in _get_service_uri
-    raise ServiceException("service [%s] unavailable"%self.resolved_name)
-rospy.service.ServiceException: service [/rollout/step_return] unavailable
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 49, in step_wait
+    obs = self.envs[env_idx].reset()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 317, in reset
+    self.regenerate_obstacles()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 257, in regenerate_obstacles
+    props=props,
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 524, in call
+    raise ServiceException("service [%s] returned no response"%self.resolved_name)
+rospy.service.ServiceException: service [/env_gen] returned no response

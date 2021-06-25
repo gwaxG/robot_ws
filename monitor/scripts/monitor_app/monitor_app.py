@@ -71,7 +71,8 @@ class Monitor:
         if self.guide.done:
             self.send_to_backend()
         return GuidanceInfoResponse(
-            epsilon=self.guide.get_epsilon(),
+            # epsilon=self.guide.get_epsilon(),
+            epsilon=self.guide.get_progress(),
             done=self.guide.done
         )
 
@@ -166,8 +167,8 @@ class Monitor:
             self.send_to_backend()
             if self.is_guided:
                 self.guide.update(
-                    self.rollout_state.episode_reward,  # only positive reward due to movement progress
-                    self.rollout_state.time_step  # episode length
+                    self.rollout_state.episode_reward,  # episode reward
+                    self.rollout_state.progress  # episode progress
                 )
         # print("EPISODE REWARD", self.rollout_state.episode_reward)
         return StepReturnResponse(reward=reward, done=self.rollout_state.done)
@@ -183,7 +184,7 @@ class Monitor:
             debug_value = 0.
             log += "\nnan is detected"
         else:
-            debug_value = self.guide.get_epsilon()
+            debug_value = self.guide.get_progress()
         self.rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
@@ -208,20 +209,20 @@ class Monitor:
 
     def callback_safety_deviation(self, msg):
         self.rollout_state.episode_deviation.append(msg.data)
-        if self.rollout_state.use_penalty_deviation:
-            self.guide.safety_deviation(msg.data)
+        if self.rollout_state.use_penalty_deviation and msg.data != 0.:
+            self.guide.safety_push(msg.data)
 
     def callback_safety_angular(self, msg):
         self.rollout_state.episode_angular.append(msg.data)
-        if self.rollout_state.use_penalty_angular:
-            self.guide.safety_angular(msg.data)
+        if self.rollout_state.use_penalty_angular and msg.data != 0.:
+            self.guide.safety_push(msg.data)
 
     def callback_odometry(self, msg):
         self.odometry = msg
         if self.rollout_state.done or not self.rollout_state.started:
             return
-        # distance check
 
+        # distance check
         dist = utils.get_distance(self.odometry.pose.pose.position, self.goal)
         if dist < self.rollout_state.closest_distance:
             diff = self.rollout_state.closest_distance - dist
@@ -263,6 +264,8 @@ class Monitor:
             accident = True
         if accident:
             self.rollout_state.done = True
+            # novelty
+            self.rollout_state.episode_reward -= 1.
 
 
 if __name__ == '__main__':

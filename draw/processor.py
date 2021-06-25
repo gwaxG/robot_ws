@@ -6,7 +6,7 @@ import numpy as np
 import scipy.interpolate as interp
 
 
-def apply_ema(y, alpha=0.95):
+def apply_ema(y, alpha=0.99):
     """
     EMA for an 1D array
     :param y:
@@ -20,7 +20,7 @@ def apply_ema(y, alpha=0.95):
     return y_
 
 
-def ema(data):
+def ema(data, alpha):
     """
     Moving average smoothing.
     :param data:
@@ -28,7 +28,7 @@ def ema(data):
     """
     smoothed = []
     for arr in data:
-        sm_arr = apply_ema(arr)
+        sm_arr = apply_ema(arr, alpha)
         smoothed.append(sm_arr)
 
     return smoothed
@@ -54,17 +54,27 @@ def align(data):
     return aligned
 
 
-def process(data, way="ema"):
+def cut_data(data, cut):
+    for k, v in data.items():
+        values = []
+        for val in v:
+            values.append(val[cut:])
+        data[k] = values
+    return data
+
+
+def process(data, cut, alpha, way="ema"):
     """
     :param data: dictionary where keys are experiment metrics and values are episode metric values
     :return:
     """
     aligned = {}
     smoothed = {}
+    data = cut_data(data, cut)
     # align
     for k, v in data.items():
         aligned[k] = align(v)
     # smooth
     for k, v in aligned.items():
-        smoothed[k] = getattr(sys.modules[__name__], way)(v)
+        smoothed[k] = getattr(sys.modules[__name__], way)(v, alpha)
     return smoothed

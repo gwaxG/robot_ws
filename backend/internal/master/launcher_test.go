@@ -15,12 +15,8 @@ func Init(){
 	go l.Start()
 }
 
+func TestCreateTask(t *testing.T) {}
 
-
-func TestCreateTask(t *testing.T) {
-
-
-}
 func TestReadTask(t *testing.T) {
 	got := 0.0
 	want := 40.0
