@@ -54,13 +54,14 @@ def form_drawable_curves(arrays):
 
 
 def draw(data, corrs):
-    mean, _min, _max = [], [], []
+
     for metric, arrays in data.items():
         # init plot
         draw_data = []
         for task, fields in corrs.items():
             ind, length = fields
-            mean, _min, _max = form_drawable_curves(arrays[ind:ind+length])
+            to_draw = arrays[ind:ind+length]
+            mean, _min, _max = form_drawable_curves(to_draw)
             delta = 1.0 / (len(mean)-1)
             x = [delta * i for i in range(len(mean))]
             # draw curve
@@ -100,10 +101,14 @@ def draw(data, corrs):
             draw_data.append(lower_bound)
             draw_data.append(upper_bound)
         # layout
+        if metric == "deviation":
+            metric_name = "COG deviation, m"
+        elif metric == "angular_m":
+            metric_name = "Pitch angular vel., rad/s"
         layout = go.Layout(
 
             yaxis=dict(
-                title=metric.capitalize(),  # "'<b>'+y_axis+'</b>',
+                title=metric_name,  # "'<b>'+y_axis+'</b>',
                 # gridcolor='rgba(255,255,255,1.0)'
             ),
             xaxis=dict(

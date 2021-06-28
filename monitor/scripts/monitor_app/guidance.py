@@ -83,16 +83,17 @@ class Guidance:
         self.reward_history.append(episode_reward)
         self.progress_history.append(progress)
         self.epsilon = self.estimate_epsilon()
+        msg += f"Current epsilon {self.epsilon}"
         self.progress = self.estimate_progress()
         done = False
         # incremental complexity
         # simple condition to exit
         if self.epsilon > self.epsilon_threshold and len(self.reward_history) >= self.start_size:
             if len(self.reward_history) >= 2 * self.start_size:
-                msg = "Done with penalty\n"
+                msg += "Done with penalty\n"
                 done = True
             else:
-                msg = "Threshold touched, time step number is not\n"
+                msg += "Threshold touched, time step number is not\n"
         self.send_log(msg)
         self.done = done
 
@@ -107,6 +108,8 @@ class Guidance:
             epsilon = 0.0
         else:
             epsilon = np.mean(self.reward_history[-self.window_epsilon:])
+        if epsilon < 0.:
+            self.send_log(f"negative epsilon {epsilon}")
         epsilon = np.clip(epsilon, 0.0, 1.0)
         return epsilon
 

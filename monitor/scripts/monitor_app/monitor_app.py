@@ -101,18 +101,20 @@ class Monitor:
             self.consistency.experiment = req.experiment
             self.consistency.initialized = True
             # the only place where we initialize Guidance()
-            if req.use_penalty_deviation:
-                penalty_type = "deviation"
-            elif req.use_penalty_angular:
+            if req.use_penalty_angular:
                 penalty_type = "angular"
+            elif req.use_penalty_deviation:
+                penalty_type = "deviation"
             else:
                 penalty_type = "free"
             self.guide = Guidance(penalty_type)
-            if bool(req.use_penalty_deviation) or bool(req.use_penalty_angular):
-                self.guide.send_log(f"Need to penalize! dev: {bool(req.use_penalty_deviation)}; ang {bool(req.use_penalty_angular)}.")
+
+            if penalty_type != "free":
                 self.guide.set_need_to_penalize(True)
+                self.guide.send_log(f"Need to penalize {penalty_type}!")
             else:
-                pass  # self.guide.send_log(f"No tipping!!!")
+                self.guide.send_log(f"No penalties.!")
+            print(penalty_type)
             return False
         else:
             if self.consistency.experiment != req.experiment:
@@ -158,7 +160,11 @@ class Monitor:
         self.rollout_state.step_reward = 0.
 
         # reshape in case of penalties
-        self.rollout_state.episode_reward += self.guide.reshape_reward(reward)
+        reward = self.guide.reshape_reward(reward)
+        if "tipping over" in self.rollout_state.accidents:
+            reward -= 1.0
+        self.rollout_state.episode_reward += reward
+
         self.rollout_state.time_step += 1
         if self.rollout_state.time_step == self.rollout_state.time_step_limit:
             self.rollout_state.done = True
@@ -179,12 +185,13 @@ class Monitor:
         angular_mean = np.mean(self.rollout_state.episode_angular) if len(self.rollout_state.episode_angular) > 0 else 0.
         deviation_mean = np.mean(self.rollout_state.episode_deviation) if len(self.rollout_state.episode_deviation) > 0 else 0.
         # coef_mean = np.mean(self.guide.used_penalty) if len(self.guide.used_penalty) > 0 else -0.1
-        if np.isnan(self.rollout_state.episode_reward) or not isinstance(self.rollout_state.episode_reward, float):
-            self.rollout_state.episode_reward = 0.
-            debug_value = 0.
-            log += "\nnan is detected"
-        else:
-            debug_value = self.guide.get_progress()
+        # if np.isnan(self.rollout_state.episode_reward) or not isinstance(self.rollout_state.episode_reward, float):
+        #     self.rollout_state.episode_reward = 0.
+        #     debug_value = 0.
+        #     log += "\nnan is detected"
+        # else:
+        #     pass
+        debug_value = self.guide.get_epsilon()
         self.rollout_analytics.publish(
             RolloutAnalytics(
                 exp_series=self.rollout_state.exp_series,
@@ -208,13 +215,13 @@ class Monitor:
         self.robot_state = msg
 
     def callback_safety_deviation(self, msg):
-        self.rollout_state.episode_deviation.append(msg.data)
         if self.rollout_state.use_penalty_deviation and msg.data != 0.:
+            self.rollout_state.episode_deviation.append(msg.data)
             self.guide.safety_push(msg.data)
 
     def callback_safety_angular(self, msg):
-        self.rollout_state.episode_angular.append(msg.data)
         if self.rollout_state.use_penalty_angular and msg.data != 0.:
+            self.rollout_state.episode_angular.append(msg.data)
             self.guide.safety_push(msg.data)
 
     def callback_odometry(self, msg):
@@ -264,8 +271,6 @@ class Monitor:
             accident = True
         if accident:
             self.rollout_state.done = True
-            # novelty
-            self.rollout_state.episode_reward -= 1.
 
 
 if __name__ == '__main__':

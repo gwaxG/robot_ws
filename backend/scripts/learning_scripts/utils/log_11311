@@ -6,7 +6,7 @@ get_spaces_1 5
 Using cpu device
 Using cpu device
 Using cpu device
-2021-06-25 13:08:56.467167 Learning started! Model is located at /home/r1d1/dev/catkin_ws/src/robot_ws/data/models/local/exp_22_06_asc
+2021-06-26 21:39:39.703988 Learning started! Model is located at /home/r1d1/dev/catkin_ws/src/robot_ws/data/models/local/exp_22_06_asc
 Traceback (most recent call last):
   File "stables3_launch.py", line 102, in <module>
     Learner().train_model()
@@ -14,13 +14,13 @@ Traceback (most recent call last):
     self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4, callback=self.callback)
   File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/sac/sac.py", line 291, in learn
     reset_num_timesteps=reset_num_timesteps,
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 273, in learn
-    log_interval=log_interval,
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 472, in collect_rollouts
-    new_obs, reward, done, infos = env.step(action)
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/base_vec_env.py", line 163, in step
-    return self.step_wait()
-  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 49, in step_wait
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 260, in learn
+    total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps, tb_log_name
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/off_policy_algorithm.py", line 243, in _setup_learn
+    total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, log_path, reset_num_timesteps, tb_log_name
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/base_class.py", line 379, in _setup_learn
+    self._last_obs = self.env.reset()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 61, in reset
     obs = self.envs[env_idx].reset()
   File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 317, in reset
     self.regenerate_obstacles()

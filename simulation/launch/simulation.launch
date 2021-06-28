@@ -6,7 +6,8 @@
     <arg name="gui" default="true"/>
     <arg name="headless" default="false"/>
     <arg name="debug" default="false"/>
-
+    <!-- Robot related parameters -->
+    <param name="base_length" type="double" value="0.64" />
     <!-- Spawn worlds-->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find simulation)/worlds/flat.world"/>

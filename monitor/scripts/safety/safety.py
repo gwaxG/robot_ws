@@ -26,6 +26,7 @@ import numpy as np
 class Safety:
     def __init__(self):
         rospy.init_node('safety')
+        self.semi_length = rospy.get_param("base_length") / 2.
         self.listener = tf.TransformListener()
         self.br = tf.TransformBroadcaster()
         self.mass = {
@@ -50,7 +51,7 @@ class Safety:
             rospy.sleep(0.1)
 
     def update_imu(self, msg):
-        noise_cut = 0.15
+        noise_cut = 0.1
         maximum_angular_velocity = 1.0
         angular_velocity_y = np.clip(np.abs(msg.angular_velocity.y), noise_cut, maximum_angular_velocity)
         relative = angular_velocity_y / maximum_angular_velocity
@@ -131,9 +132,9 @@ class Safety:
         deviation = (cy[2]**2 + cx[0]**2) ** 0.5
         # print("deviation", deviation)
         # relative_deviation = (deviation - min_deviation) / (max_deviation - min_deviation)
-        # relative_deviation = np.clip(relative_deviation, 0., 1.0)
+        relative_deviation = np.clip(deviation, 0., self.semi_length)
         if position == "stair":
-            self.pub_dev.publish(Float32(data=deviation))
+            self.pub_dev.publish(Float32(data=relative_deviation))
         else:
             self.pub_dev.publish(Float32(data=0.))
 
