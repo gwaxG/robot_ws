@@ -243,10 +243,6 @@ class GroundObstacles(Group):
 
 class StairFloor(Group):
 
-    min_step_height = 0.15  # 0.17 15
-    min_step_length = 0.35
-    max_step_height = 0.22  # 0.28 25
-    max_step_length = 0.52
     length_ground = 12.0
     floor_thickness = 0.01
     width_ground = 10.
@@ -270,11 +266,11 @@ class StairFloor(Group):
         self.exist = False
 
     def sample_uniform(self):
-        step_n = random.randint(5, 10)
-        length = StairFloor.min_step_length + random.random() * (
-                StairFloor.max_step_length - StairFloor.min_step_length)
-        height = StairFloor.min_step_height + random.random() * (
-                StairFloor.max_step_height - StairFloor.min_step_height)
+        step_n = random.randint(StairFloor.dimensions["n"]["min"], StairFloor.dimensions["n"]["max"])
+        length = StairFloor.dimensions["length"]["min"] + random.random() * (
+                StairFloor.dimensions["length"]["max"] - StairFloor.dimensions["length"]["min"])
+        height = StairFloor.dimensions["height"]["min"] + random.random() * (
+                StairFloor.dimensions["height"]["max"] - StairFloor.dimensions["height"]["min"])
         return step_n, length, height
 
     def sample_gaussian(self, eps):
@@ -318,8 +314,8 @@ class StairFloor(Group):
             step_n, length, height = self.sample_gaussian(eps)
         elif "eval" in props:
             step_n = int(float(StairFloor.dimensions["n"]["max"]))
-            length = float(StairFloor.dimensions["length"]["max"] + StairFloor.dimensions["length"]["min"]) / 2
-            height = float(StairFloor.dimensions["height"]["max"] + StairFloor.dimensions["height"]["min"]) / 2
+            length = float(StairFloor.dimensions["length"]["min"])
+            height = float(StairFloor.dimensions["height"]["max"])
         else:
             raise ValueError("Uniform or multivariate gaussian distribution has to be indicated in props.")
         print("Generating staircase nlhs:", step_n, length, height, np.arctan2(height, length)*180/3.14)

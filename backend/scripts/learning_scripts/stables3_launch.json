@@ -5,17 +5,17 @@
   "complexity":"full",
   "env_type":"vect",
   "experiment":"asc",
-  "experiment_series":"exp_22_06",
+  "experiment_series":"exp_",
   "load_path":"data/models/server/nothing",
   "log_path":"data/boards/local",
   "model_parameters":{"ppo_cliprange":"0.2","ppo_ent_coef":"0.005","sac_ent_coef":"auto_0.5","sac_tau":0.05,"sac_train_freq":1},
-  "penalty_angular":true,
-  "penalty_deviation":false,
+  "penalty_angular":false,
+  "penalty_deviation":true,
   "policy":"default",
   "rand":false,
   "save_path":"data/models/local",
   "sigma":0,
-  "task":"descent",
-  "time_step_limit":1,
-  "total_timesteps":100000
+  "task":"ascent",
+  "time_step_limit":50,
+  "total_timesteps":20000
 }

@@ -38,7 +38,6 @@ class TrainingEnv(gym.Env):
         self.penalty_angular = bool(kwargs['penalty_angular'])
         self.penalty_deviation = bool(kwargs['penalty_deviation'])
         self.time_step_limit = int(kwargs['time_step_limit'])
-        # either full or inc
         self.obstacle = self.replace_task_obstacle(self.task)
         self.rand = "1" if kwargs['rand'] else "0"
         self.randomness = self.rand
@@ -103,7 +102,6 @@ class TrainingEnv(gym.Env):
                 amax.append(dMA)
                 omin.append(-ANGLE)
                 omax.append(ANGLE)
-        print("get_spaces_1", len(omin))
         height = rospy.get_param("feature_height")
         width = rospy.get_param("feature_width")
         if self.task == "flat":

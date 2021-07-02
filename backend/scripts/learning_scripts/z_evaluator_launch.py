@@ -51,9 +51,9 @@ class Learner(Base):
 
     def evaluate_model(self):
         # Enjoy trained agent
-        for i in range(self.prms["episode_limit"]):
+        for i in range(int(self.prms["episode_limit"])):
             obs = self.env.reset()
-            for j in range(self.prms["time_step_limit"]):
+            for j in range(int(self.prms["time_step_limit"])):
                 action, _states = self.model.predict(obs, deterministic=True)
                 obs, rewards, done, info = self.env.step(action)
                 if done:

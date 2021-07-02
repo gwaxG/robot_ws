@@ -21,7 +21,8 @@ class Config:
         self.name_index = {
             "Ascent": 0,
             "Descent": 1,
-            "Flat": 2,
+            "Random ascent": 2,
+            "Random descent": 3,
         }
 
         self.index_name = {v: k for k, v in self.name_index.items()}
@@ -105,6 +106,10 @@ def draw(data, corrs):
             metric_name = "COG deviation, m"
         elif metric == "angular_m":
             metric_name = "Pitch angular vel., rad/s"
+        elif metric == "reward":
+            metric_name = "Reward"
+        else:
+            raise NotImplementedError("No metric")
         layout = go.Layout(
 
             yaxis=dict(

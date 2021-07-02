@@ -19,6 +19,7 @@ class Base:
     """
 
     def __init__(self, prms):
+        self.f = None
         postfix = prms["experiment_series"] + "_" + prms['experiment']
         # paths
         p = os.path.abspath(__file__)
@@ -26,7 +27,6 @@ class Base:
             p = os.path.split(p)[0]
         self.log_path = os.path.join(p, prms["log_path"], postfix)
         self.save_path = os.path.join(p, prms["save_path"], postfix)
-
         self.loading = True if prms["load_path"].split("/")[-1] != "nothing" else False
         self.load_path = os.path.join(p, prms["load_path"])
         # parse input
@@ -63,9 +63,10 @@ class Base:
         self.f.flush()
 
     def close(self):
-        self.f.close()
-        sys.stdout = self.save_stdout
-        sys.stderr = self.save_stderr
+        if self.f is not None:
+            self.f.close()
+            sys.stdout = self.save_stdout
+            sys.stderr = self.save_stderr
 
     def __del__(self):
         self.close()

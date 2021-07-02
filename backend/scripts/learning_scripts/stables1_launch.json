@@ -1,1 +1,0 @@
-{"alg":"PPO2sb1","angular":true,"arm":true,"experiment":"test_2_manual","experiment_series":"exp_08_04","log_path":"data/boards","model_parameters":{"cliprange":"0.2","ent_coef":"0.005"},"penalty_angular":false,"penalty_deviation":true,"policy_type":"CustomMLPsb1","rand":false,"save_path":"data/models","sigma":0,"task":"ascent","time_step_limit":50,"total_timesteps":10000}

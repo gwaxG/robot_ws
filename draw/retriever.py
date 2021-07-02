@@ -16,6 +16,22 @@ def restore_consistency(data, colls, insterted):
     return ret_data
 
 
+def retrieve_local(database, colls, fields):
+    client = pymongo.MongoClient('127.0.0.1', 27017)  # server.local_bind_port is assigned local port
+    db = client[database]
+    inserted = []
+    data = {field: [] for field in fields}
+    for name in db.collection_names():
+        if name not in colls:
+            continue
+        inserted.append(name)
+        df = pd.DataFrame(list(getattr(db, name).find()))
+        for field in fields:
+            data[field].append(df[field].to_numpy())
+
+    data = restore_consistency(data, colls, inserted)
+    return data
+
 def retrieve(database, colls, fields):
     """
 
