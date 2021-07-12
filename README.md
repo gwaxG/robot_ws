@@ -19,7 +19,6 @@ Simulation launching:
 ***
 ### simulation
 Gazebo environment flat/multi-floor simulation and robot spawning accordingly to the task.
-***
 ### control
 Real/simulated robot control package.
 ### perception
