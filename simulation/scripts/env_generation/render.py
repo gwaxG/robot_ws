@@ -82,6 +82,12 @@ def add(model_sdf, box, coll_tag=False):
 
     visual = SubElement(link, 'visual')
     visual.set("name", "visual")
+
+    if box.color is not None:
+        material = SubElement(visual, 'material')
+        ambient = SubElement(material, 'ambient')
+        ambient.text = f"{box.color[0]} {box.color[1]} {box.color[2]} 1"
+
     geometry_vis = SubElement(visual, 'geometry')
     if "sphere" in box.name:
         box_vis = SubElement(geometry_vis, 'sphere')

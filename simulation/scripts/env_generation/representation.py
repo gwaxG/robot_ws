@@ -34,7 +34,7 @@ class Group(ABC):
 
 
 class Box:
-    def __init__(self, name, x=0., y=0., z=0., roll=0., pitch=0., yaw=0., box_x=0.01, box_y=0.01, box_z=0.0):
+    def __init__(self, name, x=0., y=0., z=0., roll=0., pitch=0., yaw=0., box_x=0.01, box_y=0.01, box_z=0.0, color=None):
         self.name = name
         self.x = x
         self.y = y
@@ -45,6 +45,7 @@ class Box:
         self.box_x = box_x
         self.box_y = box_y
         self.box_z = box_z
+        self.color = color
 
 class Sphere:
     def __init__(self, name, x=0., y=0., z=0.,  radius=0.01, transparency=.5):
@@ -337,7 +338,8 @@ class StairFloor(Group):
                     yaw=0.,
                     box_x=length,
                     box_y=2.,
-                    box_z=height
+                    box_z=height,
+                    color=(112, 128, 144)
                 )
             )
         self.shift_x = length * step_n
@@ -353,7 +355,8 @@ class StairFloor(Group):
             yaw=0.,
             box_x=StairFloor.length_ground,
             box_y=StairFloor.width_ground,
-            box_z=StairFloor.floor_thickness/2
+            box_z=StairFloor.floor_thickness/2,
+            color=(105, 105, 105)
         )
         # walls
         self.walls = [
@@ -429,18 +432,7 @@ class StairFloor(Group):
                 box_y=self.shift_x,
                 box_z=StairFloor.standard_height + self.shift_z
             ),
-            Box(
-                name="side_right",
-                x=self.shift_x / 2,
-                y=-StairFloor.width_stair / 2,
-                z=self.shift_z / 2 + StairFloor.standard_height / 2,
-                roll=0.,
-                pitch=0.,
-                yaw=math.pi / 2,
-                box_x=StairFloor.floor_thickness,
-                box_y=self.shift_x,
-                box_z=StairFloor.standard_height + self.shift_z
-            ),
+
         ]
 
 
