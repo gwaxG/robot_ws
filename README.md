@@ -16,17 +16,14 @@ Standalone simulation launching.
 "stables3_launch.py" is an example, you can modify "stables3_launch.json" to change experiment configurations.
 Alternatively, you can provide your own "your_own_template.json" and "your_own_launch.py" for your libraries of choice.  
 Example launching:    
-    ```
-        roslaunh backend learning.launch &  
-        roscd backend/scripts/learning/scripts  
-        python stables3_launch.py
-    ```
+    `roslaunh backend learning.launch &`  
+    `roscd backend/scripts/learning/scripts`  
+    `python stables3_launch.py`  
 
-Server launching:  
-    ```
-        roscd backend  
-        ./bin/master_app
-    ```  
+Server launching:    
+    `roscd backend`  
+    `./bin/master_app`
+    
 
 ## Packages:
 ***
