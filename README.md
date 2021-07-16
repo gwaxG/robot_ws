@@ -2,7 +2,7 @@
 ***
 ## Description
 This work space contains all code necessary for jaguar simulation,
-control, ^percpetion and learning.
+control, percpetion and learning.
 
 ## Build:  
 Before starting your work, be sure that Go nodes are compiled.
@@ -12,12 +12,18 @@ Launch `python build.py` and all nested Go targets located in `cmd` folders will
 ## Launch:
 If you want to launch a particular package you can find its documentation inside.
 
-Simulation launching:
-    `roslaunh backend learning.launch`
+Standalone simulation launching.  
+"stables3_launch.py" is an example, you can modify "stables3_launch.json" to change experiment configurations.
+Alternatively, you can provide your own "your_own_template.json" and "your_own_launch.py" for your libraries of choice.  
+Example launching:    
+    `roslaunh backend learning.launch &`  
+    `roscd backend/scripts/learning/scripts`  
+    `python stables3_launch.py`  
 
-Server launching:  
+Server launching:    
     `roscd backend`  
-    `./bin/master_app`  
+    `./bin/master_app`
+    
 
 ## Packages:
 ***
@@ -40,8 +46,9 @@ Gazebo plugins necessery to make contact surface motion model working.
 ***
 
 ## Requirements
-1. ROS Noetic
-2. ROS packages:
+1. Ubuntu 20.04
+2. ROS Noetic
+3. ROS packages:
     hector_models, gazebo_ros_control, ros-controllers, ros_control, gazebo_ros_pkgs, geometry2, 
 4. Gazebo 11 installed preferably from source together with plugins from the `plugins` folder.
 5. Go 1.18 + latest goroslib
