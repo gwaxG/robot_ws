@@ -17,14 +17,14 @@ Standalone simulation launching.
 Alternatively, you can provide your own "your_own_template.json" and "your_own_launch.py" for your libraries of choice.  
 Example launching:    
     ```
-        roslaunh backend learning.launch &
-        roscd backend/scripts/learning/scripts
+        roslaunh backend learning.launch &  
+        roscd backend/scripts/learning/scripts  
         python stables3_launch.py
     ```
 
 Server launching:  
     ```
-        roscd backend
+        roscd backend  
         ./bin/master_app
     ```  
 
