@@ -11,9 +11,16 @@ Launch `python build.py` and all nested Go targets located in `cmd` folders will
 
 ## Launch:
 If you want to launch a particular package you can find its documentation inside.
+
 Simulation launching:
 * learning: 
     `roslaunh backend learning.launch`
+
+Server launching:
+* backend: 
+    `roscd backend/..`
+    `python build.py`
+    `./backend/bin/master_app`
 
 ## Packages:
 ***
