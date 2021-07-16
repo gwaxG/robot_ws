@@ -7,15 +7,15 @@ First of all, the package calculates postions of features, then it averages valu
 ### Parameters
 * Depth image topic  
 `<param name="depth_image_topic" type="str" value="/camera/depth/image_raw" />`
-* Image height  
+* Image height   
 `<param name="image_height" type="int" value="480" />`
-* Image width
+* Image width  
 `<param name="image_width" type="int" value="640" />`
-* Number of vertical features
+* Number of vertical features  
 `<param name="feature_height" type="int" value="30" />`
-* Number of horizontal features
+* Number of horizontal features  
 `<param name="feature_width" type="int" value="12" />`
-* Width of feature band
+* Width of feature band  
 `<param name="band_width" type="int" value="10" />`
   
 
