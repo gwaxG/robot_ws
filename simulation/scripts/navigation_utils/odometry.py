@@ -9,6 +9,7 @@ from simulation.srv import OdomInfo, OdomInfoResponse, OdomInfoRequest
 from std_msgs.msg import Header
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance
 from termcolor import colored
+import time
 
 
 """
@@ -19,6 +20,14 @@ It broadcast base_link in odom frame and publishes odometry.
 class Odom:
     def __init__(self):
         rospy.init_node('odom')
+        self.robot_name = ""
+        while self.robot_name == "":
+            try:
+                self.robot_name = rospy.get_param("robot_name")
+            except Exception as e:
+                print("No robot_name parameter on param server")
+                # Sleeping in real time
+                time.sleep(0.1)
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.callback)
         self.br = tf.TransformBroadcaster()
         self.odom_pub = rospy.Publisher("/odometry", Odometry)
@@ -47,12 +56,13 @@ class Odom:
             self.sync_time = rospy.get_time()
         names = msg.name
         try:
-            jaguar_index = names.index("jaguar")
-        except ValueError as _:
-            print(colored('Jaguar model is not in simulation yet', 'red'))
+            robot_index = names.index(self.robot_name)
+        except ValueError as e:
+            print(e)
+            print(colored('Model is not in simulation yet', 'red'))
             return None
-        pose = msg.pose[jaguar_index]
-        twist = msg.twist[jaguar_index]
+        pose = msg.pose[robot_index]
+        twist = msg.twist[robot_index]
         self.odom_pub.publish(
             Odometry(
                 header=Header(

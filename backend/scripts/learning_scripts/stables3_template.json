@@ -14,7 +14,7 @@
   "load_path": "data/models/server/nothing",
   "time_step_limit": 50,
   "env_type": "rand",
-  "arm": true,
+  "arm": false,
   "angular": false,
   "sigma": 0.0,
   "task": "ascent",

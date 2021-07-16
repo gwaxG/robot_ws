@@ -55,6 +55,7 @@ class Sphere:
         self.z = z
         self.transparency = transparency
         self.radius = radius
+        self.color = None
 
 class Goal(Group):
 

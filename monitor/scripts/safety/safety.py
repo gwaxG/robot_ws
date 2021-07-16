@@ -26,16 +26,26 @@ import numpy as np
 class Safety:
     def __init__(self):
         rospy.init_node('safety')
+        self.robot = rospy.get_param("robot_name")
         self.semi_length = rospy.get_param("base_length") / 2.
         self.listener = tf.TransformListener()
         self.br = tf.TransformBroadcaster()
-        self.mass = {
-            'arm1': 1.0,
-            'arm2': 0.5,
-            'arm3': 0.5,
-            'ball': rospy.get_param("ball_mass"),
-            'cent': 18.0,
-        }
+        if self.robot == "jaguar":
+            self.mass = {
+                'arm1': 1.0,
+                'arm2': 0.5,
+                'arm3': 0.5,
+                'ball': rospy.get_param("ball_mass"),
+                'cent': 18.0,
+            }
+        else:
+            self.mass = {
+                'arm1': 0.0,
+                'arm2': 0.0,
+                'arm3': 0.0,
+                'ball': 0.0,
+                'cent': 29.37,
+            }
         self.mass["sum"] = np.sum(list(self.mass.values()))
         self.zero_rot = tf.transformations.quaternion_from_euler(0, 0, 0)
         self.pub_dev = rospy.Publisher("/safety/relative_deviation", Float32)
@@ -94,11 +104,17 @@ class Safety:
 
     def broadcast_cog(self):
         try:
-            (arm1, rot) = self.listener.lookupTransform('/centroid', '/arm_1_mass', rospy.Time(0))
-            (arm2, rot) = self.listener.lookupTransform('/centroid', '/arm_2_mass', rospy.Time(0))
-            (arm3, rot) = self.listener.lookupTransform('/centroid', '/arm_3_mass', rospy.Time(0))
-            (ball, rot) = self.listener.lookupTransform('/centroid', '/ball', rospy.Time(0))
-            (cent, rot) = self.listener.lookupTransform('/centroid', '/centroid_mass', rospy.Time(0))
+            if self.robot == "jaguar":
+                (arm1, _) = self.listener.lookupTransform('/centroid', '/arm_1_mass', rospy.Time(0))
+                (arm2, _) = self.listener.lookupTransform('/centroid', '/arm_2_mass', rospy.Time(0))
+                (arm3, _) = self.listener.lookupTransform('/centroid', '/arm_3_mass', rospy.Time(0))
+                (ball, _) = self.listener.lookupTransform('/centroid', '/ball', rospy.Time(0))
+            else:
+                arm1 = [0, 0, 0]
+                arm2 = [0, 0, 0]
+                arm3 = [0, 0, 0]
+                ball = [0, 0, 0]
+            (cent, _) = self.listener.lookupTransform('/centroid', '/centroid_mass', rospy.Time(0))
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             return None
         cog = [
@@ -111,6 +127,7 @@ class Safety:
             ) / self.mass["sum"] for i in range(3)
         ]
         self.broadcast(cog, self.zero_rot, "cog", "centroid")
+
 
     def broadcast_cog_projections(self, position):
         try:

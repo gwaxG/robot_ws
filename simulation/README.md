@@ -64,5 +64,6 @@ string err
 ```
 where the `place` is `ground` or `floor`, the `task` field is `flat`, `ascent` or `descent`, `random` is `0` or `1`.
 
-
+## TODO
+1. Calculate z coordiante of the Absolem' centroid.
 

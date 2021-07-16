@@ -3,6 +3,7 @@
     <!--Go-related port definition until goroslib corrected-->
     <arg name="port" default="11311" />
     <!--Input arguments-->
+    <arg name="robot" default="jaguar"/>
     <arg name="paused" default="False"/>
     <arg name="use_sim_time" default="true"/>
     <arg name="gui" default="true"/>
@@ -23,13 +24,26 @@
     </include>
 
     <!-- Spawn robot-->
-    <include file="$(find simulation)/launch/spawn.launch">
-        <arg name="debug" value="$(arg debug)"/>
-        <arg name="gui" value="$(arg gui)"/>
-        <arg name="paused" value="$(arg paused)"/>
-        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
-        <arg name="headless" value="$(arg headless)"/>
-    </include>
+    <group if="$(eval arg('robot') == 'jaguar')">
+    	<param name="robot_name" value='jaguar' />
+        <include file="$(find simulation)/launch/spawn_jaguar.launch">
+            <arg name="debug" value="$(arg debug)"/>
+            <arg name="gui" value="$(arg gui)"/>
+            <arg name="paused" value="$(arg paused)"/>
+            <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+            <arg name="headless" value="$(arg headless)"/>
+        </include>
+    </group>
+    <group if="$(eval arg('robot') == 'absolem')">
+    	<param name="robot_name" value='absolem' />
+        <include file="$(find simulation)/launch/spawn_absolem.launch">
+            <arg name="debug" value="$(arg debug)"/>
+            <arg name="gui" value="$(arg gui)"/>
+            <arg name="paused" value="$(arg paused)"/>
+            <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+            <arg name="headless" value="$(arg headless)"/>
+        </include>
+    </group>
 
     <!-- Start perception-->
     <include file="$(find perception)/launch/perception.launch">

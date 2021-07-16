@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<launch>
+	<!-- Parameters -->
+	<param name="task" value="descent"/>
+	<arg name="model_type" default="model_with_arm"/>
+
+	<!-- Spawn world -->
+	<param name="use_sim_time" type="bool" value="true" />
+	<arg name="paused" default="False"/>
+	<arg name="use_sim_time" default="true"/>
+	<arg name="gui" default="true"/>
+	<arg name="headless" default="false"/>
+	<arg name="verbose" default="true"/>
+	<arg name="debug" default="false"/>
+
+
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+		<arg name="world_name" value="$(find jaguar_model)/worlds/crawler_robot.world"/>
+		<arg name="debug" value="$(arg debug)"/>
+		<arg name="gui" value="$(arg gui)"/>
+		<arg name="paused" value="$(arg paused)"/>
+		<arg name="use_sim_time" value="$(arg use_sim_time)"/>
+		<arg name="headless" value="$(arg headless)"/>
+	</include>
+
+
+	<!-- Another way -->
+	<param name="robot_description" command="$(find xacro)/xacro $(find nifti_robot_description)/urdf/nifti_robot.urdf" />
+	<include file="$(find nifti_robot_description)/launch/load_robot_model.launch">
+	<arg name="use_old_robot" value="true" />
+	</include>
+
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+	<remap from="robot_description" to="nifti_robot_description"/>
+	<param name="use_gui" value="$(arg gui)"/>
+	</node>
+
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+	<remap from="robot_description" to="nifti_robot_description"/>
+	</node>
+       <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-file $(find nifti_robot_description)/urdf/nifti_robot.urdf -urdf -z 1 -model robot" />
+	
+	<!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find nifti_robot_description)/rviz/urdf.rviz" /> -->
+	
+	<!---->
+
+	<!-- 
+		Spawn robot :
+			arg : model <- model_armed_fixed.urdf
+			node : spawn_urdf <- model_armed_fixed.urdf -->
+	<!--	<param name="robot_description" command="$(find xacro)/xacro $(find nifti_robot_description)/urdf/nifti_robot.xacro" />
+
+	Spawn a robot into Gazebo 
+	<node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model robot" />-->
+
+	<!-- <rosparam file="$(find nifti_robot_description)/config/arms.yaml" command="load"/>
+
+	<node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+	  output="screen" ns="/nifti" args="joint_state_controller
+			arm_1_effort_controller
+	    		arm_2_effort_controller"
+	/>-->
+	<!-- State publisers
+	<remap from="/joint_states" to="/jaguar/joint_states"/>
+
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+	  respawn="false" output="screen"></node>
+	-->
+</launch>
+

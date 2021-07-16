@@ -3,7 +3,7 @@
 
 import random
 import math
-import copy
+import time
 import rospy
 import tf
 from geometry_msgs.msg import Twist, Pose
@@ -15,6 +15,14 @@ class Spawner:
     stair_width = 2.
 
     def __init__(self):
+        self.robot_name = ""
+        while self.robot_name == "":
+            try:
+                self.robot_name = rospy.get_param("robot_name")
+            except Exception as e:
+                print("No robot_name parameter on param server")
+                # Sleeping in real time
+                time.sleep(0.1)
         self.stair_info = rospy.ServiceProxy('stair_info', StairInfo)
         self.gazebo_model_state_pub = rospy.Publisher("/gazebo/set_model_state", ModelState, queue_size=1)
         self.x = 0.
@@ -97,7 +105,7 @@ class Spawner:
 
     def spawn(self):
         msg = ModelState()
-        msg.model_name = "jaguar"
+        msg.model_name = self.robot_name
         msg.twist = Twist()
         msg.pose = Pose()
         msg.reference_frame = "world"
