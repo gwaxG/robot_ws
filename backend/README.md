@@ -14,17 +14,19 @@ You can solely launch a simulation with included database_app.
 * Experiment series names should always start with "exp"
 * `master_app` may contain bugs, feel free to open an issue.  It was tested for basic functionalities with psize=1.
 * Deleteing of a working environment can take a while, keep patience and do not abuse the "delete" button, it won't work.
+* The robot Absolem is supported only for manual simulation start due to unstable launching of Gazebo with this model.
 
-#### Launch
+#### Launching
 ##### Automated
 1. `roscd backend`
 2. `./bin/master_app`
 3. `./bin/database_app -psize=1`
 ##### Manual
-1. `roslaunch backend learning.launch`
-2. `roscd backend/scripts/learning_scripts`
-3. Modify your configuration file (for example stables3_launch.json)
-4. Launch the corresponding python scrpit, for exampel `python stables3_launch.py`
+1. Launching of simulation, the argument `robot` accepts either `jaguar` (default) or `absolem`. 
+   `roslaunch backend learning.launch robot:=jaguar`
+3. `roscd backend/scripts/learning_scripts`
+4. Modify your configuration file (for example stables3_launch.json)
+5. Launch the corresponding python scrpit, for exampel `python stables3_launch.py`
 
 #### TODO
 1. Cover `master_app` with unit tests.
