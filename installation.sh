@@ -1,5 +1,8 @@
 #!/bin/bash
 
+
+touch ~/progress.txt
+
 sudo apt-get -y update && sudo apt-get -y upgrade
 
 sudo apt -y install git
@@ -121,7 +124,7 @@ sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `ls
     wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && \
     sudo apt-get -y update && \
     sudo apt-get -y install libignition-transport8-dev
-    
+echo "CHECKPOINT libs setup" >> ~/progress.txt
     
 # Init workspace
 mkdir ~/catkin_ws
@@ -130,7 +133,7 @@ cd ~/catkin_ws
 catkin_make
 echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
-
+echo "CHECKPOINT env setup" >> ~/progress.txt
 cd ~/catkin_ws/src
 git clone https://github.com/AndreiMitriakov/jaguar_ws.git
 
@@ -145,7 +148,7 @@ cd build
 cmake ../
 make -j4 
 sudo make install    
-
+echo "CHECKPOINT gazebo installation"  >> ~/progress.txt
 # Copy flipper control plugin
 cd  ~/catkin_ws/src/jaguar_ws/docker/shared/flipper_control
 mkdir build
@@ -153,7 +156,7 @@ cd build
 cmake ..
 make -j4
 sudo cp libjaguar_plugin.so /usr/lib/
-
+echo "CHECKPOINT jaguar_plugins" >> ~/progress.txt
 # cd ~/catkin_ws/src
 # sudo apt-get update && sudo apt-get install -y ros-noetic-gazebo-ros-control ros-noetic-ros-controllers ros-noetic-ros-control
 # git clone https://github.com/ros-simulation/gazebo_ros_pkgs.git -b noetic-devel
