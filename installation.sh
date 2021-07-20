@@ -135,7 +135,7 @@ echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 echo "CHECKPOINT env setup" >> ~/progress.txt
 cd ~/catkin_ws/src
-git clone https://github.com/AndreiMitriakov/jaguar_ws.git
+git clone https://github.com/gwaxG/robot_ws.git
 
 # Install Gazebo from source with copied custom plugins
 git clone https://github.com/osrf/gazebo /tmp/gazebo
