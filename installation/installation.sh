@@ -1,11 +1,10 @@
 #!/bin/bash
 
+# ROS + Gazebo with plugins installations
 
-touch ~/progress.txt
+sudo apt -y update && sudo apt -y upgrade
 
-sudo apt-get -y update && sudo apt-get -y upgrade
-
-sudo apt -y install git
+sudo apt -y install git wget
 
 # install ros noetic desktop full
 sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list' && \
@@ -124,7 +123,6 @@ sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `ls
     wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add - && \
     sudo apt-get -y update && \
     sudo apt-get -y install libignition-transport8-dev
-echo "CHECKPOINT libs setup" >> ~/progress.txt
     
 # Init workspace
 mkdir ~/catkin_ws
@@ -133,38 +131,94 @@ cd ~/catkin_ws
 catkin_make
 echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
-echo "CHECKPOINT env setup" >> ~/progress.txt
+
+# Install plugins and gazebo
+cd ~/catkin_ws/src
+git clone https://github.com/gwaxG/robot_ws.git
+
 cd ~/catkin_ws/src
 git clone https://github.com/gwaxG/robot_ws.git
 
 # Install Gazebo from source with copied custom plugins
-git clone https://github.com/osrf/gazebo /tmp/gazebo
-cp -r ~/catkin_ws/src/robot_ws/plugins/gazebo_plugins/* /tmp/gazebo/plugins 
+git clone https://github.com/osrf/gazebo /tmp/gazebo && \
+cp -r ~/catkin_ws/src/robot_ws/plugins/gazebo_plugins/* /tmp/gazebo/plugins && \
+cd /tmp/gazebo && \
+source /opt/ros/noetic/setup.bash && \
+mkdir build && \
+cd build && \
+cmake ../ && \
+make -j4 && \
+sudo make install   
 
-cd /tmp/gazebo
-source /opt/ros/noetic/setup.bash
-mkdir build
-cd build
-cmake ../
-make -j4 
-sudo make install    
-echo "CHECKPOINT gazebo installation"  >> ~/progress.txt
 # Copy flipper control plugin
-cd  ~/catkin_ws/src/jaguar_ws/docker/shared/flipper_control
+cd  ~/catkin_ws/src/robot_ws/plugins/flipper_control
 mkdir build
 cd build
 cmake ..
 make -j4
 sudo cp libjaguar_plugin.so /usr/lib/
-echo "CHECKPOINT jaguar_plugins" >> ~/progress.txt
-# cd ~/catkin_ws/src
-# sudo apt-get update && sudo apt-get install -y ros-noetic-gazebo-ros-control ros-noetic-ros-controllers ros-noetic-ros-control
-# git clone https://github.com/ros-simulation/gazebo_ros_pkgs.git -b noetic-devel
-# git clone https://github.com/ros/geometry2.git -b 0.7.5
-# source /opt/ros/noetic/setup.bash
-# cd ~/catkin_ws
-# /bin/bash -c "catkin_make"
+
+# Modification of env. variables, default path is /usr/local
+echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >> ~/.bashrc 
+echo "export PATH=/usr/local/bin:$PATH" >> ~/.bashrc
+echo "export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH" >> ~/.bashrc
+source ~/.bashrc
+
+# Install ROS packages
+sudo apt-get install -y ros-noetic-gazebo-ros-control ros-noetic-ros-controllers ros-noetic-ros-control ros-noetic-controller-manager ros-noetic-joint-state-controller
+
+cd ~/catkin_ws/src && \
+    git clone https://github.com/ros-simulation/gazebo_ros_pkgs.git -b noetic-devel && \
+    git clone https://github.com/ros/geometry2.git -b 0.7.5 && \
+    git clone https://github.com/tu-darmstadt-ros-pkg/hector_models.git && \
+    source /opt/ros/noetic/setup.bash && \
+    cd ~/catkin_ws && \
+    /bin/bash -c "catkin_make"
+    
+
+    
+
+# Python installations
+cd ~/ && curl https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh --output conda.sh &&\
+    chmod +x ~/conda.sh &&\
+    ~/conda.sh -b
+echo "export PATH=~/anaconda3/bin:$PATH" >> ~/.bashrc
+source ~/.bashrc
+conda init bash
+source ~/.bashrc
+conda env create -f ~/catkin_ws/src/robot_ws/installation/environment.yml
+  
+echo "conda activate sb_learning" >> ~/.bashrc && source ~/.bashrc
+
+cd ~/catkin_ws/src/robot_ws/gym-training && pip install -e .
+  
+# Go installation
+cd ~/Downloads
+wget https://golang.org/dl/go1.16.6.linux-amd64.tar.gz
+rm -rf /usr/local/go 
+sudo tar -C /usr/local -xzf go1.16.6.linux-amd64.tar.gz
+echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.bashrc
+source ~/.bashrc
+
+# MongoDB installation
+sudo apt-get install -y gnupg
+wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
+echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+sudo apt-get update
+sudo apt-get install -y mongodb-org
+
+echo "running=\`pgrep mongod\`
+if  [[ !  -z  \$running  ]]
+then
+  echo \"Mongo is already running\" \$running
+else
+  sudo systemctl start mongod
+  echo \"Mongo is started\"
+fi
+">> ~/.bashrc
+
+# Project initialization
+roscd control/..
+python build.py
 
 
-# cd ~/catkin_ws/src
-# git clone https://github.com/tu-darmstadt-ros-pkg/hector_models.git &&\
