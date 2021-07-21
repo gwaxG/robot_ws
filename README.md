@@ -45,16 +45,5 @@ Automation tools which contain a server application and ROS database node.
 Gazebo plugins necessery to make contact surface motion model working.
 ***
 
-## Requirements
-1. Ubuntu 20.04
-2. ROS Noetic
-3. ROS packages:
-    hector_models, gazebo_ros_control, ros-controllers, ros_control, gazebo_ros_pkgs, geometry2, 
-4. Gazebo 11 installed preferably from source together with plugins from the `plugins` folder.
-5. Go 1.18 + latest goroslib
-6. Python:
-    stable-baselines3, ros-rospy, ros-std-msgs.
-6. mongodb (do not forget to `systemctl start mongod`)
-
-
-
+## Requirements and installation
+The user is addressed to `robot_ws/instalation folder` for more instructions.
