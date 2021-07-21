@@ -15,12 +15,12 @@ If you want to launch a particular package you can find its documentation inside
 Standalone simulation launching.  
 "stables3_launch.py" is an example, you can modify "stables3_launch.json" to change experiment configurations.
 Alternatively, you can provide your own "your_own_template.json" and "your_own_launch.py" for your libraries of choice.  
-Example launching:    
+#### Example launching:    
     `roslaunh backend learning.launch &`  
     `roscd backend/scripts/learning/scripts`  
     `python stables3_launch.py`  
 
-Server launching:    
+#### Server launching:    
     `roscd backend`   
     `./bin/master_app`  
     [GUI launching](http://github.com/gwaxG/robot-simu)
