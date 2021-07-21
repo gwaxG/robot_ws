@@ -21,8 +21,9 @@ Example launching:
     `python stables3_launch.py`  
 
 Server launching:    
-    `roscd backend`  
-    `./bin/master_app`
+    `roscd backend`   
+    `./bin/master_app`  
+    [GUI launching](http://github.com/gwaxG/robot-simu)
     
 
 ## Packages:
