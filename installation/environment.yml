@@ -15,4 +15,6 @@ dependencies:
       - stable-baselines3
       - opencv-python
       - scikit-image
+      - psutil 
+      - tensorboard==1.15.0
 

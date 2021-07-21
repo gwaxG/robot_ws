@@ -175,9 +175,6 @@ cd ~/catkin_ws/src && \
     cd ~/catkin_ws && \
     /bin/bash -c "catkin_make"
     
-
-    
-
 # Python installations
 cd ~/ && curl https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh --output conda.sh &&\
     chmod +x ~/conda.sh &&\
