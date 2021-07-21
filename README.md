@@ -16,15 +16,14 @@ Standalone simulation launching.
 "stables3_launch.py" is an example, you can modify "stables3_launch.json" to change experiment configurations.
 Alternatively, you can provide your own "your_own_template.json" and "your_own_launch.py" for your libraries of choice.  
 #### Example launching:    
-    `roslaunh backend learning.launch &`  
-    `roscd backend/scripts/learning/scripts`  
-    `python stables3_launch.py`  
+1. `roslaunh backend learning.launch &`  
+2. `roscd backend/scripts/learning/scripts`  
+3. `python stables3_launch.py`  
 
 #### Server launching:    
-    `roscd backend`   
-    `./bin/master_app`  
-    [GUI launching](http://github.com/gwaxG/robot-simu)
-    
+1. `roscd backend`   
+2. `./bin/master_app`  
+3. [GUI launching](http://github.com/gwaxG/robot-simu) (another terminal)
 
 ## Packages:
 ***
