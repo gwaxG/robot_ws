@@ -105,6 +105,23 @@
                 </geometry>
             </visual>
         </link>
+        <link name="side_right">
+            <pose>0.26 -1.0 1.060.0 0.0 1.5707963267948966</pose>
+            <collision name="collision">
+                <geometry>
+                    <box>
+                        <size>0.01 0.52 2.12</size>
+                    </box>
+                </geometry>
+            </collision>
+            <visual name="visual">
+                <geometry>
+                    <box>
+                        <size>0.01 0.52 2.12</size>
+                    </box>
+                </geometry>
+            </visual>
+        </link>
         <link name="floor">
             <pose>6.52 0.0 0.114999999999999990.0 0.0 0.0</pose>
             <collision name="collision">

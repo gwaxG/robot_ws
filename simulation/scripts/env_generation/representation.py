@@ -433,7 +433,18 @@ class StairFloor(Group):
                 box_y=self.shift_x,
                 box_z=StairFloor.standard_height + self.shift_z
             ),
-
+            Box(
+                name="side_right",
+                x=self.shift_x / 2,
+                y=-StairFloor.width_stair / 2,
+                z=self.shift_z / 2 + StairFloor.standard_height / 2,
+                roll=0.,
+                pitch=0.,
+                yaw=math.pi / 2,
+                box_x=StairFloor.floor_thickness,
+                box_y=self.shift_x,
+                box_z=StairFloor.standard_height + self.shift_z
+            ),
         ]
 
 

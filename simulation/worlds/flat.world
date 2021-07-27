@@ -76,7 +76,7 @@
         </visual>
       </link>
 
-      <!--<link name="wall_right">
+      <!----><link name="wall_right">
         <pose> -6.0  -5.0  1.0  1.57 0 0 </pose>
         <collision name="collision">
           <geometry>
@@ -88,7 +88,7 @@
             <box> <size>12.0 2.0 0.02</size> </box>
           </geometry>
         </visual>
-      </link>-->
+      </link>
 
       <link name="wall_back">
         <pose> -12.0  0  1.0  1.57 0 1.57 </pose>
@@ -104,7 +104,7 @@
         </visual>
       </link>
 
-      <!--<link name="wall_front_left">
+      <!----><link name="wall_front_right">
         <pose> 0.0  -3.0  1.0  1.57 0 1.57 </pose>
         <collision name="collision">
           <geometry>
@@ -116,9 +116,9 @@
             <box> <size>4.0 2.0 0.02</size> </box>
           </geometry>
         </visual>
-      </link>-->
+      </link>
 
-      <!----><link name="wall_front_right">
+      <!----><link name="wall_front_left">
         <pose> 0.0  3.0  1.0  1.57 0 1.57 </pose>
         <collision name="collision">
           <geometry>
