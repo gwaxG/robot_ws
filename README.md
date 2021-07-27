@@ -2,7 +2,7 @@
 ***
 ## Description
 This work space contains all code necessary for jaguar simulation,
-control, percpetion and learning.
+control, perception and learning.
 
 ## Build:  
 Before starting your work, be sure that Go nodes are compiled.
@@ -23,7 +23,7 @@ Alternatively, you can provide your own "your_own_template.json" and "your_own_l
 #### Server launching:    
 1. `roscd backend`   
 2. `./bin/master_app`  
-3. [GUI launching](http://github.com/gwaxG/robot-simu) (another terminal)
+3. [GUI launching](http://github.com/gwaxG/robot-simu) (another terminal)  `cd ~/some_path/robot_simu && npm start`
 
 ## Packages:
 ***
