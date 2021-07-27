@@ -25,7 +25,7 @@ class Odom:
             try:
                 self.robot_name = rospy.get_param("robot_name")
             except Exception as e:
-                print("No robot_name parameter on param server")
+                # print("No robot_name parameter on param server")
                 # Sleeping in real time
                 time.sleep(0.1)
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.callback)

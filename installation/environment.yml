@@ -1,0 +1,20 @@
+name: sb_learning
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7.7
+  - pytorch
+  - torchvision
+  - pip
+  - cudatoolkit=10.2
+  - rospkg
+  - termcolor
+  - yaml
+  - scipy
+  - pip:
+      - stable-baselines3
+      - opencv-python
+      - scikit-image
+      - psutil 
+      - tensorboard==1.15.0
+
