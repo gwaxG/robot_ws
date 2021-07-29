@@ -1,4 +1,4 @@
-# Robot work space (in progress)
+# Robot work space
 ***
 ## Description
 This work space contains all code necessary for jaguar simulation,
