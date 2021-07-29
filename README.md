@@ -23,7 +23,7 @@ Alternatively, you can provide your own "your_own_template.json" and "your_own_l
 #### Server launching:    
 1. `roscd backend`   
 2. `./bin/master_app`  
-3. [GUI launching](http://github.com/gwaxG/robot-simu) (another terminal)  `cd ~/some_path/robot_simu && npm start`
+3. [GUI launching](http://github.com/gwaxG/robot-simu)
 
 ## Packages:
 ***
