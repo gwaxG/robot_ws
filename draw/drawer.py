@@ -19,10 +19,10 @@ class Config:
         ]
 
         self.name_index = {
-            "Ascent": 0,
-            "Descent": 1,
-            "Random ascent": 2,
-            "Random descent": 3,
+            "Asc-inc-cog": 0,
+            "Des-inc-ang": 1,
+            "Asc-uni-cog": 2,
+            "Des-uni-ang": 3,
         }
 
         self.index_name = {v: k for k, v in self.name_index.items()}

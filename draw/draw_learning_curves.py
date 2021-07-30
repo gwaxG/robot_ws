@@ -16,12 +16,12 @@ if __name__ == "__main__":
     # episode after which we start penalty adding
     cut = 30
     alpha = 0.8
-    fields = ["angular_m"]  # ["reward", "deviation", "angular_m"]  #
+    fields = ["reward"]  # ["reward", "deviation", "angular_m"]  #
     corrs = {
-        # "Ascent": (0, 3),   # "Ascent": (0, 3),
-        "Descent": (3, 3),  # "Descent": (3, 3),
-        # "Random ascent": (6, 3),  # "Random ascent": (6, 3),
-        "Random descent": (9, 3)  # "Random descent": (9, 3)
+        "Asc-inc-cog": (0, 3),   # "Ascent": (0, 3),
+        "Des-inc-ang": (3, 3),  # "Descent": (3, 3),
+        "Asc-uni-cog": (6, 3),  # "Random ascent": (6, 3),
+        "Des-uni-ang": (9, 3)  # "Random descent": (9, 3)
     }  # "Ascent": (0, 3), "Descent": (3, 3), "Random ascent": (6, 3)
     raw_data = retrieve(database, colls, fields)
     print("Raw data retrieved")

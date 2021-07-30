@@ -4,7 +4,7 @@
     <model name="goal">
         <static>true</static>
         <link name="sphere_inner">
-            <pose>2.350184862569261 0.0 0.5554197884500507 0 0 0</pose>
+            <pose>3.4499999999999997 0.0 1.625 0 0 0</pose>
             <visual name="visual">
                 <geometry>
                     <sphere>
@@ -15,7 +15,7 @@
             </visual>
         </link>
         <link name="sphere_outter">
-            <pose>2.350184862569261 0.0 0.5554197884500507 0 0 0</pose>
+            <pose>3.4499999999999997 0.0 1.625 0 0 0</pose>
             <visual name="visual">
                 <geometry>
                     <sphere>

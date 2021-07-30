@@ -28,19 +28,19 @@ def draw(data):
 
     fig.add_trace(
         go.Scatter(
-            x=["Ascent", "Random ascent"],
+            x=["Asc-inc-cog", "Asc-uni-cog"],
             y=[
-                data["Ascent"]["r"]["mean"],
-                data["Random ascent"]["r"]["mean"],
+                data["Asc-inc-cog"]["r"]["mean"],
+                data["Asc-uni-cog"]["r"]["mean"],
             ],
             mode='markers',
-            marker=dict(color=[color[0], color[1]], size=15),
+            marker=dict(color=[color[0], color[1]], size=20),
             marker_symbol=[smb[0], smb[1]],
             showlegend=True,
             error_y=dict(
                 type='data',  # value of error bar given in data coordinates
-                array=[data["Ascent"]["r"]["std"], data["Random ascent"]["r"]["std"]],
-                thickness=2,
+                array=[data["Asc-inc-cog"]["r"]["std"], data["Asc-uni-cog"]["r"]["std"]],
+                thickness=3,
                 visible=True
             ),
         ),
@@ -49,19 +49,19 @@ def draw(data):
 
     fig.add_trace(
         go.Scatter(
-            x=["Ascent", "Random ascent"],
+            x=["Asc-inc-cog", "Asc-uni-cog"],
             y=[
-                data["Ascent"]["dev"]["mean"],
-                data["Random ascent"]["dev"]["mean"],
+                data["Asc-inc-cog"]["dev"]["mean"],
+                data["Asc-uni-cog"]["dev"]["mean"],
             ],
             mode='markers',
-            marker=dict(color=[color[0], color[1]], size=15),
+            marker=dict(color=[color[0], color[1]], size=20),
             marker_symbol=[smb[0], smb[1]],
             showlegend=True,
             error_y=dict(
                 type='data',  # value of error bar given in data coordinates
-                array=[data["Ascent"]["dev"]["std"], data["Random ascent"]["dev"]["std"]],
-                thickness=2,
+                array=[data["Asc-inc-cog"]["dev"]["std"], data["Asc-uni-cog"]["dev"]["std"]],
+                thickness=3,
                 visible=True
             ),
         ),
@@ -70,19 +70,19 @@ def draw(data):
 
     fig.add_trace(
         go.Scatter(
-            x=["Descent", "Random descent"],
+            x=["Des-inc-ang", "Des-uni-ang"],
             y=[
-                data["Descent"]["ang"]["mean"],
-                data["Random descent"]["ang"]["mean"],
+                data["Des-inc-ang"]["ang"]["mean"],
+                data["Des-uni-ang"]["ang"]["mean"],
             ],
             mode='markers',
-            marker=dict(color=[color[2], color[3]], size=15),
+            marker=dict(color=[color[2], color[3]], size=20),
             marker_symbol=[smb[2], smb[3]],
             showlegend=True,
             error_y=dict(
                 type='data',  # value of error bar given in data coordinates
-                array=[data["Descent"]["ang"]["std"], data["Random descent"]["ang"]["std"]],
-                thickness=2,
+                array=[data["Des-inc-ang"]["ang"]["std"], data["Des-uni-ang"]["ang"]["std"]],
+                thickness=3,
                 visible=True
             ),
         ),
@@ -178,7 +178,7 @@ def draw(data):
                      showgrid=True, gridwidth=3, gridcolor='rgba(0,0,0,0.2)', row=1, col=1)
     fig.update_yaxes(title_text="COG deviation, m", showline=True, linewidth=2, linecolor='black',
                      showgrid=True, gridwidth=3, gridcolor='rgba(0,0,0,0.2)', row=1, col=2)
-    fig.update_yaxes(title_text="Ang. vel., rad/s", showline=True, linewidth=2, linecolor='black',
+    fig.update_yaxes(title_text="Pitch angular  vel., rad/s", showline=True, linewidth=2, linecolor='black',
                      showgrid=True, gridwidth=3, gridcolor='rgba(0,0,0,0.2)', row=1, col=3)
     fig.show()
 
@@ -212,10 +212,10 @@ if __name__ == "__main__":
         "rand_des1_evaluation",
     ]
     corr = [
-        "Ascent",
-        "Descent",
-        "Random ascent",
-        "Random descent",
+        "Asc-inc-cog",
+        "Des-inc-ang",
+        "Asc-uni-cog",
+        "Des-uni-ang",
     ]
     fields = ["reward", "deviation", "angular_m"]  #
     raw_data = retrieve_local(database, colls, fields)

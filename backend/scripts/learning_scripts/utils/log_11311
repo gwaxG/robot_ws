@@ -1,0 +1,20 @@
+/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py:53: SyntaxWarning: The publisher should be created with an explicit keyword argument 'queue_size'. Please see http://wiki.ros.org/rospy/Overview/Publishers%20and%20Subscribers for more information.
+  self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
+/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
+  warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+Traceback (most recent call last):
+  File "z_evaluator_launch.py", line 65, in <module>
+    Learner().evaluate_model()
+  File "z_evaluator_launch.py", line 58, in evaluate_model
+    obs, rewards, done, info = self.env.step(action)
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/base_vec_env.py", line 163, in step
+    return self.step_wait()
+  File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 49, in step_wait
+    obs = self.envs[env_idx].reset()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 315, in reset
+    self.regenerate_obstacles()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 255, in regenerate_obstacles
+    props=props,
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 524, in call
+    raise ServiceException("service [%s] returned no response"%self.resolved_name)
+rospy.service.ServiceException: service [/env_gen] returned no response

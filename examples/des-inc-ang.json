@@ -1,0 +1,21 @@
+{
+  "alg":"SAC",
+  "angular":false,
+  "arm":true,
+  "complexity":"full",
+  "env_type":"vect",
+  "experiment":"des_inc_ang",
+  "experiment_series":"exp_paper",
+  "load_path":"data/models/server/nothing",
+  "log_path":"data/boards/server",
+  "model_parameters":{"ppo_cliprange":"0.2","ppo_ent_coef":"0.005","sac_ent_coef":"auto_0.5","sac_tau":0.05,"sac_train_freq":1},
+  "penalty_angular":true,
+  "penalty_deviation":false,
+  "policy":"default",
+  "rand":false,
+  "save_path":"data/models/server",
+  "sigma":0,
+  "task":"descent",
+  "time_step_limit":50,
+  "total_timesteps":20000
+}
