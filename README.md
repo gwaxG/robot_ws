@@ -2,7 +2,10 @@
 ***
 ## Description
 This work space contains all code necessary for jaguar simulation,
-control, perception and learning.
+control, perception and learning.  
+
+## Examples
+We invite the reader to check the `examples` folder for example videos and the description of used configuration files and files themselves.  
 
 ## Build:  
 Before starting your work, be sure that Go nodes are compiled.
