@@ -20,7 +20,6 @@ To automatically install:
 
 ## Manual step-by-step installation:
 Be patient, installation of Gazebo from source code can take some time (about 1 hour).  
-We assume 
 
 1. Update the system, install git and wget
 ```
