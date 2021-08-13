@@ -4,6 +4,9 @@
 This work space contains all code necessary for jaguar simulation,
 control, perception and learning.  
 
+## Requirements and installation
+The user is addressed to [this folder](https://github.com/gwaxG/robot_ws/tree/main/installation) for more instructions.
+
 ## Examples
 We invite the reader to check the `examples` folder for example videos and the description of used configuration files and files themselves.  
 
@@ -48,5 +51,3 @@ Automation tools which contain a server application and ROS database node.
 Gazebo plugins necessery to make contact surface motion model working.
 ***
 
-## Requirements and installation
-The user is addressed to `robot_ws/instalation folder` for more instructions.
