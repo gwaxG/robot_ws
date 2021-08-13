@@ -11,6 +11,15 @@ We suppose that installation is done on a clean Ubuntu 20.04, if it is not the c
 5. MongoDB;
 6. `~/.bashrc` will be modified.
 
+## Trying a virtual machine:  
+If you want to avoid installation, you can use the provided virtual machine. 
+To do so:
+* install the latest version of [Oracle VM VirtualBox](https://www.virtualbox.org/)
+* download parts of the splitted virtual desktop infrastructure (VDI) file through `chmod +x download.sh && ./download.sh`
+* join those parts into a .vdi file through `cat part.?? > tests.vdi`
+* put `tests.vdi` and `tests.vbox` into your `VirtualBox VMs` folder where "Oracle VM VirtualBox" looks for images
+* Normally, you can start this VM
+
 ## Automatic installation:  
 You can try automatically install everything using `installation.sh`,
 still eventual problems can arise and we propose a manual installation guide presented below.
