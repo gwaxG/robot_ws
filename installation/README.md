@@ -11,7 +11,7 @@ We suppose that installation is done on a clean Ubuntu 20.04, if it is not the c
 5. MongoDB;
 6. `~/.bashrc` will be modified.
 
-## Trying a virtual machine:  
+## Virtual machine:  
 If you want to avoid installation, you can use the provided virtual machine. 
 To do so:
 * install the latest version of [Oracle VM VirtualBox](https://www.virtualbox.org/)
