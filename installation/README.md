@@ -16,6 +16,7 @@ If you want to avoid installation, you can use the provided virtual machine.
 To do so:
 * install the latest version of [Oracle VM VirtualBox](https://www.virtualbox.org/)
 * download parts of the splitted virtual desktop infrastructure (VDI) file through `chmod +x download.sh && ./download.sh`
+* be sure that you have downloaded 16 parts of type`part.??`
 * join those parts into a .vdi file through `cat part.?? > tests.vdi`
 * put `tests.vdi` and `tests.vbox` into your `VirtualBox VMs` folder where "Oracle VM VirtualBox" looks for images
 * Normally, you can start this VM
