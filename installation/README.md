@@ -1,7 +1,9 @@
 # Installation
 
 This folder contains description for manual installation, description of python dependencies and automatic installation script.
-We suppose that installation is done on a clean Ubuntu 20.04, if it is not the case, then follow the step-by-step installation guide and modify commands accordnigly to your situation.
+We suppose that installation is done on a clean Ubuntu 20.04, if it is not the case, then follow the step-by-step installation guide and modify commands accordnigly to your situation.  
+Consider to allocate around 30 GB  or moreon the hard disk.  
+We also need to notify that installation could take several hours due to source installation of Gazebo.  
 
 ## What will be installed and done:  
 1. ROS Noetic with ros-control, ros-controllers, controller-manager, geometry2, hector_models, gazebo_ros_pkgs;
@@ -19,7 +21,7 @@ To do so:
 * be sure that you have downloaded 16 parts of type`part.??`
 * join those parts into a .vdi file through `cat part.?? > tests.vdi`
 * put `tests.vdi` and `tests.vbox` into your `VirtualBox VMs` folder where "Oracle VM VirtualBox" looks for images
-* Normally, you can start this VM
+* you can start this VM
 
 ## Automatic installation:  
 You can try automatically install everything using `installation.sh`,
