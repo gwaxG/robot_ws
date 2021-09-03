@@ -18,6 +18,7 @@ We invite the reader to check the `examples` folder for example videos and the d
 ## Launch
 
 It is possible to launch with (server) and without (standlalone) application interface.  
+Important note: one experiment can take from 15 mins to several hours, it depends on your machine and number of experiment time steps.
 
 #### Standalone launching    
 In case when you want to launch only the simulation, you should follow the convienent ROS+Gazebo workflow.
