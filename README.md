@@ -8,7 +8,7 @@ Software was tested on a machine with the following hardware configuration:
 * Memory 31,2 GiB
 * Processor Intel® Core™ i7-8650U CPU @ 1.90GHz × 8 
 * Graphics Intel® UHD Graphics 620 (KBL GT2)
-* >30 GiB HDD/SSD
+* \>30 GiB HDD/SSD
 
 ## Requirements and installation
 The user is addressed to [this folder](https://github.com/gwaxG/robot_ws/tree/main/installation) for more instructions.
