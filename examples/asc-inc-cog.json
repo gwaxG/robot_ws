@@ -8,7 +8,13 @@
   "experiment_series":"exp_paper",
   "load_path":"data/models/server/nothing",
   "log_path":"data/boards/server",
-  "model_parameters":{"ppo_cliprange":"0.2","ppo_ent_coef":"0.005","sac_ent_coef":"auto_0.5","sac_tau":0.05,"sac_train_freq":1},
+  "model_parameters":{
+    "ppo_cliprange":"0.2",
+    "ppo_ent_coef":"0.005",
+    "sac_ent_coef":"auto_0.5",
+    "sac_tau":0.05,
+    "sac_train_freq":1
+  },
   "penalty_angular":false,
   "penalty_deviation":true,
   "policy":"default",
