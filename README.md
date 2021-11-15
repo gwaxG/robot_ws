@@ -2,30 +2,56 @@
 ***
 ## Description
 This work space contains all code necessary for jaguar simulation,
-control, perception and learning.
+control, perception and learning.  
 
-## Build:  
-Before starting your work, be sure that Go nodes are compiled.
-To do so, it is necessary to execute `python build.py` in the `robot_ws` folder.
-Launch `python build.py` and all nested Go targets located in `cmd` folders will be built and placed into package `bin` folders.
+Software was tested on a machine with the following hardware configuration:
+* Memory 31,2 GiB
+* Processor Intel® Core™ i7-8650U CPU @ 1.90GHz × 8 
+* Graphics Intel® UHD Graphics 620 (KBL GT2)
+* \>30 GiB HDD/SSD
 
-## Launch:
-If you want to launch a particular package you can find its documentation inside.
+## Requirements and installation
+The user is addressed to [this folder](https://github.com/gwaxG/robot_ws/tree/main/installation) for more instructions.
 
-Standalone simulation launching.  
-"stables3_launch.py" is an example, you can modify "stables3_launch.json" to change experiment configurations.
+## Examples
+We invite the reader to check the `examples` folder for example videos and the description of used configuration files and files themselves.  
+
+## Launch
+
+It is possible to launch with (server) and without (standlalone) application interface.  
+Important note: one experiment can take from 15 mins to several hours, it depends on your machine and number of experiment time steps.
+
+#### Standalone launching    
+In case when you want to launch only the simulation, you should follow the convienent ROS+Gazebo workflow.
+You start ROS and launch Gazebo as it presented below, then you launch a learning script. 
+Here, the script "stables3_launch.py" is an example, you can modify "stables3_launch.json" to change experiment configurations.
 Alternatively, you can provide your own "your_own_template.json" and "your_own_launch.py" for your libraries of choice.  
-#### Example launching:    
-1. `roslaunh backend learning.launch &`  
-2. `roscd backend/scripts/learning/scripts`  
-3. `python stables3_launch.py`  
+You can find working examples [here](https://github.com/gwaxG/robot_ws/tree/main/examples) and instructions to currently used fields of the json-based configuration [here](https://github.com/gwaxG/robot_ws/tree/main/backend).
 
-#### Server launching:    
+1. `roslaunh backend learning.launch gui:=true &`  
+2. `roscd backend/scripts/learning/scripts`  
+3. `python stables3_launch.py
+
+#### Server launching    
+In case you to start the server application that will communicate with the [GUI application](http://github.com/gwaxG/robot-simu),
+you have to execute next commands.
+
 1. `roscd backend`   
 2. `./bin/master_app`  
-3. [GUI launching](http://github.com/gwaxG/robot-simu)
+3. [GUI launching](http://github.com/gwaxG/robot-simu)  
 
-## Packages:
+Description of configuration fields can be found [here](https://github.com/gwaxG/robot_ws/tree/main/backend) and [here](https://github.com/gwaxG/robot_ws/tree/main/examples).  
+
+If you want to launch a particular package you can find its documentation inside.
+
+
+
+## Build 
+If you have modified any Go-based node, be sure that they are compiled.
+To do so, it is necessary to execute `python build.py` in the `robot_ws` folder.
+Launching `python build.py` leads to compilation of all nested Go targets located in `cmd` folders and placing binaries into corresponding `bin` folders.
+
+## Packages
 ***
 ### simulation
 Gazebo environment flat/multi-floor simulation and robot spawning accordingly to the task.
@@ -45,5 +71,3 @@ Automation tools which contain a server application and ROS database node.
 Gazebo plugins necessery to make contact surface motion model working.
 ***
 
-## Requirements and installation
-The user is addressed to `robot_ws/instalation folder` for more instructions.
