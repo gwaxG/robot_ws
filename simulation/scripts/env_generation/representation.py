@@ -312,6 +312,7 @@ class StairFloor(Group):
         if props == "rand":
             step_n, length, height = self.sample_uniform()
         elif "vect" in props:
+            print(props.split("_")[1])
             eps = float(props.split("_")[1])
             step_n, length, height = self.sample_gaussian(eps)
         elif "eval" in props:
