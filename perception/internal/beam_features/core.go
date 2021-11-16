@@ -8,6 +8,7 @@ import (
 
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/gwaxG/robot_ws/perception/pkg/bridge"
+	"gonum.org/v1/gonum/stat/distuv"
 )
 
 const BandWidth = 10
@@ -17,6 +18,7 @@ type Core struct {
 	HeightFeatNum int
 	WidthFeatNum  int
 	BandWidth     int
+	cnt           int
 }
 
 func (c *Core) Init() {
@@ -102,22 +104,35 @@ func (c *Core) Handle(img *sensor_msgs.Image) {
 	go c.handleSlice(true, noised, &beamsHeight, &wg)
 	go c.handleSlice(false, noised, &beamsWidth, &wg)
 	wg.Wait()
-
 	c.ros.Publish(beamsHeight, beamsWidth, img.Header.FrameId)
+}
+
+type SourceUint64 struct {
 }
 
 func (c *Core) Noise(dec *bridge.Image) *bridge.Image {
 	img := *dec
+	normal := distuv.Normal{0, 1., nil}
 	// Noising
-	grainNumber := int(float64(dec.Height*dec.Width/uint32(c.ros.GrainSize)) * c.ros.ImageNoiseLevel)
+	grainNumber := int(float64(dec.Height) * float64(dec.Width) / float64(c.ros.GrainSize) * float64(c.ros.ImageNoiseLevel) / 100.)
+	gsize := c.ros.GrainSize
 	for g := 0; g < grainNumber; g++ {
-		h := rand.Intn(int(dec.Height) - c.ros.GrainSize)
-		w := rand.Intn(int(dec.Width) - c.ros.GrainSize)
-		for hi := 0; hi < c.ros.GrainSize; hi++ {
-			for wi := 0; wi < c.ros.GrainSize; wi++ {
+		randomF := math.Abs(normal.Rand())
+		size := int(randomF*float64(gsize)) % gsize
+		if size == 0 {
+			size = 1
+		}
+
+		h := rand.Intn(int(dec.Height) - size)
+		w := rand.Intn(int(dec.Width) - size)
+		for hi := 0; hi < size; hi++ {
+			for wi := 0; wi < size; wi++ {
 				img.Rows[h+hi][w+wi] = 0
 			}
 		}
 	}
+	// Uncomment to see noised images.
+	c.ros.PublishImage(bridge.Encode(&img))
+
 	return &img
 }

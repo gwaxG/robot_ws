@@ -3,7 +3,6 @@ package beam_features
 import (
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/aler9/goroslib"
@@ -22,9 +21,10 @@ type BeamMsg struct {
 type RosProxy struct {
 	conn            *goroslib.Node
 	featurePub      *goroslib.Publisher
+	imagePub        *goroslib.Publisher
 	imgSub          *goroslib.Subscriber
 	seq             uint32
-	ImageNoiseLevel float64
+	ImageNoiseLevel int
 	GrainSize       int
 }
 
@@ -41,33 +41,42 @@ func (r *RosProxy) Init(subs func(*sensor_msgs.Image)) {
 	})
 	FailOnError(err, "Can not create node")
 
-	noisingStr, err := r.conn.ParamGetString("image_noise_level")
-	FailOnError(err, "Can not get param string")
-	noising, err := strconv.ParseFloat(noisingStr, 64)
-	FailOnError(err, "Can not parse string to float")
+	noising, err := r.conn.ParamGetInt("image_noise_level")
+	FailOnError(err, "Can not get param string image_noise_level")
 	r.ImageNoiseLevel = noising
 
-	grainStr, err := r.conn.ParamGetString("image_noising_level")
-	FailOnError(err, "Can not get param string")
-	graine, err := strconv.Atoi(grainStr)
-	FailOnError(err, "Can not parse string to float")
+	graine, err := r.conn.ParamGetInt("grain_size")
+	FailOnError(err, "Can not get param string grain_size")
 	r.GrainSize = graine
 
 	depthImageTopic, err = r.conn.ParamGetString("depth_image_topic")
 	FailOnError(err, "Can not get param string")
+
 	r.featurePub, err = goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  r.conn,
 		Topic: "features",
 		Msg:   &BeamMsg{},
 	})
-
 	FailOnError(err, "Can not create publisher")
+
 	r.imgSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
 		Node:     r.conn,
 		Topic:    depthImageTopic,
 		Callback: subs,
 	})
 	FailOnError(err, "Can not create subscriber")
+
+	r.imagePub, err = goroslib.NewPublisher(goroslib.PublisherConf{
+		Node:  r.conn,
+		Topic: "noised_image",
+		Msg:   &sensor_msgs.Image{},
+	})
+
+	FailOnError(err, "Can not create publisher")
+}
+
+func (r *RosProxy) PublishImage(img *sensor_msgs.Image) {
+	r.imagePub.Write(img)
 }
 
 func (r *RosProxy) Publish(Height []float32, Width []float32, frame string) {
