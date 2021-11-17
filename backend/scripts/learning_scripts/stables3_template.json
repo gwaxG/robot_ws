@@ -4,7 +4,7 @@
   "alg": "SAC",
   "policy": "default",
   "penalty_deviation": true,
-  "penalty_angular": false,
+  "penalty_angular": true,
   "model_parameters": {
     "ppo_cliprange":  "0.2", "ppo_ent_coef":  "0.005",
     "sac_train_freq": 1, "sac_tau": 0.05, "sac_ent_coef": "auto_0.5"

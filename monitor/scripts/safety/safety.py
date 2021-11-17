@@ -27,7 +27,7 @@ class Safety:
     def __init__(self):
         rospy.init_node('safety')
         self.robot = rospy.get_param("robot_name")
-        self.semi_length = rospy.get_param("base_length") / 2.
+        self.semi_length = float(rospy.get_param("base_length")) / 2.
         self.listener = tf.TransformListener()
         self.br = tf.TransformBroadcaster()
         if self.robot == "jaguar":

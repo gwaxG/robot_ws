@@ -131,6 +131,7 @@ class Monitor:
         :param req:
         :return:
         """
+        print("new rollout", req)
         self.debug = []
         need_to_reset = self.check_consistency(req)
         if need_to_reset:

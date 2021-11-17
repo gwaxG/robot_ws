@@ -68,6 +68,7 @@ func (j *Job) Do(port int) (e error) {
 	base := strings.Replace(path.Base(j.LaunchFile), ".py", ".json", 1)
 	configPath := path.Join(path.Dir(j.LaunchFile), base)
 	// Dump config map[string]interface{} into the json config file.
+
 	marshalled, err := json.Marshal(j.Config)
 	if err != nil {
 		return err
@@ -479,7 +480,8 @@ func deleteMapStrInt(a []map[string]interface{}, i int) (m []map[string]interfac
 // Custom delete from string array by index function.
 func deleteStrings(a []string, i int) ([]string, bool) {
 	defer func() {
-		if r := recover(); r != nil {}
+		if r := recover(); r != nil {
+		}
 	}()
 	var aNew []string
 	aNew = a[:i]

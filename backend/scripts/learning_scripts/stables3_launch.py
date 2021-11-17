@@ -12,10 +12,26 @@ from monitor.srv import GuidanceInfoRequest
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
+
 class Learner(Base):
     def __init__(self):
         with open(__file__.replace(".py", ".json")) as f:
             prms = json.load(f)
+            # TODO solve the issue that penalties are passed as values from the server to the launch json
+            if "penalty_deviation" in prms.keys():
+                val = prms["penalty_deviation"]
+                if type(val) is str:
+                    if val == "true" or val == "True":
+                        prms["penalty_deviation"] = True
+                    if val == "false" or val == "False":
+                        prms["penalty_deviation"] = False
+            if "penalty_angular" in prms.keys():
+                val = prms["penalty_angular"]
+                if type(val) is str:
+                    if val == "true" or val == "True":
+                        prms["penalty_angular"] = True
+                    if val == "false" or val == "False":
+                        prms["penalty_angular"] = False
         super(Learner, self).__init__(prms)
         kwargs = {
             'experiment_series': prms['experiment_series'],
