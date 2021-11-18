@@ -4,25 +4,25 @@
     <model name="goal">
         <static>true</static>
         <link name="sphere_inner">
-            <pose>1.722939143710924 0.0 0.3666520137725542 0 0 0</pose>
+            <pose>1.7486939628058304 0.0 0.36651133732321795 0 0 0</pose>
             <visual name="visual">
                 <geometry>
                     <sphere>
                         <radius>0.05</radius>
                     </sphere>
                 </geometry>
-                <transparency>0.0</transparency>
+                <transparency>1.0</transparency>
             </visual>
         </link>
         <link name="sphere_outter">
-            <pose>1.722939143710924 0.0 0.3666520137725542 0 0 0</pose>
+            <pose>1.7486939628058304 0.0 0.36651133732321795 0 0 0</pose>
             <visual name="visual">
                 <geometry>
                     <sphere>
                         <radius>0.3</radius>
                     </sphere>
                 </geometry>
-                <transparency>0.75</transparency>
+                <transparency>1.0</transparency>
             </visual>
         </link>
     </model>

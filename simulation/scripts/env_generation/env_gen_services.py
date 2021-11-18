@@ -16,7 +16,8 @@ class EnvGenerator:
         # Wait time to prevent node crashing
         time.sleep(1)
         rospy.init_node('env_gen_services')
-        self.env = Env()
+        goal_transparency = float(rospy.get_param("goal_transparency", 1.0))
+        self.env = Env(goal_transparency)
         s = rospy.Service('env_gen', EnvGen, self.router)
         s = rospy.Service('stair_info', StairInfo, self.send_stair_info)
         s = rospy.Service('goal_info', GoalInfo, self.send_goal_info)

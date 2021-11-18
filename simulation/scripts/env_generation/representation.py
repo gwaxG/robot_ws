@@ -10,14 +10,14 @@ from abc import ABC, abstractmethod
 
 class Env:
 
-    def __init__(self):
+    def __init__(self, goal_transparency):
         self.ground_obstacles = GroundObstacles(wall_x_size=1.0, wall_y_size=2.0, wall_z_size=2.0)
         self.stair_floor = StairFloor()
         self.floor_obstacles = FloorObstacles(
             wall_x_size=1.0, wall_y_size=2.0, wall_z_size=2.0,
             shift_x=2.0, shift_z=2.0
         )
-        self.goal = Goal()
+        self.goal = Goal(goal_transparency)
 
 
 class Group(ABC):
@@ -59,13 +59,13 @@ class Sphere:
 
 class Goal(Group):
 
-    def __init__(self):
+    def __init__(self, goal_transparency):
         super().__init__("goal")
         self.spheres = []
         self.shift_x = 0.
         self.shift_z = 0.
         self.exist = False
-
+        self.goal_transparency = goal_transparency
         self.x = 1.99
         self.y = 1.99
         self.z = 0.085
@@ -106,7 +106,7 @@ class Goal(Group):
                 x=self.x,
                 y=self.y,
                 z=self.z,
-                transparency=0.0,
+                transparency=self.goal_transparency,
                 radius=0.05,
             ),
             Sphere(
@@ -114,7 +114,7 @@ class Goal(Group):
                 x=self.x,
                 y=self.y,
                 z=self.z,
-                transparency=0.75,
+                transparency=self.goal_transparency,
                 radius=0.3,
             )
         ]
