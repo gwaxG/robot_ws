@@ -11,6 +11,8 @@
     <param name="image_noise_level" type="int" value="10" /> <!-- percent level of noise -->
     <param name="grain_size" type="int" value="5" />
     <param name="goal_transparency" type="double" value="1.0" />
+    <!-- View distance in cm -->
+    <param name="view_distance" type="int" value="40" />
     <!-- Spawn worlds-->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="world_name" value="$(find simulation)/worlds/flat.world"/>

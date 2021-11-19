@@ -20,6 +20,7 @@ type Core struct {
 	BandWidth     int
 	cnt           int
 	mutex         sync.Mutex
+	viewDistance  float64
 }
 
 func (c *Core) Init() {
@@ -33,6 +34,11 @@ func (c *Core) Init() {
 	FailOnError(err, "can not get param")
 	c.BandWidth, err = c.ros.conn.ParamGetInt("band_width")
 	FailOnError(err, "can not get param")
+	var dist int
+	dist, err = c.ros.conn.ParamGetInt("view_distance")
+	FailOnError(err, "can not get param")
+	c.viewDistance = float64(dist) / 100.
+	FailOnError(err, "can not parse param")
 }
 
 func (c *Core) Start() {
@@ -100,7 +106,8 @@ func (c *Core) Handle(img *sensor_msgs.Image) {
 	beamsWidth := []float32{}
 
 	decoded := bridge.Decode(img, "depth")
-	noised := c.Noise(decoded)
+	distanceCut := c.CutDistance(decoded)
+	noised := c.Noise(distanceCut)
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go c.handleSlice(true, noised, &beamsHeight, &wg)
@@ -135,6 +142,18 @@ func (c *Core) Noise(dec *bridge.Image) *bridge.Image {
 	// Uncomment to see noised images.
 	c.ros.PublishImage(bridge.Encode(&img))
 
+	return &img
+}
+
+func (c *Core) CutDistance(dec *bridge.Image) *bridge.Image {
+	img := *dec
+	for h := 0; h < int(img.Height); h++ {
+		for w := 0; w < int(img.Width); w++ {
+			if img.Rows[h][w] < float32(c.viewDistance) {
+				img.Rows[h][w] = 0.0
+			}
+		}
+	}
 	return &img
 }
 
