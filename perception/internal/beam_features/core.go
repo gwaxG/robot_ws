@@ -19,9 +19,11 @@ type Core struct {
 	WidthFeatNum  int
 	BandWidth     int
 	cnt           int
+	mutex         sync.Mutex
 }
 
 func (c *Core) Init() {
+	c.mutex = sync.Mutex{}
 	var err error
 	c.ros = RosProxy{}
 	c.ros.Init(c.Handle)
@@ -116,7 +118,28 @@ func (c *Core) Noise(dec *bridge.Image) *bridge.Image {
 	// Noising
 	grainNumber := int(float64(dec.Height) * float64(dec.Width) / float64(c.ros.GrainSize) * float64(c.ros.ImageNoiseLevel) / 100.)
 	gsize := c.ros.GrainSize
-	for g := 0; g < grainNumber; g++ {
+
+	UsedCPU := 8
+	cover := grainNumber / 4
+	start := 0
+	end := cover
+	var wg sync.WaitGroup
+
+	for i := 0; i < UsedCPU; i++ {
+		wg.Add(1)
+		go c.AddNoise(&wg, start, end, gsize, &normal, dec, &img)
+		start += cover
+		end += cover
+	}
+
+	// Uncomment to see noised images.
+	c.ros.PublishImage(bridge.Encode(&img))
+
+	return &img
+}
+
+func (c *Core) AddNoise(wg *sync.WaitGroup, start, end, gsize int, normal *distuv.Normal, dec, img *bridge.Image) {
+	for g := start; g < end; g++ {
 		randomF := math.Abs(normal.Rand())
 		size := int(randomF*float64(gsize)) % gsize
 		if size == 0 {
@@ -131,8 +154,5 @@ func (c *Core) Noise(dec *bridge.Image) *bridge.Image {
 			}
 		}
 	}
-	// Uncomment to see noised images.
-	c.ros.PublishImage(bridge.Encode(&img))
-
-	return &img
+	wg.Done()
 }

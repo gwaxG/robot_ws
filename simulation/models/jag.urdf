@@ -779,7 +779,7 @@
               <height>480</height>
             </image>
             <clip>
-              <near>0.4</near>
+              <near>1.0</near>
               <far>8</far>
             </clip>
           </camera>
