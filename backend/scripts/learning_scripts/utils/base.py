@@ -7,6 +7,7 @@ import os
 import argparse
 import datetime
 from monitor.srv import GuidanceInfo
+import json
 
 
 
@@ -18,7 +19,26 @@ class Base:
     3. Node creation.
     """
 
-    def __init__(self, prms):
+    def parameters_check(self):
+        """
+        This function checks the parameters map.
+        :return:
+        """
+        for k, v in self.prms.items():
+            if isinstance(v, str):
+                if "false" == v or "False" == v:
+                    self.prms[k] = False
+                if "true" == v or "True" == v:
+                    self.prms[k] = True
+
+    def __init__(self, fname):
+        file = fname.replace(".py", ".json")
+        path = os.path.dirname(__file__)
+        path = os.path.dirname(path)
+        path = os.path.join(path, file)
+        with open(path) as f:
+            prms = json.load(f)
+        self.prms = prms
         self.f = None
         postfix = prms["experiment_series"] + "_" + prms['experiment']
         # paths

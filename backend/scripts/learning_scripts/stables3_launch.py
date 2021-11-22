@@ -15,36 +15,20 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 
 class Learner(Base):
     def __init__(self):
-        with open(__file__.replace(".py", ".json")) as f:
-            prms = json.load(f)
-            # TODO solve the issue that penalties are passed as values from the server to the launch json
-            if "penalty_deviation" in prms.keys():
-                val = prms["penalty_deviation"]
-                if type(val) is str:
-                    if val == "true" or val == "True":
-                        prms["penalty_deviation"] = True
-                    if val == "false" or val == "False":
-                        prms["penalty_deviation"] = False
-            if "penalty_angular" in prms.keys():
-                val = prms["penalty_angular"]
-                if type(val) is str:
-                    if val == "true" or val == "True":
-                        prms["penalty_angular"] = True
-                    if val == "false" or val == "False":
-                        prms["penalty_angular"] = False
-        super(Learner, self).__init__(prms)
+
+        super(Learner, self).__init__()
         kwargs = {
-            'experiment_series': prms['experiment_series'],
-            'experiment': prms['experiment'],
-            'arm': prms['arm'],
-            'angular': prms['angular'],
-            'penalty_deviation': prms['penalty_deviation'],
-            'penalty_angular': prms['penalty_angular'],
-            'time_step_limit': prms['time_step_limit'],
-            'sigma': prms['sigma'],
-            'task': prms['task'],
-            'rand': prms['rand'],
-            'env_type': prms['env_type']
+            'experiment_series': self.prms['experiment_series'],
+            'experiment': self.prms['experiment'],
+            'arm': self.prms['arm'],
+            'angular': self.prms['angular'],
+            'penalty_deviation': self.prms['penalty_deviation'],
+            'penalty_angular': self.prms['penalty_angular'],
+            'time_step_limit': self.prms['time_step_limit'],
+            'sigma': self.prms['sigma'],
+            'task': self.prms['task'],
+            'rand': self.prms['rand'],
+            'env_type': self.prms['env_type']
         }
         env = DummyVecEnv([lambda: TrainingEnv(**kwargs)])
         policies = {
@@ -53,7 +37,7 @@ class Learner(Base):
             "ppo_default": "MlpPolicy",
             "td3_default": "MlpPolicy",
         }
-        model_parameters = prms['model_parameters']
+        model_parameters = self.prms['model_parameters']
         n_actions = env.action_space.shape[-1]
         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
         if self.loading:
@@ -65,7 +49,7 @@ class Learner(Base):
         else:
             models = {
                 "SAC": SAC(
-                    policies[prms["policy"]],
+                    policies[self.prms["policy"]],
                     env,
                     verbose=1,
                     train_freq=int(model_parameters["sac_train_freq"]),
@@ -74,21 +58,21 @@ class Learner(Base):
                     tensorboard_log=self.log_path
                 ),
                 "PPO": PPO(
-                    policies[prms["policy"]],
+                    policies[self.prms["policy"]],
                     env,
                     verbose=1,
                     tensorboard_log=self.log_path
                 ),
                 "TD3": TD3(
-                    policies[prms["policy"]],
+                    policies[self.prms["policy"]],
                     env,
                     action_noise=action_noise,
                     verbose=1,
                     tensorboard_log=self.log_path
                 ),
             }
-        self.model = models[prms["alg"]]
-        self.prms = prms
+        self.model = models[self.prms["alg"]]
+
 
     def train_model(self):
         self.log(f"Learning started! Model is located at {self.save_path}")
