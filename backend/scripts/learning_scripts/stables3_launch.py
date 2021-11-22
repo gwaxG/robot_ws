@@ -16,7 +16,7 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 class Learner(Base):
     def __init__(self):
 
-        super(Learner, self).__init__()
+        super(Learner, self).__init__(__file__)
         kwargs = {
             'experiment_series': self.prms['experiment_series'],
             'experiment': self.prms['experiment'],

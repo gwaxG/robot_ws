@@ -319,7 +319,6 @@ class TrainingEnv(gym.Env):
         return self.get_transformed_state()
 
     def step(self, action):
-        print("Steps of rollout", self.seq)
         self.update_action(action)
         self.pub_robot_cmd.publish(self.action)
         rospy.sleep(TrainingEnv.ACTION_TIME)

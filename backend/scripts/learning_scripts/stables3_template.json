@@ -1,10 +1,10 @@
 {
-  "experiment_series": "exp_official_try_1",
-  "experiment": "asc_rand4",
+  "experiment_series": "exp_e2e",
+  "experiment": "asc",
   "alg": "SAC",
   "policy": "default",
   "penalty_deviation": true,
-  "penalty_angular": true,
+  "penalty_angular": false,
   "model_parameters": {
     "ppo_cliprange":  "0.2", "ppo_ent_coef":  "0.005",
     "sac_train_freq": 1, "sac_tau": 0.05, "sac_ent_coef": "auto_0.5"
@@ -14,7 +14,7 @@
   "load_path": "data/models/server/nothing",
   "time_step_limit": 50,
   "env_type": "rand",
-  "arm": false,
+  "arm": true,
   "angular": false,
   "sigma": 0.0,
   "task": "ascent",

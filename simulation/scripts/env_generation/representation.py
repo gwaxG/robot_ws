@@ -107,7 +107,7 @@ class Goal(Group):
                 y=self.y,
                 z=self.z,
                 transparency=self.goal_transparency,
-                radius=0.05,
+                radius=0.001,  # 0.05
             ),
             Sphere(
                 name="sphere_outter",
@@ -115,7 +115,7 @@ class Goal(Group):
                 y=self.y,
                 z=self.z,
                 transparency=self.goal_transparency,
-                radius=0.3,
+                radius=0.001,  # 0.3
             )
         ]
         self.spheres = spheres
