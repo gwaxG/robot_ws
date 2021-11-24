@@ -41,8 +41,8 @@ class Guidance:
         # 0.99 is good when there is no penalties, otherwise 0.9 is better
         epsilon_thresholds = {
             "free": 0.9,
-            "deviation": 0.6,
-            "angular": 0.5,
+            "deviation": 0.75,
+            "angular": 0.3,  # 0.5
         }
         self.penalty_type = penalty_type
         self.epsilon_threshold = epsilon_thresholds[penalty_type]

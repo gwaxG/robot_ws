@@ -1,1 +1,20 @@
-{"alg":"SAC","angular":false,"arm":true,"complexity":"full","env_type":"eval","episode_limit":10,"experiment":"asc1","experiment_series":"exp_official_eval","load_path":"data/models/server/exp_official_try_2_asc1.zip","log_path":"data/boards","penalty_angular":false,"penalty_deviation":true,"policy":"default","rand":false,"save_path":"data/models","sigma":0,"task":"ascent","time_step_limit":50}
+{
+  "alg":"SAC",
+  "angular":false,
+  "arm":true,
+  "complexity":"full",
+  "env_type":"eval",
+  "episode_limit":10,
+  "experiment":"asc5",
+  "experiment_series":"exp_e2e",
+  "load_path":"data/models/server/exp_e2e_asc5.zip",
+  "log_path":"data/boards",
+  "penalty_angular":false,
+  "penalty_deviation":true,
+  "policy":"default",
+  "rand":false,
+  "save_path":"data/models",
+  "sigma":0,
+  "task":"ascent",
+  "time_step_limit":200
+}

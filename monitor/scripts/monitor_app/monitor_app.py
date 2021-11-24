@@ -114,7 +114,6 @@ class Monitor:
                 self.guide.send_log(f"Need to penalize {penalty_type}!")
             else:
                 self.guide.send_log(f"No penalties.!")
-            print(penalty_type)
             return False
         else:
             if self.consistency.experiment != req.experiment:

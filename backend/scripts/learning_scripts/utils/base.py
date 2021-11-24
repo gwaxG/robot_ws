@@ -24,11 +24,13 @@ class Base:
         This function checks the parameters map.
         :return:
         """
+        negatives = ["false", "no", "n"]
+        positives = ["true", "yes", "y"]
         for k, v in self.prms.items():
             if isinstance(v, str):
-                if "false" == v or "False" == v:
+                if v.lower() in negatives:
                     self.prms[k] = False
-                if "true" == v or "True" == v:
+                if v.lower() in positives:
                     self.prms[k] = True
 
     def __init__(self, fname):
@@ -39,6 +41,8 @@ class Base:
         with open(path) as f:
             prms = json.load(f)
         self.prms = prms
+        self.parameters_check()
+
         self.f = None
         postfix = prms["experiment_series"] + "_" + prms['experiment']
         # paths
