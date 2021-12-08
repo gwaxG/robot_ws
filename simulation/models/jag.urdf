@@ -731,7 +731,7 @@
       </link>
 
       <joint name="camera_joint" type="fixed">
-        <origin xyz="0.175 0.1 0.355" rpy="0 0.47 0.0"/> <!-- 0.3 0 0.19 -->
+        <origin xyz="0.21 0.1 0.28" rpy="0 0.43 0.0"/> <!-- 0.3 0 0.19 0.47-->
         <parent link="base_link"/>
         <child link="camera_link"/>
       </joint>
@@ -772,7 +772,7 @@
         <sensor type="depth" name="camera">
           <update_rate>20</update_rate>
           <camera>
-            <horizontal_fov>1.05</horizontal_fov>
+            <horizontal_fov>1.273</horizontal_fov>
             <image>
               <format>R8G8B8</format>
               <width>640</width>
@@ -784,6 +784,7 @@
             </clip>
           </camera>
           <plugin name="camera_camera_controller" filename="libgazebo_ros_openni_kinect.so">
+
           <!--
           host:
           <plugin name="camera_camera_controller" filename="/home/r1d1/dev/catkin_ws/devel/lib/libgazebo_ros_openni_kinect.so">
@@ -792,6 +793,7 @@
           or
           <plugin name="camera_camera_controller" filename="/opt/ros/noetic/lib/libgazebo_ros_openni_kinect.so">
           -->
+
             <alwaysOn>true</alwaysOn>
             <updateRate>20</updateRate>
             <imageTopicName>camera/rgb/image_raw</imageTopicName>

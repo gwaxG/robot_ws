@@ -1,9 +1,11 @@
 package beam_features
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"math/rand"
+	"os"
 	"sync"
 
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
@@ -27,18 +29,26 @@ func (c *Core) Init() {
 	c.mutex = sync.Mutex{}
 	var err error
 	c.ros = RosProxy{}
-	c.ros.Init(c.Handle)
+	c.ros.Init()
+	if c.ros.Mode== "simulation" {
+		c.ros.SetHandler(c.Handle)
+	} else if c.ros.Mode == "reality" {
+		c.ros.SetHandler(c.HandleRealWorld)
+	} else {
+		fmt.Printf("Unknown perception mode {%s}. Force exit.\n", c.ros.Mode)
+		os.Exit(1)
+	}
 	c.HeightFeatNum, err = c.ros.conn.ParamGetInt("feature_height")
 	FailOnError(err, "can not get param")
 	c.WidthFeatNum, err = c.ros.conn.ParamGetInt("feature_width")
 	FailOnError(err, "can not get param")
 	c.BandWidth, err = c.ros.conn.ParamGetInt("band_width")
 	FailOnError(err, "can not get param")
-	var dist int
-	dist, err = c.ros.conn.ParamGetInt("view_distance")
-	FailOnError(err, "can not get param")
-	c.viewDistance = float64(dist) / 100.
-	FailOnError(err, "can not parse param")
+	// var dist int
+	// dist, err = c.ros.conn.ParamGetInt("view_distance")
+	// FailOnError(err, "can not get param")
+	// c.viewDistance = float64(dist) / 100.
+	// FailOnError(err, "can not parse param")
 }
 
 func (c *Core) Start() {
@@ -101,17 +111,38 @@ func (c *Core) handleSlice(isHeight bool, img *bridge.Image, dst *[]float32, wg 
 	*dst = append(*dst, calcMean(beam))
 }
 
+// Decode simulation image
 func (c *Core) Handle(img *sensor_msgs.Image) {
 	beamsHeight := []float32{}
 	beamsWidth := []float32{}
 
 	decoded := bridge.Decode(img, "depth")
+	
 	distanceCut := c.CutDistance(decoded)
+	
 	noised := c.Noise(distanceCut)
+	
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go c.handleSlice(true, noised, &beamsHeight, &wg)
 	go c.handleSlice(false, noised, &beamsWidth, &wg)
+	wg.Wait()
+	c.ros.Publish(beamsHeight, beamsWidth, img.Header.FrameId)
+}
+
+// Decode real-world image
+func (c *Core) HandleRealWorld(img *sensor_msgs.Image) {
+	beamsHeight := []float32{}
+	beamsWidth := []float32{}
+
+	endian := img.IsBigendian
+	decoded := bridge.DecodeRealSense(img, "depth", c.ros.DistViewMin, c.ros.DistViewMax, endian)
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go c.handleSlice(true, decoded, &beamsHeight, &wg)
+	go c.handleSlice(false, decoded, &beamsWidth, &wg)
 	wg.Wait()
 	c.ros.Publish(beamsHeight, beamsWidth, img.Header.FrameId)
 }
@@ -149,7 +180,7 @@ func (c *Core) CutDistance(dec *bridge.Image) *bridge.Image {
 	img := *dec
 	for h := 0; h < int(img.Height); h++ {
 		for w := 0; w < int(img.Width); w++ {
-			if img.Rows[h][w] < float32(c.viewDistance) {
+			if img.Rows[h][w] < c.ros.DistViewMin || img.Rows[h][w] > c.ros.DistViewMax {
 				img.Rows[h][w] = 0.0
 			}
 		}

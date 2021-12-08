@@ -1,22 +1,38 @@
 <?xml version="1.0"?>
 <launch>
-    <param name="feature_type" value="FeatureSliceVertical"/>
-    <param name="image_height" type="int" value="480" />
-    <param name="image_width" type="int" value="640" />
+    <param name="perception_mode" type="str" value="reality"/>
 
-    <param name="depth_image_topic" type="str" value="/camera/depth/image_raw" />
+    <param name="feature_type" value="FeatureSliceVertical"/>
+    <param name="image_width" type="int" value="640" />
+    <param name="image_height" type="int" value="480" />
+
+    <param name="depth_image_encoding" type="str" value="16UC1" />
+
+    <param name="camera_distance_view_min" type="int" value="20" />
+    <param name="camera_distance_view_max" type="int" value="150" />
+
+    <param name="depth_image_topic" type="str" value="/camera/depth/image_rect_raw" />
     <!--60 72 10-->
-    <param name="feature_height" type="int" value="60" />
+    <param name="feature_height" type="int" value="30" />
     <param name="feature_width" type="int" value="12" />
     <param name="band_width" type="int" value="10" />
 
-    <!-- USB camera launch -->
-    <include file="$(find astra_camera)/launch/astra.launch"/>
-    <!-- End of usb camera part -->
+    <!-- Noise -->
+    <param name="image_noise_level" type="int" value="0" /> <!-- percent level of noise -->
+    <param name="grain_size" type="int" value="0" />
+    <!-- View distance in cm -->
+    <param name="view_distance" type="int" value="0" />
 
-    <!-->
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="dev"         default="/dev/input/js0"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+    <arg name="port" default="11311"/>
+
     <node name="beamer" pkg="perception" type="beamer_app"
-      output="screen">
+      output="screen" args="$(arg port)">
     </node>
-    <-->
+
 </launch>

@@ -26,14 +26,26 @@ type RosProxy struct {
 	seq             uint32
 	ImageNoiseLevel int
 	GrainSize       int
+	Encoding        string
+	DistViewMin     float32
+	DistViewMax     float32
+	Mode            string
 }
 
-func (r *RosProxy) Init(subs func(*sensor_msgs.Image)) {
-	var (
-		err             error
-		depthImageTopic string
-	)
+func (r *RosProxy) SetHandler(subs func(*sensor_msgs.Image)) {
+	depthImageTopic, err := r.conn.ParamGetString("depth_image_topic")
+	FailOnError(err, "Can not get param string")
 
+	r.imgSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
+		Node:     r.conn,
+		Topic:    depthImageTopic,
+		Callback: subs,
+	})
+	FailOnError(err, "Can not create subscriber")
+}
+
+func (r *RosProxy) Init() {
+	var err error
 	r.seq = 1
 	r.conn, err = goroslib.NewNode(goroslib.NodeConf{
 		Name:          "features",
@@ -45,12 +57,28 @@ func (r *RosProxy) Init(subs func(*sensor_msgs.Image)) {
 	FailOnError(err, "Can not get param string image_noise_level")
 	r.ImageNoiseLevel = noising
 
+	encoding, err := r.conn.ParamGetString("depth_image_encoding")
+	FailOnError(err, "Can not get param string depth_image_encoding")
+	r.Encoding = encoding
+
+	mode, err := r.conn.ParamGetString("perception_mode")
+	FailOnError(err, "Can not get param string perception_mode")
+	r.Mode = mode
+
+	// Check real camera distance view
+
+	var value int
+	value, err = r.conn.ParamGetInt("camera_distance_view_min")
+	FailOnError(err, "Can not get param string camera_distance_view_min")
+	r.DistViewMin = float32(value) / float32(100)
+
+	value, err = r.conn.ParamGetInt("camera_distance_view_max")
+	FailOnError(err, "Can not get param string camera_distance_view_max")
+	r.DistViewMax = float32(value) / float32(100)
+
 	graine, err := r.conn.ParamGetInt("grain_size")
 	FailOnError(err, "Can not get param string grain_size")
 	r.GrainSize = graine
-
-	depthImageTopic, err = r.conn.ParamGetString("depth_image_topic")
-	FailOnError(err, "Can not get param string")
 
 	r.featurePub, err = goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  r.conn,
@@ -58,13 +86,6 @@ func (r *RosProxy) Init(subs func(*sensor_msgs.Image)) {
 		Msg:   &BeamMsg{},
 	})
 	FailOnError(err, "Can not create publisher")
-
-	r.imgSub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
-		Node:     r.conn,
-		Topic:    depthImageTopic,
-		Callback: subs,
-	})
-	FailOnError(err, "Can not create subscriber")
 
 	r.imagePub, err = goroslib.NewPublisher(goroslib.PublisherConf{
 		Node:  r.conn,

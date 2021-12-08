@@ -5,9 +5,9 @@
   "complexity":"full",
   "env_type":"eval",
   "episode_limit":10,
-  "experiment":"asc5",
+  "experiment":"exp_e2e_asc11_med_range_03",
   "experiment_series":"exp_e2e",
-  "load_path":"data/models/server/exp_e2e_asc5.zip",
+  "load_path":"data/models/server/exp_e2e_asc11_med_range_03.zip",
   "log_path":"data/boards",
   "penalty_angular":false,
   "penalty_deviation":true,
@@ -16,5 +16,5 @@
   "save_path":"data/models",
   "sigma":0,
   "task":"ascent",
-  "time_step_limit":200
+  "time_step_limit":100
 }

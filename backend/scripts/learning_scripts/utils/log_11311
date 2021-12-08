@@ -11,10 +11,10 @@ Traceback (most recent call last):
     return self.step_wait()
   File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 49, in step_wait
     obs = self.envs[env_idx].reset()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 317, in reset
-    self.spawn_goal()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 288, in spawn_goal
-    props=self.task + "_" + self.randomness
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 315, in reset
+    self.regenerate_obstacles()
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 255, in regenerate_obstacles
+    props=props,
   File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 524, in call
     raise ServiceException("service [%s] returned no response"%self.resolved_name)
 rospy.service.ServiceException: service [/env_gen] returned no response
