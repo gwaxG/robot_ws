@@ -10,17 +10,17 @@ import (
 
 type Ros struct {
 	stateChange chan state.State
-	state 		state.State
-	reset 		chan bool
+	state       state.State
+	reset       chan bool
 }
 
-func (r *Ros) Init (stateChange chan state.State, reset chan bool) {
+func (r *Ros) Init(stateChange chan state.State, reset chan bool) {
 	r.reset = reset
 	r.stateChange = stateChange
 	r.state = state.State{}
 }
 
-func (r * Ros) Serve () {
+func (r *Ros) Serve() {
 	var err error
 	var subBase *goroslib.Subscriber
 	var servReset *goroslib.ServiceProvider
@@ -31,7 +31,7 @@ func (r * Ros) Serve () {
 		Callback: r.onRequest,
 	})
 	utils.FailOnError(err, "Failed to create platform_cmd subscriber")
-	defer func(){err=subBase.Close(); utils.FailOnError(err, "Failed to disconnect from robot_cmd")}()
+	defer func() { err = subBase.Close(); utils.FailOnError(err, "Failed to disconnect from robot_cmd") }()
 
 	servReset, err = goroslib.NewServiceProvider(goroslib.ServiceProviderConf{
 		Node:     connections.RosConnection(),
@@ -40,12 +40,12 @@ func (r * Ros) Serve () {
 		Callback: r.onResetService,
 	})
 	utils.FailOnError(err, "Failed to create platform_cmd subscriber")
-	defer func(){err=servReset.Close(); utils.FailOnError(err, "Failed to disconnect from reset service")}()
+	defer func() { err = servReset.Close(); utils.FailOnError(err, "Failed to disconnect from reset service") }()
 
 	select {}
 }
 
-func (r * Ros) onResetService(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes {
+func (r *Ros) onResetService(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes {
 	r.reset <- true
 	return &std_srvs.TriggerRes{
 		Success: true,
@@ -53,7 +53,7 @@ func (r * Ros) onResetService(_ *std_srvs.TriggerReq) *std_srvs.TriggerRes {
 	}
 }
 
-func (r * Ros) onRequest (msg *state.State) {
+func (r *Ros) onRequest(msg *state.State) {
 	r.state.Linear = msg.Linear
 	r.state.Angular = msg.Angular
 	r.state.FrontFlippers = msg.FrontFlippers

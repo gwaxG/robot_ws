@@ -1,40 +1,41 @@
 package controller
 
 import (
+	"log"
+	"net"
+	"os"
+	"strings"
+
 	"github.com/gwaxG/robot_ws/control/pkg/connections"
 	"github.com/gwaxG/robot_ws/control/pkg/input"
 	"github.com/gwaxG/robot_ws/control/pkg/output"
 	"github.com/gwaxG/robot_ws/control/pkg/platform_sensors"
 	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"log"
-	"net"
-	"os"
-	"strings"
 )
 
 type Controller struct {
-	connBase 		net.Conn
-	connArm 		net.Conn
-	save 			func()()
-	input 			[]interface{}
-	output			interface{}
-	imu 			interface{}
-	statePublisher  interface{}
-	manager 		state.Manager
-	fromInput 		chan state.State
-	toOutput 		chan []state.State
-	publishState 	chan state.State
-	done 			chan bool
-	reset 			chan bool
-	keyboardUsage 	chan bool
-	stopReleaseCh   chan string
+	connBase       net.Conn
+	connArm        net.Conn
+	save           func()
+	input          []interface{}
+	output         interface{}
+	imu            interface{}
+	statePublisher interface{}
+	manager        state.Manager
+	fromInput      chan state.State
+	toOutput       chan []state.State
+	publishState   chan state.State
+	done           chan bool
+	reset          chan bool
+	keyboardUsage  chan bool
+	stopReleaseCh  chan string
 }
 
 // Initialize connections with the platform and roscore.
 // This method automatically defines configuration of the control node
 // based on availability of connections and keyboardSim flag provided at start time.
-func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outputSimulation bool) {
-	defer func(){
+func (c *Controller) Init(inputKeyboard, inputRos, test, outputPlatform, outputSimulation bool) {
+	defer func() {
 		if r := recover(); r != nil {
 			if cont := strings.Contains(r.(string), "robot connection problem"); cont {
 				log.Println("Robot connection problem.\nCheck Wifi connection to the robot.\nExit.")
@@ -135,20 +136,20 @@ func (c * Controller) Init (inputKeyboard, inputRos, test, outputPlatform, outpu
 	}
 }
 
-func (c *Controller) Start () {
+func (c *Controller) Start() {
 	var set, end bool
 	var StateAction, Change state.State
 	log.Println("Controller started...")
 	// control workflow
 	for {
 		select {
-		case <- c.reset:
+		case <-c.reset:
 			StateAction, Change = c.manager.Reset()
 		case _ = <-c.done:
 			end = true
-		case actions := <- c.fromInput:
-			select{
-			case <- c.keyboardUsage:
+		case actions := <-c.fromInput:
+			select {
+			case <-c.keyboardUsage:
 				set = false
 			default:
 				set = true
@@ -167,6 +168,6 @@ func (c *Controller) Start () {
 	}
 }
 
-func (c * Controller) Close(){
+func (c *Controller) Close() {
 	connections.Close()
 }

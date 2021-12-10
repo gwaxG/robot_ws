@@ -2,6 +2,30 @@
   self.pub_robot_cmd = rospy.Publisher("robot_cmd", State)
 /home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/gym/logger.py:30: UserWarning: [33mWARN: Box bound precision lowered by casting to float32[0m
   warnings.warn(colorize('%s: %s'%('WARN', msg % args), 'yellow'))
+PITCH -1.7625307746643647e-05
+PITCH 1.0585963360725507e-05
+PITCH 5.821001484218671e-06
+PITCH 6.0071653978461616e-05
+PITCH 0.005530257767568787
+PITCH -8.657310608474542e-06
+PITCH -2.2135171267520745e-05
+PITCH -0.16926983810085447
+PITCH -0.6602696309388326
+PITCH -0.6645866947392116
+PITCH -0.7081986247297531
+PITCH -0.5606970768475572
+PITCH -0.5916749709039738
+PITCH -0.5610511187217826
+PITCH -0.6755048043158927
+PITCH -0.5665070248744489
+PITCH -0.5697674131002879
+PITCH -0.5601655023205446
+PITCH -0.6713156442788066
+PITCH -0.5932519894298842
+PITCH 0.00011879344665399772
+PITCH -1.6323962184952593e-05
+PITCH -4.1252968609235304e-05
+PITCH -6.758689521892287e-06
 Traceback (most recent call last):
   File "z_evaluator_launch.py", line 62, in <module>
     Learner().evaluate_model()
@@ -11,10 +35,10 @@ Traceback (most recent call last):
     return self.step_wait()
   File "/home/r1d1/anaconda3/envs/sb_ros_learning/lib/python3.7/site-packages/stable_baselines3/common/vec_env/dummy_vec_env.py", line 49, in step_wait
     obs = self.envs[env_idx].reset()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 315, in reset
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 317, in reset
     self.regenerate_obstacles()
-  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 255, in regenerate_obstacles
-    props=props,
+  File "/home/r1d1/dev/catkin_ws/src/robot_ws/gym-training/gym_training/envs/training_env.py", line 245, in regenerate_obstacles
+    props="",
   File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 524, in call
     raise ServiceException("service [%s] returned no response"%self.resolved_name)
 rospy.service.ServiceException: service [/env_gen] returned no response

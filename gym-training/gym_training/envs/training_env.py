@@ -310,6 +310,7 @@ class TrainingEnv(gym.Env):
     def reset(self, goal=""):
         self.seq += 1
         self.return_robot_to_initial_state()
+        self.respawn_robot()
         self.create_new_rollout()
         self.request_complexity()
         self.regenerate_obstacles()

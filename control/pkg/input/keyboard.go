@@ -1,27 +1,27 @@
 package input
 
 import (
-	"github.com/gwaxG/robot_ws/control/pkg/state"
-	"os"
 	"fmt"
+	"os"
 	"os/exec"
 	"unicode/utf8"
+
+	"github.com/gwaxG/robot_ws/control/pkg/state"
 )
 
 type Keyboard struct {
-	stateChange 	chan state.State
-	done 			chan bool
-	reset 			chan bool
-	keyboardUsage	chan bool
-	releaseStop		chan string
-
+	stateChange   chan state.State
+	done          chan bool
+	reset         chan bool
+	keyboardUsage chan bool
+	releaseStop   chan string
 }
 
-func (k *Keyboard) Init (
-		stateChange chan state.State,
-		reset, done, keyboardUsage chan bool,
-		releaseStop chan string,
-	) {
+func (k *Keyboard) Init(
+	stateChange chan state.State,
+	reset, done, keyboardUsage chan bool,
+	releaseStop chan string,
+) {
 	k.releaseStop = releaseStop
 	k.stateChange = stateChange
 	k.done = done
@@ -32,7 +32,7 @@ func (k *Keyboard) Init (
 	// exec.Command("stty", "-F", "/dev/tty", "-echo").Run()
 }
 
-func (k *Keyboard) Serve () {
+func (k *Keyboard) Serve() {
 	var reset, done, setVelocity bool
 	var releaseStop string
 	b := make([]byte, 1)
@@ -58,7 +58,7 @@ func (k *Keyboard) Serve () {
 	}
 }
 
-func  (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool, string) {
+func (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool, string) {
 	key, _ := utf8.DecodeRune(b)
 	var reset, done, setVelocity bool
 	var releaseStop string

@@ -2,12 +2,14 @@
 package connections
 
 import (
+	"os"
+
 	"github.com/aler9/goroslib"
 	"github.com/gwaxG/robot_ws/control/pkg/utils"
-	"os"
 )
 
 var _RosConn *goroslib.Node
+
 // Return ROS node
 func RosConnection() *goroslib.Node {
 	lock.Lock()

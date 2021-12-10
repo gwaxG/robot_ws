@@ -17,29 +17,23 @@ func main() {
 			}
 		}
 	}()
-	var port string
+	/* var port string
 	if len(os.Args) == 1 {
 		port = "11311"
 	} else {
 		port = os.Args[1]
-	}
-	os.Setenv("ROS_MASTER_URI", "http://localhost:"+port)
+	}*/
 
-
-	/*
-	iKeyb := flag.Bool("ik", true, "Keyboard input")                     // true
-	iRos := flag.Bool("ir", false, "ROS input")                           // true
-	test := flag.Bool("t", false, "Test IP:HOST platform configuration") // false
-	oPlat := flag.Bool("op", true, "Platform command output")           // false
-	oSim := flag.Bool("os", false, "Simulation command output")           // true
-	*/
-	iKeyb := flag.Bool("ik", true, "Keyboard input")                     // true
+	port := flag.String("port", "11311", "ROS port")                     // true
+	iKeyb := flag.Bool("ik", false, "Keyboard input")                    // true
 	iRos := flag.Bool("ir", true, "ROS input")                           // true
 	test := flag.Bool("t", false, "Test IP:HOST platform configuration") // false
 	oPlat := flag.Bool("op", false, "Platform command output")           // false
 	oSim := flag.Bool("os", true, "Simulation command output")           // true
 	flag.Parse()
-	fmt.Println(*iKeyb, *iRos, *test, *oPlat, *oSim)
+	os.Setenv("ROS_MASTER_URI", "http://localhost:"+*port)
+
+	fmt.Println(*iKeyb, *iRos, *test, *oPlat, *oSim, *port)
 	c := controller.Controller{}
 	c.Init(*iKeyb, *iRos, *test, *oPlat, *oSim)
 	c.Start()

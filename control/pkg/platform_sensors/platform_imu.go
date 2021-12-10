@@ -2,20 +2,21 @@ package platform_sensors
 
 import (
 	"bufio"
-	"github.com/aler9/goroslib"
-	"github.com/gwaxG/robot_ws/control/pkg/connections"
-	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/aler9/goroslib"
+	"github.com/gwaxG/robot_ws/control/pkg/connections"
+	"github.com/gwaxG/robot_ws/control/pkg/state"
 )
 
 // struct reading sensor information and sending it to ROS
 type PlatformSensors struct {
-	stopRelease 	chan string
-	sensor 			*state.Sensor
-	sensorPub		*goroslib.Publisher
+	stopRelease chan string
+	sensor      *state.Sensor
+	sensorPub   *goroslib.Publisher
 }
 
 func (i *PlatformSensors) Init(stopReleaseCh chan string) {
@@ -36,7 +37,7 @@ func (i *PlatformSensors) Serve() {
 			ba, _, err := reader.ReadLine()
 			if err != nil {
 				// log.Println("Can not read from the robot")
-				
+
 			} else {
 				str = strings.Trim(string(ba), "[]")
 				i.handleSensorData(str)
@@ -44,7 +45,7 @@ func (i *PlatformSensors) Serve() {
 		}
 	}()
 	go func() {
-		ticker := time.NewTicker(200 * time.Millisecond)
+		ticker := time.NewTicker(100 * time.Millisecond)
 		for {
 			select {
 			case <-ticker.C:
@@ -56,7 +57,7 @@ func (i *PlatformSensors) Serve() {
 }
 
 func (i *PlatformSensors) handleSensorData(line string) {
-	defer func (){
+	defer func() {
 		if r := recover(); r != nil {
 			log.Println("Recovering in PlatformSensors.handleSensorData.\nCut sensor data.")
 			line = ""
@@ -73,11 +74,11 @@ func (i *PlatformSensors) handleSensorData(line string) {
 		i.sensor.AccelZ, _ = strconv.ParseFloat(strArray[10], 64)
 	} else if strings.HasPrefix(line, "MM") {
 		// V(motorBoard data) AI(motor temp) A(current) C(position data)
-		
+
 		index, _ := strconv.Atoi(string(line[2]))
 		line = line[4:]
 
-		if index == 0 && strings.HasPrefix(line, "V") { // index == 2 && 
+		if index == 0 && strings.HasPrefix(line, "V") { // index == 2 &&
 			voltageInt, _ := strconv.ParseInt(strings.Split(line[2:], ":")[1], 10, 64)
 			i.sensor.Voltage = float64(voltageInt) / 10
 		}
@@ -97,7 +98,7 @@ func (i *PlatformSensors) handleSensorData(line string) {
 				i.sensor.RearFlipperCounts = pos2
 			}
 		}
-		if strings.HasPrefix(line, "A"){
+		if strings.HasPrefix(line, "A") {
 			currents := strings.Split(line[2:], ":")
 			current1, _ := strconv.ParseInt(currents[0], 10, 64)
 			current2, _ := strconv.ParseInt(currents[0], 10, 64)
@@ -105,7 +106,7 @@ func (i *PlatformSensors) handleSensorData(line string) {
 			case 0:
 				i.sensor.FrontLeftMotorCurrent = float64(current1) / 10
 				i.sensor.FrontRightMotorCurrent = float64(current2) / 10
-				
+
 			case 1:
 				i.sensor.RearLeftMotorCurrent = float64(current1) / 10
 				i.sensor.RearRightMotorCurrent = float64(current2) / 10
@@ -116,7 +117,7 @@ func (i *PlatformSensors) handleSensorData(line string) {
 
 			i.sensor.FrontFlipperCurrent = float64(current1) / 10
 			i.sensor.FrontFlipperCurrent = float64(current2) / 10
-			
+
 		}
 	}
 }
