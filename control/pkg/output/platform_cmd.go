@@ -1,22 +1,23 @@
 package output
 
 import (
-	"github.com/gwaxG/robot_ws/control/pkg/connections"
-	"github.com/gwaxG/robot_ws/control/pkg/state"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/gwaxG/robot_ws/control/pkg/connections"
+	"github.com/gwaxG/robot_ws/control/pkg/state"
 )
 
 type PlatformCmd struct {
-	stateActionCh 		chan []state.State
-	stopReleaseCh 		chan string
+	stateActionCh chan []state.State
+	stopReleaseCh chan string
 }
 
 const PI = 3.14
 const Latency = 25
 const MAXVel = 400
-const AngFlipperRes = 7600.0 / (2 * PI)
+const AngFlipperRes = 5700.0 / (2 * PI) // 7600
 const AngArmRes = 5700.0 / (2 * PI)
 
 func (p *PlatformCmd) Init(stopReleaseCh chan string, test bool, StateChange chan []state.State) {
@@ -33,8 +34,8 @@ func (p *PlatformCmd) Init(stopReleaseCh chan string, test bool, StateChange cha
 func (p *PlatformCmd) Serve() {
 	var StateChange []state.State
 	var SetState, Change state.State
-	go func (){
-		switch <- p.stopReleaseCh {
+	go func() {
+		switch <-p.stopReleaseCh {
 		case "stop":
 			p.stopMotors()
 		case "release":
@@ -42,8 +43,8 @@ func (p *PlatformCmd) Serve() {
 		}
 	}()
 	for {
-		StateChange = <- p.stateActionCh
-		
+		StateChange = <-p.stateActionCh
+
 		Change = StateChange[1]
 		SetState = StateChange[0]
 		p.serveBase(&SetState, &Change)
@@ -55,8 +56,8 @@ func (p *PlatformCmd) Serve() {
 func (p *PlatformCmd) serveBase(setState, change *state.State) {
 	// Base width, wheel radius
 	D, R := 0.6, 0.085
-	left := (setState.Linear + setState.Angular * D / 2) / R / (2*PI) * MAXVel
-	right := (setState.Linear - setState.Angular * D / 2) / R / (2*PI) * MAXVel
+	left := (setState.Linear + setState.Angular*D/2) / R / (2 * PI) * MAXVel
+	right := (setState.Linear - setState.Angular*D/2) / R / (2 * PI) * MAXVel
 	cmd := "MMW !M " + strconv.Itoa(int(-left)) + " " + strconv.Itoa(int(right)) + "\r\n"
 	connections.WriteToBase(cmd)
 }
@@ -84,7 +85,7 @@ func (p *PlatformCmd) serveArm(setState, change *state.State) {
 	arm1 := int(change.ArmJoint1 * AngArmRes)
 	arm2 := int(change.ArmJoint2 * AngArmRes)
 	if arm1 != 0 {
-		cmd = "!PR 1 " + strconv.Itoa(arm1) + "\r"
+		cmd = "!PR 1 " + strconv.Itoa(-arm1) + "\r"
 		connections.WriteToArm(cmd)
 		// time to wait for ack from server
 		if arm2 != 0 {
@@ -92,7 +93,7 @@ func (p *PlatformCmd) serveArm(setState, change *state.State) {
 		}
 	}
 	if arm2 != 0 {
-		cmd = "!PR 2 " + strconv.Itoa(-arm2) + "\r"
+		cmd = "!PR 2 " + strconv.Itoa(arm2) + "\r"
 		connections.WriteToArm(cmd)
 	}
 }
