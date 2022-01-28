@@ -24,8 +24,8 @@ class Base:
         This function checks the parameters map.
         :return:
         """
-        negatives = ["false", "no", "n"]
-        positives = ["true", "yes", "y"]
+        negatives = ["False", "false", "no", "n"]
+        positives = ["True", "true", "yes", "y"]
         for k, v in self.prms.items():
             if isinstance(v, str):
                 if v.lower() in negatives:

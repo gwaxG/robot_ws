@@ -49,8 +49,11 @@ class Safety:
         self.mass["sum"] = np.sum(list(self.mass.values()))
         self.zero_rot = tf.transformations.quaternion_from_euler(0, 0, 0)
         self.pub_dev = rospy.Publisher("/safety/relative_deviation", Float32)
-        self.pub_angular = rospy.Publisher("/safety/angular", Float32)
+        self.pub_angular = rospy.Publisher("/safety/only_angular", Float32)
+        # angular + cog deviation in the descent task
+        self.pub_dev_angular = rospy.Publisher("/safety/angular", Float32)
         rospy.Subscriber("/imu", Imu, self.update_imu)
+        self.estimations = {"cog": 0, "ang": []}
         while not rospy.is_shutdown():
             position = self.define_position()
             if position is None:
@@ -58,13 +61,25 @@ class Safety:
             self.broadcast_centroid_projection(position)
             self.broadcast_cog()
             self.broadcast_cog_projections(position)
+            self.descent_task_penalty()
             rospy.sleep(0.1)
 
+    def descent_task_penalty(self):
+        if len(self.estimations["ang"]) > 0:
+            ang = np.mean(self.estimations["ang"])
+            self.estimations["ang"] = []
+        else:
+            ang = 0
+        value = 0.5 * (ang + self.estimations["cog"])
+        self.pub_dev_angular.publish(Float32(data=value))
+
     def update_imu(self, msg):
-        noise_cut = 0.1
-        maximum_angular_velocity = 1.0
-        angular_velocity_y = np.clip(np.abs(msg.angular_velocity.y), noise_cut, maximum_angular_velocity)
-        relative = angular_velocity_y / maximum_angular_velocity
+        max_val = 1
+        noise_cut = 0.02
+        relative = np.sqrt(msg.linear_acceleration.x ** 2 + msg.linear_acceleration.z ** 2)
+        relative = np.clip(relative, noise_cut, max_val)
+        relative = (relative - noise_cut)/(max_val - noise_cut)
+        self.estimations["ang"].append(relative)
         self.pub_angular.publish(Float32(data=relative))
 
     def define_position(self):
@@ -145,15 +160,20 @@ class Safety:
         cx = [x, cog[1], 0]
         self.broadcast(cx, self.zero_rot, "Cx", "O")
         min_deviation = 0.08
-        max_deviation = 0.3
+        max_deviation = self.semi_length
+
         deviation = (cy[2]**2 + cx[0]**2) ** 0.5
-        # print("deviation", deviation)
-        # relative_deviation = (deviation - min_deviation) / (max_deviation - min_deviation)
-        relative_deviation = np.clip(deviation, 0., self.semi_length)
+
+        deviation = np.clip(deviation, 0., max_deviation)
+
+        relative_deviation = deviation / max_deviation
+
         if position == "stair":
-            self.pub_dev.publish(Float32(data=relative_deviation))
+            self.pub_dev.publish(Float32(data=deviation))
+            self.estimations["cog"] = relative_deviation
         else:
             self.pub_dev.publish(Float32(data=0.))
+            self.estimations["cog"] = 0.
 
     def broadcast(self, trans, quaternion, child, parent):
         quaternion = list(quaternion)

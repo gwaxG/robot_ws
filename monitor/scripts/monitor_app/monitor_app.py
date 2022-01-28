@@ -215,13 +215,13 @@ class Monitor:
         self.robot_state = msg
 
     def callback_safety_deviation(self, msg):
+        self.rollout_state.episode_deviation.append(msg.data)
         if self.rollout_state.use_penalty_deviation and msg.data != 0.:
-            self.rollout_state.episode_deviation.append(msg.data)
             self.guide.safety_push(msg.data)
 
     def callback_safety_angular(self, msg):
+        self.rollout_state.episode_angular.append(msg.data)
         if self.rollout_state.use_penalty_angular and msg.data != 0.:
-            self.rollout_state.episode_angular.append(msg.data)
             self.guide.safety_push(msg.data)
 
     def callback_odometry(self, msg):
@@ -239,10 +239,10 @@ class Monitor:
                 self.rollout_state.step_reward += diff / self.rollout_state.maximum_distance
         if dist < 0.0:
             self.rollout_state.closest_distance = 0.
-            print("Done 2")
+            # print("Done 2")
             self.rollout_state.done = True
         elif dist > 1.2 * self.rollout_state.maximum_distance:
-            print("Done 2-5")
+            # print("Done 2-5")
             self.rollout_state.closest_distance = dist
             self.rollout_state.done = True
         else:

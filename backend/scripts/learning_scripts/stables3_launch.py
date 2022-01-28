@@ -15,7 +15,6 @@ from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckA
 
 class Learner(Base):
     def __init__(self):
-
         super(Learner, self).__init__(__file__)
         kwargs = {
             'experiment_series': self.prms['experiment_series'],
@@ -37,6 +36,7 @@ class Learner(Base):
             "ppo_default": "MlpPolicy",
             "td3_default": "MlpPolicy",
         }
+        self.time_step_cnt = 0
         model_parameters = self.prms['model_parameters']
         n_actions = env.action_space.shape[-1]
         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
@@ -76,7 +76,8 @@ class Learner(Base):
 
     def train_model(self):
         self.log(f"Learning started! Model is located at {self.save_path}")
-        self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4, callback=self.callback)
+        self.model.learn(total_timesteps=int(self.prms['total_timesteps']), log_interval=4,
+                         callback=self.callback)
         try:
             self.model.save(self.save_path)
         except Exception as e:
@@ -90,6 +91,12 @@ class Learner(Base):
         :return: boolean value for whether or not the training should continue
         """
         resp = self.guidance_info.call(GuidanceInfoRequest())
+
+        self.time_step_cnt += 1
+        # model is saved every 1000 time steps
+        if self.time_step_cnt % 1000 == 0:
+            _locals['self'].save(self.save_path)
+
         if resp.done:
             _locals['self'].save(self.save_path)
             # Stop training.
@@ -97,6 +104,7 @@ class Learner(Base):
         else:
             # Continue training.
             return True
+
 
 if __name__ == '__main__':
     Learner().train_model()

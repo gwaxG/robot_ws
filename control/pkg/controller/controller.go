@@ -96,6 +96,16 @@ func (c *Controller) Init(inputKeyboard, inputRos, test, outputPlatform, outputS
 		switch s.(type) {
 		case *input.Keyboard:
 			log.Println("Keyboard input started")
+			log.Println("z/q - linear velocity")
+			log.Println("q/d - angular velocity")
+			log.Println("r/f - front flippers")
+			log.Println("t/g - rear flippers")
+			log.Println("y/h - first arm joint")
+			log.Println("u/j - second arm joint")
+			log.Println("a - reset robot state")
+			log.Println("p - exit")
+			log.Println("b/n - block/release motors")
+
 			s.(*input.Keyboard).Init(c.fromInput, c.reset, c.done, c.keyboardUsage, c.stopReleaseCh)
 			go s.(*input.Keyboard).Serve()
 		case *input.Ros:

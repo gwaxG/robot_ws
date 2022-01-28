@@ -91,6 +91,8 @@ func (k *Keyboard) handleKeyPress(b []byte, st *state.State) (bool, bool, bool, 
 		st.ArmJoint2 = 0.1
 	case 'j':
 		st.ArmJoint2 = -0.1
+	// To add other use-cases, place your code here
+	// st.ArmJoint3 and st.ArmJoint4 to control robot hand rotation and open-close
 	case 'a':
 		reset = true
 	case 'p':

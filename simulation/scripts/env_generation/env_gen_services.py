@@ -117,14 +117,17 @@ class EnvGenerator:
         # calculate the points
         points = [
             # central frame
-            [0, 0, self.env.stair_floor.step_height],
+            # [0, 0, self.env.stair_floor.step_height],
+            [-self.env.stair_floor.step_length, 0, 0],
             # central inclined
             [0, 0, 0],
             # up central
             [
-                self.env.stair_floor.step_length * (self.env.stair_floor.step_n - 1),
+                # self.env.stair_floor.step_length * (self.env.stair_floor.step_n - 1),
+                self.env.stair_floor.step_length * (self.env.stair_floor.step_n),
                 0,
-                self.env.stair_floor.step_height * (self.env.stair_floor.step_n - 1)
+                # self.env.stair_floor.step_height * (self.env.stair_floor.step_n - 1)
+                self.env.stair_floor.step_height * (self.env.stair_floor.step_n)
             ],
             # up central, inclined
             [0, 0, 0],
