@@ -3,6 +3,8 @@
 ## Description
 This work space contains all necessary code for the simulation, control, perception and learning of the Jaguar V4 with Arm robot, as part of the following publication :
 
+
+```latex
 @article{AR-Mitriakov-2022,
   author = {A. Mitriakov and P. Papadakis and S. Garlatti},
   title = {An open-source software framework for reinforcement learning-based control of tracked robots in simulated indoor environments},
@@ -13,7 +15,8 @@ This work space contains all necessary code for the simulation, control, percept
   year  = {2022},
   publisher = {Taylor & Francis},
   doi = {10.1080/01691864.2022.2076570},
-}
+  }
+  ```
 
 Software was tested on a machine with the following hardware configuration:
 * Memory 31,2 GiB
