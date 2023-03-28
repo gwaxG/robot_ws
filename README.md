@@ -44,7 +44,7 @@ You can find working examples [here](https://github.com/gwaxG/robot_ws/tree/main
 
 1. `roslaunh backend learning.launch gui:=true &`  
 2. `roscd backend/scripts/learning/scripts`  
-3. `python stables3_launch.py
+3. `python stables3_launch.py`
 
 #### Server launching    
 In case you to start the server application that will communicate with the [GUI application](http://github.com/gwaxG/robot-simu),
